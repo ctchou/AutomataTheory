@@ -3,4 +3,5 @@
 import AutomataTheory.Sequences
 import AutomataTheory.AutomataBasic
 import AutomataTheory.AutomataSum
+import AutomataTheory.AutomataProd
 import AutomataTheory.Test
