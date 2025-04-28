@@ -22,7 +22,7 @@ def AutomataProd (M : I → Automata A) : Automata A where
 
 variable (M : I → Automata A)
 
-theorem Automata_prod_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → (AutomataProd M).State) :
+theorem automata_prod_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → (AutomataProd M).State) :
     FinRun (AutomataProd M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -34,7 +34,7 @@ theorem Automata_prod_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) →
     · intro i ; exact (h_all i).1
     · intro k i ;  exact (h_all i).2 k
 
-theorem Automata_prod_inf_run (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
+theorem automata_prod_inf_run (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
     InfRun (AutomataProd M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -62,7 +62,7 @@ theorem accepted_lang_inter :
     use n, as ; simp [h_al]
     use (fun k ↦ ss k i)
     constructor
-    · exact (Automata_prod_fin_run M n as ss).mp h_run i
+    · exact (automata_prod_fin_run M n as ss).mp h_run i
     · exact h_acc i
   · intro h_all
     have h_all' : ∀ i, ∃ ss_i, FinRun (M i) al.length (fun k ↦ al[k]) ss_i ∧ ss_i (Fin.last al.length) ∈ acc i := by
@@ -83,7 +83,7 @@ theorem accepted_lang_inter :
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k)
     constructor
-    · apply (Automata_prod_fin_run M al.length (fun k ↦ al[k]) (fun k i ↦ ss_i i k)).mpr
+    · apply (automata_prod_fin_run M al.length (fun k ↦ al[k]) (fun k i ↦ ss_i i k)).mpr
       intro i
       exact (h_ss_i i).1
     · intro i

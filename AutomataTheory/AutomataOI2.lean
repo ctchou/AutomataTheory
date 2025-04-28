@@ -124,8 +124,8 @@ theorem accepted_omega_lang_inter2 :
   ext as ; simp [AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩ i
-    have h_run1 := Automata_hist_inf_run_proj (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc) h_run
-    have h_run' := (Automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
+    have h_run1 := automata_hist_inf_run_proj (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc) h_run
+    have h_run' := (automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
     use (fun k ↦ (Prod.fst ∘ ss) k i) ; constructor
     · assumption
     let p0 k := ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 }
@@ -150,13 +150,13 @@ theorem accepted_omega_lang_inter2 :
     choose ss h_ss using h_all
     let ss' := fun k i ↦ ss i k
     have h_ss' : ∀ i, InfRun (M i) as (fun k ↦ ss' k i) := by intro i ; exact (h_ss i).1
-    have h_run' := (Automata_prod_inf_run M as ss').mpr h_ss'
+    have h_run' := (automata_prod_inf_run M as ss').mpr h_ss'
     have h_hist_init : AutomataOI2_HistInit.Nonempty := by simp [AutomataOI2_HistInit]
     have h_hist_next : ∀ s a, (AutomataOI2_HistNext M acc s a).Nonempty := by
       intro s a ; simp only [AutomataOI2_HistNext]
       rcases Classical.em (s.1 0 ∈ acc 0 ∧ s.2 = 0) with cond1 | cond1 <;> simp [cond1]
       rcases Classical.em (s.1 1 ∈ acc 1 ∧ s.2 = 1) with cond2 | cond2 <;> simp [cond2]
-    have h_runh := Automata_hist_inf_run_exists (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
+    have h_runh := automata_hist_inf_run_exists (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
       h_hist_init h_hist_next h_run'
     obtain ⟨hs, h_run⟩ := h_runh
     use (fun k ↦ (ss' k, hs k))
