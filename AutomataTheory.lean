@@ -5,4 +5,5 @@ import AutomataTheory.AutomataBasic
 import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataHist
+import AutomataTheory.AutomataOI2
 import AutomataTheory.Test
