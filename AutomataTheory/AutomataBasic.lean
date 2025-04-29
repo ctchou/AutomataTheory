@@ -19,9 +19,6 @@ class Automata (A : Type*) where
 
 variable {A : Type*}
 
-def Deterministic (M : Automata A) : Prop :=
-  M.init.ncard = 1 ∧ ∀ s a, (M.next s a).ncard = 1
-
 def FinRun (M : Automata A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : Fin n, ss (k + 1) ∈ M.next (ss k) (as k)
 
