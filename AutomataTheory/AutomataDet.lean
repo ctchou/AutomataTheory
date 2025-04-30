@@ -4,11 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Tactic
 import Mathlib.Data.Set.Card
 import Mathlib.Data.List.OfFn
 import Mathlib.Data.Fin.Basic
-import Mathlib.Order.Filter.ATTopBot.Basic
+import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Tactic.Linarith
 import AutomataTheory.AutomataBasic
 
 open BigOperators Function Set Filter
