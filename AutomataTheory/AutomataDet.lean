@@ -7,7 +7,6 @@ Authors: Ching-Tsun Chou
 import Mathlib.Data.Set.Card
 import Mathlib.Data.List.OfFn
 import Mathlib.Data.Fin.Basic
-import Mathlib.Order.Filter.AtTopBot.Basic
 import AutomataTheory.AutomataBasic
 
 open BigOperators Function Set Filter
@@ -120,38 +119,3 @@ theorem accepted_lang_compl :
     contradiction
 
 end AcceptedLangCompl
-
-section AutomataPSet
-
-variable {A : Type*}
-
-def AutomataPSet (M : Automata A) : DetAutomata A where
-  State := Set M.State
-  init := {M.init}
-  next := fun ps a ↦ { ⋃ s ∈ ps, M.next s a }
-  get_init := M.init
-  get_next := fun ps a ↦ ⋃ s ∈ ps, M.next s a
-  det_init := by simp
-  det_next := by simp
-
-variable (M : Automata A)
-
--- theorem automata_pset_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :
---     FinRun M n as ss ↔ FinRun (AutomataPSet M).toAutomata n as (fun k : Fin (n + 1) ↦ {s | s = ss k}) := by
---   sorry
-
-end AutomataPSet
-
--- def MakeFinRun (M : DetAutomata A) (n : ℕ) (as : Fin n → A) : Fin (n + 1) → M.State
---   | 0 => M.get_init
---   | ⟨k + 1, _⟩ => M.get_next (MakeFinRun M n as ⟨k, by omega⟩) (as ⟨k, by omega⟩)
-
--- def MakeFinRun (M : DetAutomata A) (n : ℕ) (as : Fin n → A) : Fin (n + 1) → M.State :=
---   match n with
---   | 0 => fun _ ↦ M.get_init
---   | _ + 1 =>
---     let as' := fun k : ℕ ↦ if k < n + 1 then as k else as 0
---     fun k ↦ MakeInfRun M as' k.toNat
-
--- def Deterministic (M : Automata A) : Prop :=
---   (∃ s0, M.init = {s0}) ∧ (∀ s a, ∃ s', M.next s a = {s'})

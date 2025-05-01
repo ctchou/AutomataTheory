@@ -7,6 +7,7 @@ import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataHist
 import AutomataTheory.AutomataOI2
 import AutomataTheory.AutomataDet
+import AutomataTheory.AutomataPSet
 import AutomataTheory.RegLang
 import AutomataTheory.OmegaRegLang
 import AutomataTheory.Test
