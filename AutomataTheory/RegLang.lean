@@ -10,6 +10,7 @@ import Mathlib.Data.Finite.Prod
 import Mathlib.Data.Finite.Sigma
 import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataProd
+import AutomataTheory.AutomataPSet
 
 open BigOperators Function Set Filter
 
@@ -20,7 +21,7 @@ variable {A : Type}
 def RegLang (L : Set (List A)) :=
   ∃ M : Automata.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedLang M acc
 
-theorem _reg_lang_union {L0 L1 : Set (List A)}
+theorem reg_lang_union {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -38,7 +39,7 @@ theorem _reg_lang_union {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, accepted_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
-theorem _reg_lang_inter {L0 L1 : Set (List A)}
+theorem reg_lang_inter {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -55,5 +56,14 @@ theorem _reg_lang_inter {L0 L1 : Set (List A)}
     exact Pi.finite
   · ext as
     simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
+
+theorem reg_lang_compl {L : Set (List A)}
+    (h : RegLang L) : RegLang (Lᶜ) := by
+  obtain ⟨M, acc, h_fin, h_l⟩ := h
+  use (AutomataPSet M).toAutomata, (AutomataPSet_Acc M acc)ᶜ
+  constructor
+  · simp [AutomataPSet]
+    exact Set.instFinite
+  · rw [accepted_lang_compl, accepted_lang_pset, h_l]
 
 end RegLang
