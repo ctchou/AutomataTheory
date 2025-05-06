@@ -137,4 +137,30 @@ theorem automata_pset_fin_run (n : ℕ) (as : Fin n → A) :
               Nat.mod_eq_of_lt (by omega : k + 1 < n + 1)]
     · simp [ss', ← h_s] ; congr
 
+section AcceptedLangPSet
+
+variable {A : Type*} (M : Automata A) (acc : Set M.State)
+
+def AutomataPSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
+
+theorem accepted_lang_pset :
+    AcceptedLang (AutomataPSet M).toAutomata (AutomataPSet_Acc M acc) = AcceptedLang M acc := by
+  ext al ; simp only [AcceptedLang, FinAccept]
+  constructor
+  · rintro ⟨n, as, ⟨ss', h_run', h_sn_acc⟩, h_al⟩
+    obtain ⟨rfl⟩ := det_automata_fin_run_unique (AutomataPSet M) n as ss' h_run'
+    rw [automata_pset_fin_run, AutomataPSet_Acc] at h_sn_acc
+    obtain ⟨sn, ⟨ss, h_run, h_sn⟩, h_acc⟩ := h_sn_acc
+    use n, as ; simp [h_al, -Fin.natCast_eq_last]
+    use ss ; rw [h_sn] ; tauto
+  · rintro ⟨n, as, ⟨ss, h_run, h_sn⟩, h_al⟩
+    use n, as ; simp [h_al, -Fin.natCast_eq_last]
+    use (MakeFinRun (AutomataPSet M) n as) ; constructor
+    · apply det_automata_fin_run_exists
+    · rw [automata_pset_fin_run, AutomataPSet_Acc]
+      use (ss ↑n) ; simp [h_sn, -Fin.natCast_eq_last]
+      use ss
+
+end AcceptedLangPSet
+
 end AutomataPSet
