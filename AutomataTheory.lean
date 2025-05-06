@@ -1,13 +1,10 @@
--- This module serves as the root of the `AutomataTheory` library.
--- Import modules here that should be built as part of the library.
-import AutomataTheory.Sequences
 import AutomataTheory.AutomataBasic
-import AutomataTheory.AutomataSum
-import AutomataTheory.AutomataProd
+import AutomataTheory.AutomataDet
 import AutomataTheory.AutomataHist
 import AutomataTheory.AutomataOI2
-import AutomataTheory.AutomataDet
 import AutomataTheory.AutomataPSet
-import AutomataTheory.RegLang
+import AutomataTheory.AutomataProd
+import AutomataTheory.AutomataSum
 import AutomataTheory.OmegaRegLang
-import AutomataTheory.Test
+import AutomataTheory.RegLang
+import AutomataTheory.Sequences

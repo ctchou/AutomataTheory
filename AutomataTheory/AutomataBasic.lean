@@ -22,6 +22,10 @@ variable {A : Type*}
 def FinRun (M : Automata A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : Fin n, ss (k + 1) ∈ M.next (ss k) (as k)
 
+def OptFinRun (M : Automata A) (n : ℕ) (as' : ℕ → Option A) (ss' : ℕ → Option M.State) :=
+  (∃ s0 ∈ M.init, ss' 0 = some s0) ∧
+  (∀ k < n, ∃ sk ak sk_1, sk_1 ∈ M.next sk ak ∧ ss' k = some sk ∧ as' k = some ak ∧ ss' (k + 1) = some sk_1)
+
 def InfRun (M : Automata A) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)
 

@@ -43,10 +43,6 @@ theorem automata_pset_reach_next (n : ℕ) (as : Fin n → A) (k : ℕ) (h : k <
   simp only [h_k, dite_true] ; simp
   congr ; simp [Fin.ext_iff] ; omega
 
-def OptFinRun (n : ℕ) (as' : ℕ → Option A) (ss' : ℕ → Option M.State) :=
-  (∃ s0 ∈ M.init, ss' 0 = some s0) ∧
-  (∀ k < n, ∃ sk ak sk_1, sk_1 ∈ M.next sk ak ∧ ss' k = some sk ∧ as' k = some ak ∧ ss' (k + 1) = some sk_1)
-
 theorem automata_pset_opt_fin_run (n : ℕ) (as : Fin n → A) (k : ℕ) (h : k < n + 1) :
     MakeFinRun (AutomataPSet M) n as k =
     { s : M.State | ∃ ss', OptFinRun M k (fun j ↦ if h : j < n then as ⟨j, h⟩ else none) ss' ∧ ss' k = some s } := by
