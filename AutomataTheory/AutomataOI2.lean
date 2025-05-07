@@ -18,7 +18,7 @@ section AutomataOI2
 
 open Classical
 
-variable {A : Type*} (M : Fin 2 → Automata A) (acc : (i : Fin 2) → Set ((M i).State))
+variable {A : Type*} (M : Fin 2 → Automaton A) (acc : (i : Fin 2) → Set ((M i).State))
 
 def AutomataOI2_HistInit : Set (Fin 2) := {0}
 
@@ -27,7 +27,7 @@ def AutomataOI2_HistNext : (AutomataProd M).State × Fin 2 → A → Set (Fin 2)
     if s.1 0 ∈ acc 0 ∧ s.2 = 0 then {1} else
     if s.1 1 ∈ acc 1 ∧ s.2 = 1 then {0} else {s.2}
 
-def AutomataOI2 : Automata A :=
+def AutomataOI2 : Automaton A :=
   AutomataHist (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
 
 def AutomataOI2_Acc : Set (AutomataOI2 M acc).State :=

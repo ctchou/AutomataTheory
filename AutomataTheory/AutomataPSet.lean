@@ -17,7 +17,7 @@ open Classical
 
 variable {A : Type*}
 
-def AutomataPSet (M : Automata A) : DetAutomata A where
+def AutomataPSet (M : Automaton A) : DetAutomaton A where
   State := Set M.State
   init := {M.init}
   next := fun ps a ↦ { ⋃ s ∈ ps, M.next s a }
@@ -26,7 +26,7 @@ def AutomataPSet (M : Automata A) : DetAutomata A where
   det_init := by simp
   det_next := by simp
 
-variable (M : Automata A)
+variable (M : Automaton A)
 
 instance : Membership M.State (AutomataPSet M).State := by exact { mem := fun s ↦ s }
 
@@ -139,12 +139,12 @@ theorem automata_pset_fin_run (n : ℕ) (as : Fin n → A) :
 
 section AcceptedLangPSet
 
-variable {A : Type*} (M : Automata A) (acc : Set M.State)
+variable {A : Type*} (M : Automaton A) (acc : Set M.State)
 
 def AutomataPSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
 
 theorem accepted_lang_pset :
-    AcceptedLang (AutomataPSet M).toAutomata (AutomataPSet_Acc M acc) = AcceptedLang M acc := by
+    AcceptedLang (AutomataPSet M).toAutomaton (AutomataPSet_Acc M acc) = AcceptedLang M acc := by
   ext al ; simp only [AcceptedLang, FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss', h_run', h_sn_acc⟩, h_al⟩

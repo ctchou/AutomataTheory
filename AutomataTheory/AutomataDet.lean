@@ -13,7 +13,7 @@ open BigOperators Function Set Filter
 
 section DetAutomata
 
-class DetAutomata (A : Type*) extends Automata A where
+class DetAutomaton (A : Type*) extends Automaton A where
   get_init : State
   get_next : State → A → State
   det_init : init = {get_init}
@@ -21,20 +21,20 @@ class DetAutomata (A : Type*) extends Automata A where
 
 variable {A : Type*}
 
-def MakeInfRun (M : DetAutomata A) (as : ℕ → A) : ℕ → M.State
+def MakeInfRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
   | 0 => M.get_init
   | k + 1 => M.get_next (MakeInfRun M as k) (as k)
 
-variable (M : DetAutomata A)
+variable (M : DetAutomaton A)
 
 theorem det_automata_inf_run_exists (as : ℕ → A) :
-    InfRun M.toAutomata as (MakeInfRun M as) := by
+    InfRun M.toAutomaton as (MakeInfRun M as) := by
   constructor
   · simp [M.det_init, MakeInfRun]
   · simp [M.det_next, MakeInfRun]
 
 theorem det_automata_inf_run_unique (as : ℕ → A) :
-    ∀ ss, InfRun M.toAutomata as ss → ss = MakeInfRun M as := by
+    ∀ ss, InfRun M.toAutomaton as ss → ss = MakeInfRun M as := by
   intro ss h_run
   ext k ; induction' k with k h_ind
   · have h_init := h_run.1
@@ -45,7 +45,7 @@ theorem det_automata_inf_run_unique (as : ℕ → A) :
     simp [M.det_next] at h_next
     assumption
 
-def MakeFinRun (M : DetAutomata A) (n : ℕ) (as : Fin n → A) (k : Fin (n + 1)) : M.State :=
+def MakeFinRun (M : DetAutomaton A) (n : ℕ) (as : Fin n → A) (k : Fin (n + 1)) : M.State :=
   if h : k > 0 then
     have h1 : k - 1 < k := by exact Fin.sub_one_lt_iff.mpr h
     have h2 : k - 1 ≠ Fin.last n := by exact Fin.ne_last_of_lt h1
@@ -53,7 +53,7 @@ def MakeFinRun (M : DetAutomata A) (n : ℕ) (as : Fin n → A) (k : Fin (n + 1)
   else M.get_init
 
 theorem det_automata_fin_run_exists (n : ℕ) (as : Fin n → A) :
-    FinRun M.toAutomata n as (MakeFinRun M n as) := by
+    FinRun M.toAutomaton n as (MakeFinRun M n as) := by
   constructor
   · simp [M.det_init, MakeFinRun]
   · intro k ; simp [M.det_next]
@@ -62,7 +62,7 @@ theorem det_automata_fin_run_exists (n : ℕ) (as : Fin n → A) :
     congr ; simp [h1]
 
 theorem det_automata_fin_run_unique (n : ℕ) (as : Fin n → A) :
-    ∀ ss, FinRun M.toAutomata n as ss → ss = MakeFinRun M n as := by
+    ∀ ss, FinRun M.toAutomaton n as ss → ss = MakeFinRun M n as := by
   intro ss h_run
   ext k ; induction' k using Fin.induction with k h_ind
   · have h_init := h_run.1
@@ -79,7 +79,7 @@ end DetAutomata
 
 section AcceptedLangCompl
 
-variable {A : Type*} (M : DetAutomata A) (acc : Set M.State)
+variable {A : Type*} (M : DetAutomaton A) (acc : Set M.State)
 
 private lemma ofFn_eq_imp_eq {n : ℕ} {as as' : Fin n → A}
     (h : List.ofFn as = List.ofFn as') : as = as' := by
@@ -89,7 +89,7 @@ private lemma ofFn_eq_imp_eq {n : ℕ} {as as' : Fin n → A}
   rw [h_k, h_k'] ; simp [h]
 
 theorem accepted_lang_compl :
-    AcceptedLang M.toAutomata accᶜ = (AcceptedLang M.toAutomata acc)ᶜ := by
+    AcceptedLang M.toAutomaton accᶜ = (AcceptedLang M.toAutomaton acc)ᶜ := by
   ext al
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
@@ -110,11 +110,11 @@ theorem accepted_lang_compl :
     have h_al : al = List.ofFn as := by symm ; exact List.ofFn_getElem al
     use n, as ; simp [h_al]
     let ss := MakeFinRun M n as
-    have h_run : FinRun DetAutomata.toAutomata n as ss := by exact det_automata_fin_run_exists M n as
+    have h_run : FinRun DetAutomaton.toAutomaton n as ss := by exact det_automata_fin_run_exists M n as
     use ss ; constructor
     · exact h_run
     intro h_acc
-    have : al ∈ (AcceptedLang DetAutomata.toAutomata acc) := by
+    have : al ∈ (AcceptedLang DetAutomaton.toAutomaton acc) := by
       use n, as ; simp [h_al] ; use! ss
     contradiction
 

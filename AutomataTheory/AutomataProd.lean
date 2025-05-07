@@ -15,12 +15,12 @@ section AutomataProd
 
 variable {I A : Type*}
 
-def AutomataProd (M : I → Automata A) : Automata A where
+def AutomataProd (M : I → Automaton A) : Automaton A where
   State := Π i : I, (M i).State
   init := { s | ∀ i : I, (s i) ∈ (M i).init }
   next := fun s a ↦ { s' | ∀ i : I, (s' i) ∈ (M i).next (s i) a }
 
-variable (M : I → Automata A)
+variable (M : I → Automaton A)
 
 theorem automata_prod_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → (AutomataProd M).State) :
     FinRun (AutomataProd M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
@@ -50,7 +50,7 @@ end AutomataProd
 
 section AcceptedLangInter
 
-variable {I A : Type*} (M : I → Automata A) (acc : (i : I) → Set ((M i).State))
+variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
 
 def AutomataProd_Acc : Set (AutomataProd M).State := { s | ∀ i, (s i) ∈ (acc i) }
 

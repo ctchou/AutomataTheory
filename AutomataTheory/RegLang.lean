@@ -19,13 +19,13 @@ section RegLang
 variable {A : Type}
 
 def RegLang (L : Set (List A)) :=
-  ∃ M : Automata.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedLang M acc
+  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedLang M acc
 
 theorem reg_lang_union {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automata A
+  let M_u : (i : Fin 2) → Automaton A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
@@ -43,7 +43,7 @@ theorem reg_lang_inter {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automata A
+  let M_u : (i : Fin 2) → Automaton A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
@@ -60,7 +60,7 @@ theorem reg_lang_inter {L0 L1 : Set (List A)}
 theorem reg_lang_compl {L : Set (List A)}
     (h : RegLang L) : RegLang (Lᶜ) := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
-  use (AutomataPSet M).toAutomata, (AutomataPSet_Acc M acc)ᶜ
+  use (AutomataPSet M).toAutomaton, (AutomataPSet_Acc M acc)ᶜ
   constructor
   · simp [AutomataPSet]
     exact Set.instFinite

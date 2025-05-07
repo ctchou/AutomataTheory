@@ -18,13 +18,13 @@ section OmegaRegLang
 variable {A : Type}
 
 def OmegaRegLang (L : Set (ℕ → A)) :=
-  ∃ M : Automata.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedOmegaLang M acc
+  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedOmegaLang M acc
 
 theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automata A
+  let M_u : (i : Fin 2) → Automaton A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
@@ -42,7 +42,7 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automata A
+  let M_u : (i : Fin 2) → Automaton A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State

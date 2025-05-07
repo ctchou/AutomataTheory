@@ -15,12 +15,12 @@ section AutomataHist
 
 variable {A H : Type*}
 
-def AutomataHist (M : Automata A) (hist_init : Set H) (hist_next : M.State × H → A → Set H) : Automata A where
+def AutomataHist (M : Automaton A) (hist_init : Set H) (hist_next : M.State × H → A → Set H) : Automaton A where
   State := M.State × H
   init := { s | s.1 ∈ M.init ∧ s.2 ∈ hist_init }
   next := fun s a ↦ { s' | s'.1 ∈ M.next s.1 a ∧ s'.2 ∈ hist_next s a }
 
-variable (M : Automata A) (hist_init : Set H) (hist_next : M.State × H → A → Set H)
+variable (M : Automaton A) (hist_init : Set H) (hist_next : M.State × H → A → Set H)
 
 theorem automata_hist_inf_run_proj {as : ℕ → A} {ss : ℕ → M.State × H}
     (h : InfRun (AutomataHist M hist_init hist_next) as ss) : InfRun M as (Prod.fst ∘ ss) := by
