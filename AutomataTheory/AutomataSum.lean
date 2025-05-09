@@ -23,47 +23,46 @@ def AutomataSum (M : I → Automaton A) : Automaton A where
 
 variable (M : I → Automaton A)
 
-theorem automata_sum_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → (AutomataSum M).State) :
-    FinRun (AutomataSum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
+theorem automata_sum_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (AutomataSum M).State) :
+    FinRun (AutomataSum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
   constructor
   · rintro ⟨h_init, h_next⟩
     have := h_init
     simp [AutomataSum, Automaton.init] at this
     rcases this with ⟨i, s0, h_s0_init, h_s0_ss⟩
-    have h_ss_exists : ∀ k : Fin (n + 1), ∃ sk : (M i).State, ss k = Sigma.mk i sk := by
-      intro k ; induction' k using Fin.induction with k h_k
-      · use s0 ; rw [h_s0_ss]
-      rcases h_k with ⟨sk, h_sk⟩
+    have h_ss_exists : ∀ k < n + 1, ∃ sk : (M i).State, ss k = Sigma.mk i sk := by
+      intro k h_n ; induction' k with k h_k
+      · use s0 ; simp [h_s0_ss]
+      obtain ⟨sk, h_sk⟩ := h_k (by omega : k < n + 1)
       have h_next_k := h_next k
       simp [AutomataSum, h_sk] at h_next_k
-      rcases h_next_k with ⟨sk', h_sk'⟩
+      obtain ⟨sk', h_sk'⟩ := h_next_k (by omega : k < n)
       use sk' ; simp [h_sk'.2]
     choose ss_i h_ss_i using h_ss_exists
-    use i, ss_i
+    use i, (fun k ↦ if h : k < n + 1 then ss_i k h else ss_i 0 (by omega))
     constructor
     · constructor
-      · rw [h_ss_i 0, Automaton.init] at h_init
+      · simp [h_ss_i 0 (by omega : 0 < n + 1), Automaton.init] at h_init
         simp [AutomataSum] at h_init
         obtain ⟨i, s', h_s', rfl, h_eq⟩ := h_init
         rw [heq_eq_eq] at h_eq
-        rwa [h_eq] at h_s'
-      · intro k
-        have h_next_k := h_next k
-        rw [h_ss_i k, h_ss_i (k + 1)] at h_next_k
-        simp [AutomataSum] at h_next_k
+        simp [h_eq] at h_s'
         simpa
-    · ext k ; rw [h_ss_i k] ; simp
+      · intro k h_k
+        have h_next_k := h_next k h_k
+        rw [h_ss_i k (by omega : k < n + 1), h_ss_i (k + 1) (by omega : k + 1 < n + 1)] at h_next_k
+        simp [AutomataSum] at h_next_k
+        simpa [h_k, (by omega : k < n + 1)]
+    · intro k h_k
+      simp [h_k, h_ss_i k h_k]
   · rintro ⟨i, ss_i, h_run, h_ss⟩
-    simp [h_ss, AutomataSum]
     constructor
-    · simp [Automaton.init]
+    · simp [AutomataSum, h_ss 0 (by omega : 0 < n + 1)]
       use i, (ss_i 0)
       simp ; exact h_run.1
-    · intro k
-      simp [Automaton.next]
-      have h_k := h_run.2 k
-      simp at h_k
-      exact h_k
+    · intro k h_k
+      have h_run_k := h_run.2 k h_k
+      simpa [AutomataSum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
 
 theorem automata_sum_inf_run (as : ℕ → A) (ss : ℕ → (AutomataSum M).State) :
     InfRun (AutomataSum M) as ss ↔ ∃ i ss_i, InfRun (M i) as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
@@ -138,6 +137,7 @@ theorem accepted_lang_union :
       constructor
       · apply (automata_sum_fin_run M n as ((Sigma.mk i) ∘ ss_i)).mpr
         use i, ss_i
+        simp [h_run]
       · use i, ss_i (Fin.last n)
         simpa
     · assumption
