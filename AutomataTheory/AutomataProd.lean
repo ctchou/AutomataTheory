@@ -22,17 +22,20 @@ def AutomataProd (M : I → Automaton A) : Automaton A where
 
 variable (M : I → Automaton A)
 
-theorem automata_prod_fin_run (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → (AutomataProd M).State) :
+theorem automata_prod_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
     FinRun (AutomataProd M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
     · apply h_init
-    · intro k ; apply h_next
+    · intro k h_k
+      exact h_next k h_k i
   · intro h_all
     constructor
-    · intro i ; exact (h_all i).1
-    · intro k i ;  exact (h_all i).2 k
+    · intro i
+      exact (h_all i).1
+    · intro k h_k i
+      exact (h_all i).2 k h_k
 
 theorem automata_prod_inf_run (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
     InfRun (AutomataProd M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
@@ -54,7 +57,7 @@ variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).Sta
 
 def AutomataProd_Acc : Set (AutomataProd M).State := { s | ∀ i, (s i) ∈ (acc i) }
 
-theorem accepted_lang_inter :
+theorem accepted_lang_inter [Inhabited A] :
     AcceptedLang (AutomataProd M) (AutomataProd_Acc M acc) = ⋂ i : I, AcceptedLang (M i) (acc i) := by
   ext al ; simp [AcceptedLang, FinAccept]
   constructor
@@ -65,27 +68,26 @@ theorem accepted_lang_inter :
     · exact (automata_prod_fin_run M n as ss).mp h_run i
     · exact h_acc i
   · intro h_all
-    have h_all' : ∀ i, ∃ ss_i, FinRun (M i) al.length (fun k ↦ al[k]) ss_i ∧ ss_i (Fin.last al.length) ∈ acc i := by
+    have h_all' : ∀ i, ∃ ss_i, FinRun (M i) al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
       intro i
       obtain ⟨n, as, ⟨ss_i, h_run_i, h_acc_i⟩, h_al⟩ := h_all i
       have h_n : n = al.length := by rw [h_al, List.length_ofFn]
       obtain rfl := h_n
-      use ss_i
+      use ss_i ; simp [h_acc_i]
       constructor
-      · have h_as : (fun k ↦ al[k]) = as := by
-          ext k
-          calc al[k] = (List.ofFn as)[k] := by congr
-                   _ = as k := by simp
-        rw [h_as] ; assumption
-      · assumption
-    use al.length, (fun k ↦ al[k])
-    simp
+      · exact h_run_i.1
+      intro k h_k
+      have h_run_i_k := h_run_i.2 k h_k
+      rw [h_al] ; simpa [h_k]
+    use al.length, (fun k ↦ al[k]!) ; simp
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k)
     constructor
-    · apply (automata_prod_fin_run M al.length (fun k ↦ al[k]) (fun k i ↦ ss_i i k)).mpr
+    · apply (automata_prod_fin_run M al.length (fun k ↦ al[k]?.getD default) (fun k i ↦ ss_i i k)).mpr
       intro i
-      exact (h_ss_i i).1
+      have := (h_ss_i i).1
+      simp at this
+      assumption
     · intro i
       exact (h_ss_i i).2
 
