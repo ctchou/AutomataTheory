@@ -32,6 +32,18 @@ def FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :
 def AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
   { al | ∃ n as, FinAccept M acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
+def normalizeTail {X : Type*} (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
+  fun k ↦ if k < n then xs k else x
+
+theorem FinRun_normalizeTail [Inhabited A] {M : Automaton A} {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+    (h : FinRun M n as ss) : FinRun M n (normalizeTail n as default) (normalizeTail (n + 1) ss (ss 0)) := by
+  rcases h with ⟨h_init, h_next⟩
+  constructor
+  · simpa [normalizeTail]
+  intro k h_k
+  simp [normalizeTail, h_k, (by omega : k < n + 1)]
+  exact h_next k h_k
+
 /-- It may seem strange that we use infinite sequences (namely, functions of type ℕ → *)
 in the definitions about finite runs above.  In the following we give alternative
 definitions using finite sequences (namely, functions of type `Fin n` → *) and show that
@@ -123,5 +135,21 @@ def StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)
 
 def AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=
   { as | BuchiAccept M acc as }
+
+variable {M : Automaton A}
+
+theorem InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
+    InfRun M as ss ↔ ∀ n, FinRun M n as ss := by
+  constructor
+  · rintro ⟨h_init, h_next⟩ n
+    constructor
+    · exact h_init
+    intro k h_k
+    exact h_next k
+  · intro h_run
+    constructor
+    · exact (h_run 0).1
+    intro k
+    apply (h_run (k + 1)).2 k ; omega
 
 end AutomataInfiniteRuns
