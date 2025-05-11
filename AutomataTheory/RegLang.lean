@@ -39,7 +39,7 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, accepted_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
-theorem reg_lang_inter {L0 L1 : Set (List A)}
+theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -57,7 +57,7 @@ theorem reg_lang_inter {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
-theorem reg_lang_compl {L : Set (List A)}
+theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang (Lᶜ) := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use (AutomataPSet M).toAutomaton, (AutomataPSet_Acc M acc)ᶜ
