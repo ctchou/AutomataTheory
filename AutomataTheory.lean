@@ -1,4 +1,5 @@
 import AutomataTheory.AutomataBasic
+import AutomataTheory.AutomataConcat
 import AutomataTheory.AutomataDet
 import AutomataTheory.AutomataHist
 import AutomataTheory.AutomataOI2
