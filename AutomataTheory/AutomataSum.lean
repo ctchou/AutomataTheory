@@ -21,9 +21,9 @@ def AutomataSum (M : I → Automaton A) : Automaton A where
   init := ⋃ i : I, Sigma.mk i '' (M i).init
   next := fun ⟨i, s⟩ a ↦ Sigma.mk i '' (M i).next s a
 
-variable (M : I → Automaton A)
+variable {M : I → Automaton A}
 
-theorem automata_sum_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (AutomataSum M).State) :
+theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataSum M).State} :
     FinRun (AutomataSum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
   constructor
   · rintro ⟨h_init, h_next⟩
@@ -64,7 +64,7 @@ theorem automata_sum_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (AutomataS
       have h_run_k := h_run.2 k h_k
       simpa [AutomataSum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
 
-theorem automata_sum_inf_run (as : ℕ → A) (ss : ℕ → (AutomataSum M).State) :
+theorem automata_sum_inf_run {as : ℕ → A} {ss : ℕ → (AutomataSum M).State} :
     InfRun (AutomataSum M) as ss ↔ ∃ i ss_i, InfRun (M i) as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
   constructor
   · rintro ⟨h_init, h_next⟩
@@ -117,7 +117,7 @@ theorem accepted_lang_union :
   ext al ; simp [AutomataSum_Acc, AcceptedLang, FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
-    obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := (automata_sum_fin_run M n as ss).mp h_run
+    obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_fin_run.mp h_run
     use i, n, as
     constructor
     · use ss_i
@@ -135,7 +135,7 @@ theorem accepted_lang_union :
     constructor
     · use ((Sigma.mk i) ∘ ss_i)
       constructor
-      · apply (automata_sum_fin_run M n as ((Sigma.mk i) ∘ ss_i)).mpr
+      · apply automata_sum_fin_run.mpr
         use i, ss_i
         simp [h_run]
       · use i, ss_i (Fin.last n)
@@ -147,7 +147,7 @@ theorem accepted_omega_lang_union :
   ext as ; simp [AutomataSum_Acc, AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩
-    obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := (automata_sum_inf_run M as ss).mp h_run
+    obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_inf_run.mp h_run
     use i, ss_i
     constructor
     · assumption
@@ -165,7 +165,7 @@ theorem accepted_omega_lang_union :
   · rintro ⟨i, ss_i, h_run_i, h_inf_i⟩
     use ((Sigma.mk i) ∘ ss_i)
     constructor
-    · apply (automata_sum_inf_run M as ((Sigma.mk i) ∘ ss_i)).mpr
+    · apply automata_sum_inf_run.mpr
       use i, ss_i
     · let p k := ss_i k ∈ acc i
       let q k := ∃ i', ∃ si' ∈ acc i', ⟨i', si'⟩ = ((Sigma.mk i ∘ ss_i) k : (AutomataSum M).State)

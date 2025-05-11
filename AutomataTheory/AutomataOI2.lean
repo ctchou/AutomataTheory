@@ -125,7 +125,8 @@ theorem accepted_omega_lang_inter2 :
   constructor
   · rintro ⟨ss, h_run, h_inf⟩ i
     have h_run1 := automata_hist_inf_run_proj (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc) h_run
-    have h_run' := (automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
+    have h_run' := automata_prod_inf_run.mp h_run1 i
+--    have h_run' := (automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
     use (fun k ↦ (Prod.fst ∘ ss) k i) ; constructor
     · assumption
     let p0 k := ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 }
@@ -150,7 +151,7 @@ theorem accepted_omega_lang_inter2 :
     choose ss h_ss using h_all
     let ss' := fun k i ↦ ss i k
     have h_ss' : ∀ i, InfRun (M i) as (fun k ↦ ss' k i) := by intro i ; exact (h_ss i).1
-    have h_run' := (automata_prod_inf_run M as ss').mpr h_ss'
+    have h_run' := automata_prod_inf_run.mpr h_ss'
     have h_hist_init : AutomataOI2_HistInit.Nonempty := by simp [AutomataOI2_HistInit]
     have h_hist_next : ∀ s a, (AutomataOI2_HistNext M acc s a).Nonempty := by
       intro s a ; simp only [AutomataOI2_HistNext]

@@ -20,9 +20,9 @@ def AutomataProd (M : I → Automaton A) : Automaton A where
   init := { s | ∀ i : I, (s i) ∈ (M i).init }
   next := fun s a ↦ { s' | ∀ i : I, (s' i) ∈ (M i).next (s i) a }
 
-variable (M : I → Automaton A)
+variable {M : I → Automaton A}
 
-theorem automata_prod_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
+theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataProd M).State} :
     FinRun (AutomataProd M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -37,7 +37,7 @@ theorem automata_prod_fin_run (n : ℕ) (as : ℕ → A) (ss : ℕ → (Automata
     · intro k h_k i
       exact (h_all i).2 k h_k
 
-theorem automata_prod_inf_run (as : ℕ → A) (ss : ℕ → (AutomataProd M).State) :
+theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (AutomataProd M).State} :
     InfRun (AutomataProd M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -65,7 +65,7 @@ theorem accepted_lang_inter [Inhabited A] :
     use n, as ; simp [h_al]
     use (fun k ↦ ss k i)
     constructor
-    · exact (automata_prod_fin_run M n as ss).mp h_run i
+    · exact automata_prod_fin_run.mp h_run i
     · exact h_acc i
   · intro h_all
     have h_all' : ∀ i, ∃ ss_i, FinRun (M i) al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
@@ -83,7 +83,7 @@ theorem accepted_lang_inter [Inhabited A] :
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k)
     constructor
-    · apply (automata_prod_fin_run M al.length (fun k ↦ al[k]?.getD default) (fun k i ↦ ss_i i k)).mpr
+    · apply automata_prod_fin_run.mpr
       intro i
       have := (h_ss_i i).1
       simp at this
