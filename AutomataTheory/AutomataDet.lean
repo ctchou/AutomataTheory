@@ -6,7 +6,6 @@ Authors: Ching-Tsun Chou
 
 import Mathlib.Data.Set.Card
 import Mathlib.Data.List.OfFn
-import Mathlib.Data.Fin.Basic
 import AutomataTheory.AutomataBasic
 
 open BigOperators Function Set Filter
@@ -75,18 +74,18 @@ theorem accepted_lang_compl [Inhabited A] :
     have h_len' : al.length = n' := by rw [h_al', List.length_ofFn (f := (fun k : Fin n' ↦ as' k))]
     have h_n_eq : n' = n := by rw [← h_len, ← h_len']
     obtain ⟨rfl⟩ := h_n_eq
-    have h_run_n := FinRun_normalizeTail h_run
-    have h_run_n' := FinRun_normalizeTail h_run'
-    have h_as_eq : normalizeTail n as' default = normalizeTail n as default := by
+    have h_run_n := FinRun_FixSuffix h_run
+    have h_run_n' := FinRun_FixSuffix h_run'
+    have h_as_eq : FixSuffix n as' default = FixSuffix n as default := by
       ext k
-      rcases Classical.em (k < n) with h_k | h_k <;> simp [normalizeTail, h_k]
+      rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
       have h_as_k : as k = al.get ⟨k, (by omega : k < al.length)⟩ := by simp [h_al]
       have h_as_k' : as' k = al.get ⟨k, (by omega : k < al.length)⟩ := by simp [h_al']
       rw [h_as_k, h_as_k']
     rw [h_as_eq] at h_run_n'
     have h_ss_n := det_automata_fin_run_unique h_run_n n (by omega)
     have h_ss_n' := det_automata_fin_run_unique h_run_n' n (by omega)
-    simp [normalizeTail] at h_ss_n h_ss_n'
+    simp [FixSuffix] at h_ss_n h_ss_n'
     rw [h_ss_n] at h_acc
     rw [h_ss_n'] at h_acc'
     contradiction

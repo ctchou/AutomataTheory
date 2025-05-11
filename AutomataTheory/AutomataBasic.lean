@@ -7,6 +7,7 @@ Authors: Ching-Tsun Chou
 import Mathlib.Data.Set.Card
 import Mathlib.Data.List.OfFn
 import Mathlib.Order.Filter.AtTopBot.Basic
+import AutomataTheory.Sequences
 
 open BigOperators Function Set Filter
 
@@ -32,16 +33,13 @@ def FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :
 def AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
   { al | ∃ n as, FinAccept M acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
-def normalizeTail {X : Type*} (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
-  fun k ↦ if k < n then xs k else x
-
-theorem FinRun_normalizeTail [Inhabited A] {M : Automaton A} {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : FinRun M n as ss) : FinRun M n (normalizeTail n as default) (normalizeTail (n + 1) ss (ss 0)) := by
+theorem FinRun_FixSuffix [Inhabited A] {M : Automaton A} {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+    (h : FinRun M n as ss) : FinRun M n (FixSuffix n as default) (FixSuffix (n + 1) ss (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
-  · simpa [normalizeTail]
+  · simpa [FixSuffix]
   intro k h_k
-  simp [normalizeTail, h_k, (by omega : k < n + 1)]
+  simp [FixSuffix, h_k, (by omega : k < n + 1)]
   exact h_next k h_k
 
 /-- It may seem strange that we use infinite sequences (namely, functions of type ℕ → *)
@@ -60,9 +58,6 @@ def FinAccept' (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : Fin n → A
 
 variable {M : Automaton A} {acc : Set M.State}
 
-def appendFunInf {X : Type*} {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
-  fun k ↦ if h : k < n then xs ⟨k, h⟩ else xs' (n + k)
-
 theorem FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h : FinRun M n as ss) : FinRun' M n (fun k ↦ as k) (fun k ↦ ss k) := by
   constructor
@@ -72,15 +67,15 @@ theorem FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
   exact h.2 k h_k
 
 theorem FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fin (n + 1) → M.State}
-    (h : FinRun' M n as ss) : FinRun M n (appendFunInf as (const ℕ default)) (appendFunInf ss (const ℕ (ss 0))) := by
+    (h : FinRun' M n as ss) : FinRun M n (AppendFinInf as (const ℕ default)) (AppendFinInf ss (const ℕ (ss 0))) := by
   constructor
-  · simp [appendFunInf] ; exact h.1
+  · simp [AppendFinInf] ; exact h.1
   intro k h_k
   have h_k1 : k < n + 1 := by omega
   have h_k2 : (↑k : Fin (n + 1)) = ⟨k, h_k1⟩:= by simp [@Fin.eq_mk_iff_val_eq] ; omega
   have h_step := h.2 ⟨k, h_k⟩
   simp [h_k2] at h_step
-  simpa [appendFunInf, h_k, h_k1]
+  simpa [AppendFinInf, h_k, h_k1]
 
 theorem FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
     (h : FinAccept M acc n as) : FinAccept' M acc n (fun k ↦ as k) := by
@@ -91,12 +86,12 @@ theorem FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
   simpa
 
 theorem FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n → A}
-    (h : FinAccept' M acc n as) : FinAccept M acc n (appendFunInf as (const ℕ default)) := by
+    (h : FinAccept' M acc n as) : FinAccept M acc n (AppendFinInf as (const ℕ default)) := by
   rcases h with ⟨ss, h_run, h_n⟩
-  use (appendFunInf ss (const ℕ (ss 0)))
+  use (AppendFinInf ss (const ℕ (ss 0)))
   constructor
   · exact FinRun_of_FinRun' h_run
-  simpa [appendFunInf]
+  simpa [AppendFinInf]
 
 theorem AcceptedLang_of_FinAccept' [Inhabited A] :
     AcceptedLang M acc = { al | ∃ n as, FinAccept' M acc n as ∧ al = List.ofFn as } := by
@@ -107,10 +102,10 @@ theorem AcceptedLang_of_FinAccept' [Inhabited A] :
     · exact FinAccept'_of_FinAccept h_acc
     · exact h_al
   · rintro ⟨n, as, h_acc, h_al⟩
-    use n, (appendFunInf as (const ℕ default))
+    use n, (AppendFinInf as (const ℕ default))
     constructor
     · exact FinAccept_of_FinAccept' h_acc
-    · simpa [appendFunInf]
+    · simpa [AppendFinInf]
 
 end AutomataFiniteRuns
 

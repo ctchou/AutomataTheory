@@ -6,7 +6,6 @@ Authors: Ching-Tsun Chou
 
 import Mathlib.Data.Set.Card
 import Mathlib.Data.List.OfFn
-import Mathlib.Data.Fin.Basic
 import AutomataTheory.AutomataDet
 
 open BigOperators Function Set Filter Option

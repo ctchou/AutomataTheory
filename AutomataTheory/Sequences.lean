@@ -12,8 +12,17 @@ open BigOperators Function Set Filter
 
 section Sequences
 
-def AppendInf {X : Type*} (xl : List X) (xs : ℕ → X) : ℕ → X :=
+def AppendListInf {X : Type*} (xl : List X) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else xs (k - xl.length)
+
+def AppendFinInf {X : Type*} {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
+  fun k ↦ if h : k < n then xs ⟨k, h⟩ else xs' (k - n)
+
+def FixSuffix {X : Type*} (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
+  fun k ↦ if k < n then xs k else x
+
+def SuffixFrom {X : Type*} (n : ℕ) (xs : ℕ → X) : ℕ → X :=
+  fun k ↦ xs (k + n)
 
 def Step {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
   ∀ k, xs k ∈ p → xs (k + 1) ∈ q
