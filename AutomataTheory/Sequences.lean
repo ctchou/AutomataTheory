@@ -32,6 +32,14 @@ def LeadsTo {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
 
 variable {X : Type*} {xs : ℕ → X}
 
+theorem ofFn_of_sppend_ofFn_oFn {m n : ℕ} (h : n < m) :
+    (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
+  ext k x
+  simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
+  intro h_k_m
+  rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
+  simp [(by omega : k - n + n = k)]
+
 theorem leads_to_step {p q : Set X}
     (h : Step xs p q) : LeadsTo xs p q := by
   intro k h_p
