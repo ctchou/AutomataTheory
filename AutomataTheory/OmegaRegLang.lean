@@ -32,8 +32,7 @@ theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
     | 1 => acc1
   use (AutomataSum M_u), (AutomataSum_Acc M_u acc_u)
   constructor
-  · simp [AutomataSum]
-    have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
+  · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Finite.instSigma
   · ext as
     simp [h_l0, h_l1, accepted_omega_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]

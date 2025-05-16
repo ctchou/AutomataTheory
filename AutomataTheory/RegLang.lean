@@ -9,6 +9,7 @@ import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Finite.Prod
 import Mathlib.Data.Finite.Sigma
 import Mathlib.Data.Finite.Sum
+import Mathlib.Data.Fintype.EquivFin
 import AutomataTheory.Languages
 import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataProd
@@ -38,8 +39,7 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
     | 1 => acc1
   use (AutomataSum M_u), (AutomataSum_Acc M_u acc_u)
   constructor
-  · simp [AutomataSum]
-    have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
+  · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Finite.instSigma
   · ext as
     simp [h_l0, h_l1, accepted_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
@@ -56,8 +56,7 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     | 1 => acc1
   use (AutomataProd M_u), (AutomataProd_Acc M_u acc_u)
   constructor
-  · simp [AutomataProd]
-    have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
+  · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Pi.finite
   · ext as
     simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
@@ -67,8 +66,7 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use (AutomataPSet M).toAutomaton, (AutomataPSet_Acc M acc)ᶜ
   constructor
-  · simp [AutomataPSet]
-    exact Set.instFinite
+  · exact Set.instFinite
   · rw [accepted_lang_compl, accepted_lang_pset, h_l]
 
 def M_epsilon : Automaton A where
@@ -80,9 +78,7 @@ def acc_epsilon : Set Unit := {()}
 
 theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
   use M_epsilon, acc_epsilon ; constructor
-  · apply Fintype.finite
-    apply fintypeOfFiniteUniv
-    exact Subsingleton.finite fun ⦃x⦄ x_1 ⦃y⦄ ↦ congrFun rfl
+  · exact Finite.of_fintype Unit
   ext al ; constructor
   · simp ; intro h_al
     use 0, (fun k ↦ default) ; simp [h_al]
@@ -108,7 +104,7 @@ theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
   use (AutomataConcat M0 acc0 M1), (inr '' acc1)
   constructor
-  · simp [AutomataConcat, Finite.instSum]
+  · exact Finite.instSum
   · rw [h_l1] at h_ne
     simp [h_l0, h_l1, accepted_lang_concat h_ne]
 
