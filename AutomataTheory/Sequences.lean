@@ -30,15 +30,26 @@ def Step {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
 def LeadsTo {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
   ∀ k, xs k ∈ p → ∃ k' ≥ k, xs k' ∈ q
 
-variable {X : Type*} {xs : ℕ → X}
+variable {X : Type*} {xl : List X} {xs : ℕ → X}
 
-theorem ofFn_of_sppend_ofFn_oFn {m n : ℕ} (h : n < m) :
+theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n < m) :
     (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
   ext k x
   simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
   intro h_k_m
   rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
   simp [(by omega : k - n + n = k)]
+
+theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
+    xs = AppendListInf (List.ofFn fun k : Fin n ↦ xs ↑k) (SuffixFrom n xs) := by
+  ext k ; simp [AppendListInf, SuffixFrom]
+  rcases Classical.em (k < n) with h_k | h_k
+  · simp [h_k]
+  · simp [h_k, (by omega : k - n + n = k)]
+
+theorem suffixFrom_listLength_AppendListInf :
+    xs = SuffixFrom xl.length (AppendListInf xl xs) := by
+  ext k ; simp [SuffixFrom, AppendListInf]
 
 theorem leads_to_step {p q : Set X}
     (h : Step xs p q) : LeadsTo xs p q := by

@@ -224,22 +224,21 @@ theorem accepted_lang_concat (h_no_epsilon : [] ∉ (AcceptedLang M1 acc1)) :
     ConcatFin (AcceptedLang M0 acc0) (AcceptedLang M1 acc1) := by
   ext al ; constructor
   · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, h_al⟩
-    have h_end1 : ∃ s1, ss m = inr s1 := by
+    have h_s1_ex : ∃ s1, ss m = inr s1 := by
       rcases h_acc with ⟨s1, _, h_s1⟩
       use s1 ; rw [h_s1]
-    obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := automata_concat_fin_run.mp ⟨h_run, h_end1⟩
+    obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := automata_concat_fin_run.mp ⟨h_run, h_s1_ex⟩
     use (List.ofFn (fun k : Fin n ↦ as k))
     use (List.ofFn (fun k : Fin (m - n) ↦ as (k + n)))
     constructor <;> [skip ; constructor]
-    · use n, as ; simp
-      use ss0
+    · use n, as ; simp ; use ss0
     · use (m - n), (SuffixFrom n as)
       constructor
       · use ss1 ; simp [h_run1]
         obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
         simpa [← inr.inj h_s1]
       · ext k a ; simp [SuffixFrom]
-    · rw [h_al, ← ofFn_of_sppend_ofFn_oFn h_n]
+    · rw [h_al, ← ofFn_of_append_ofFn_oFn h_n]
   . rintro ⟨al0, al1, h_al0, h_al1, h_al⟩
     have h_al1_ne : al1 ≠ [] := by
       by_contra h ; simp [h] at h_al1 ; contradiction
@@ -273,13 +272,50 @@ theorem accepted_lang_concat (h_no_epsilon : [] ∉ (AcceptedLang M1 acc1)) :
           · simp [ss] ; omega
       · use (ss1 m)
         simp [h_acc1, h_ss_nm]
-    · rw [h_al, ofFn_of_sppend_ofFn_oFn (by omega : n < n + m)] ; congr
+    · rw [h_al, ofFn_of_append_ofFn_oFn (by omega : n < n + m)] ; congr
       · simp [as, h_al0]
       · simp [as, h_al1]
 
 theorem accepted_omega_lang_concat :
     AcceptedOmegaLang (AutomataConcat M0 acc0 M1) (inr '' acc1) =
     ConcatInf (AcceptedLang M0 acc0) (AcceptedOmegaLang M1 acc1) := by
-  sorry
+  ext as ; constructor
+  · rintro ⟨ss, h_run, h_acc⟩
+    obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc
+    have h_s1_ex : ∃ n s1, ss n = inr s1 := by use n, s1 ; simp [h_s1]
+    obtain ⟨n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := automata_concat_inf_run.mp ⟨h_run, h_s1_ex⟩
+    use (List.ofFn (fun k : Fin n ↦ as k)), (SuffixFrom n as)
+    constructor <;> [skip ; constructor]
+    · use n, as ; simp ; use ss0
+    · use ss1 ; simp [h_run1]
+      have h_ss1_ev : ∀ᶠ k in atTop, ss k = inr (ss1 (k - n)) := by
+        simp only [eventually_atTop] ; use (n + 1)
+      have h_ss1_acc := Frequently.and_eventually h_acc h_ss1_ev
+      simp [frequently_atTop] at h_ss1_acc ⊢
+      intro k ; obtain ⟨j, h_j, ⟨t1, h_t1_acc, h_t1⟩, h_j_ss1⟩ := h_ss1_acc (n + k)
+      use (j - n) ; rw [← h_t1, inr.inj_iff] at h_j_ss1
+      simpa [(by omega : k ≤ j - n), ← h_j_ss1]
+    · exact appendListInf_ofFnPrefix_SuffixFrom
+  · rintro ⟨al0, as1, ⟨n, as0, ⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, h_al0⟩, ⟨ss1, h_run1, h_acc1⟩, h_as⟩
+    let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
+    use ss  ; constructor
+    · suffices InfRun (AutomataConcat M0 acc0 M1) as ss ∧ (∃ n s1, ss n = inr s1) by tauto
+      apply automata_concat_inf_run.mpr
+      use n ; constructor
+      · use ss0 ; simp [ss, h_acc0] ; constructor
+        · exact h_init0
+        · intro k h_k ; simp [h_as, h_al0, AppendListInf, h_k]
+          exact h_next0 k (by omega)
+      · use ss1
+        have h_len : n = al0.length := by simp [h_al0, List.length_ofFn]
+        simpa [ss, h_as, h_len, ← suffixFrom_listLength_AppendListInf]
+    · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
+        simp only [eventually_atTop]
+        use (n + 1) ; intro k h_k ; simp [ss] ; omega
+      have h_ss1_acc := Frequently.and_eventually h_acc1 h_ss1_ev
+      simp [frequently_atTop] at h_ss1_acc ⊢
+      intro k ; obtain ⟨j, h_j, h_j_acc, h_j_ss1⟩ := h_ss1_acc (n + k)
+      use (j + n) ; simp [(by omega : k ≤ j + n)]
+      use (ss1 j) ; simp [h_j_acc, h_j_ss1]
 
 end AcceptedLangConcat
