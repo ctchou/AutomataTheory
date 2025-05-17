@@ -69,6 +69,40 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   · exact Set.instFinite
   · rw [accepted_lang_compl, accepted_lang_pset, h_l]
 
+theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
+    (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (ConcatFin L0 L1) := by
+  obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
+  obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
+  use (AutomataConcat M0 acc0 M1), (inr '' acc1)
+  constructor
+  · exact Finite.instSum
+  · have h_l1' : L1 = L1 \ {[]} := by
+      ext al ; simp
+      intro h1 h2 ; simp [h2] at h1
+      contradiction
+    rw [h_l1] at h_l1'
+    rw [h_l0, h_l1, h_l1', accepted_lang_concat_ne]
+
+theorem reg_lang_concat_e {L0 L1 : Set (List A)}
+    (h0 : RegLang L0) (h1 : RegLang L1) (h_e : [] ∈ L1) : RegLang (ConcatFin L0 L1) := by
+  obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
+  obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
+  use (AutomataConcat M0 acc0 M1), (inl '' acc0 ∪ inr '' acc1)
+  constructor
+  · exact Finite.instSum
+  · have h_l1' : L1 = (L1 \ {[]}) ∪ {[]} := by
+      symm ; apply Set.diff_union_of_subset ; simp [h_e]
+    have h_l1'' : [] ∉ L1 \ {[]} := by simp
+    rw [h_l1] at h_l1' h_l1''
+    rw [h_l0, h_l1, h_l1', ConcatFin_union_distrib_right, ConcatFin_epsilon_right,
+        accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
+
+theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
+    (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (ConcatFin L0 L1) := by
+  rcases Classical.em ([] ∈ L1) with h_e | h_ne
+  · exact reg_lang_concat_e h0 h1 h_e
+  . exact reg_lang_concat_ne h0 h1 h_ne
+
 def M_epsilon : Automaton A where
   State := Unit
   init := {()}
@@ -90,35 +124,5 @@ theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
     by_contra h_contra
     have h_step := h_next 0 (by omega)
     simp [M_epsilon] at h_step
-
-theorem reg_lang_sdiff_epsilon [Inhabited A] {L : Set (List A)}
-    (h : RegLang L) : RegLang (L \ {[]}) := by
-  rw [Set.diff_eq]
-  apply reg_lang_inter h
-  apply reg_lang_compl
-  exact reg_lang_epsilon
-
-theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
-    (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (ConcatFin L0 L1) := by
-  obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
-  obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  use (AutomataConcat M0 acc0 M1), (inr '' acc1)
-  constructor
-  · exact Finite.instSum
-  · rw [h_l1] at h_ne
-    simp [h_l0, h_l1, accepted_lang_concat h_ne]
-
-theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
-    (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (ConcatFin L0 L1) := by
-  rcases Classical.em ([] ∈ L1) with h_e | h_ne
-  · have h_l1 : (L1 \ {[]}) ∪ {[]} = L1 := by
-      apply Set.diff_union_of_subset ; simp [h_e]
-    rw [← h_l1, ConcatFin_union_distrib_right]
-    refine reg_lang_union ?_ ?_
-    · refine reg_lang_concat_ne h0 ?_ ?_
-      · exact reg_lang_sdiff_epsilon h1
-      · simp
-    · simpa [ConcatFin_epsilon_right]
-  . exact reg_lang_concat_ne h0 h1 h_ne
 
 end RegLang

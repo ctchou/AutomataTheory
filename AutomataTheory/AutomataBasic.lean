@@ -33,7 +33,9 @@ def FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :
 def AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
   { al | ∃ n as, FinAccept M acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
-theorem FinRun_FixSuffix [Inhabited A] {M : Automaton A} {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+variable {M : Automaton A}
+
+theorem FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h : FinRun M n as ss) : FinRun M n (FixSuffix n as default) (FixSuffix (n + 1) ss (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
@@ -41,6 +43,20 @@ theorem FinRun_FixSuffix [Inhabited A] {M : Automaton A} {n : ℕ} {as : ℕ →
   intro k h_k
   simp [FixSuffix, h_k, (by omega : k < n + 1)]
   exact h_next k h_k
+
+theorem accepted_lang_acc_union {acc0 acc1 : Set M.State} :
+    AcceptedLang M (acc0 ∪ acc1) = AcceptedLang M acc0 ∪ AcceptedLang M acc1 := by
+  ext al ; constructor
+  · rintro ⟨n, as, ⟨ss, h_run, (h_acc0 | h_acc1)⟩, h_al⟩
+    · left ; use n, as ; simp [h_al] ; use ss
+    · right ; use n, as ; simp [h_al] ; use ss
+  · rintro (⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ | ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩)
+    · use n, as ; simp [h_al] ; use ss ; simp [h_run, h_acc]
+    · use n, as ; simp [h_al] ; use ss ; simp [h_run, h_acc]
+
+end AutomataFiniteRuns
+
+section AutomataFiniteRuns'
 
 /-- It may seem strange that we use infinite sequences (namely, functions of type ℕ → *)
 in the definitions about finite runs above.  In the following we give alternative
@@ -107,7 +123,7 @@ theorem AcceptedLang_of_FinAccept' [Inhabited A] :
     · exact FinAccept_of_FinAccept' h_acc
     · simpa [AppendFinInf]
 
-end AutomataFiniteRuns
+end AutomataFiniteRuns'
 
 section AutomataInfiniteRuns
 
