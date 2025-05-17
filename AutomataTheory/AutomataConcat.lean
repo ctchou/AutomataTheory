@@ -219,7 +219,7 @@ section AcceptedLangConcat
 
 variable {A : Type} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
 
-theorem accepted_lang_concat (h_no_epsilon : [] ∉ (AcceptedLang M1 acc1)) :
+theorem accepted_lang_concat_ne (h_no_epsilon : [] ∉ (AcceptedLang M1 acc1)) :
     AcceptedLang (AutomataConcat M0 acc0 M1) (inr '' acc1) =
     ConcatFin (AcceptedLang M0 acc0) (AcceptedLang M1 acc1) := by
   ext al ; constructor

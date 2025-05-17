@@ -106,7 +106,7 @@ theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
   constructor
   · exact Finite.instSum
   · rw [h_l1] at h_ne
-    simp [h_l0, h_l1, accepted_lang_concat h_ne]
+    simp [h_l0, h_l1, accepted_lang_concat_ne h_ne]
 
 theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (ConcatFin L0 L1) := by
