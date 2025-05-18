@@ -94,7 +94,7 @@ theorem reg_lang_concat_e {L0 L1 : Set (List A)}
       symm ; apply Set.diff_union_of_subset ; simp [h_e]
     have h_l1'' : [] ∉ L1 \ {[]} := by simp
     rw [h_l1] at h_l1' h_l1''
-    rw [h_l0, h_l1, h_l1', ConcatFin_union_distrib_right, ConcatFin_epsilon_right,
+    rw [h_l0, h_l1, h_l1', lang_ConcatFin_union_distrib_right, lang_ConcatFin_epsilon_right,
         accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
 
 theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
@@ -102,6 +102,12 @@ theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
   rcases Classical.em ([] ∈ L1) with h_e | h_ne
   · exact reg_lang_concat_e h0 h1 h_e
   . exact reg_lang_concat_ne h0 h1 h_ne
+
+end RegLang
+
+section BasicRegLang
+
+variable {A : Type}
 
 def M_epsilon : Automaton A where
   State := Unit
@@ -125,4 +131,4 @@ theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
     have h_step := h_next 0 (by omega)
     simp [M_epsilon] at h_step
 
-end RegLang
+end BasicRegLang

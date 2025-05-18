@@ -45,7 +45,7 @@ theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
 
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
     FinRun M.toAutomaton n as (MakeDetRun M as) := by
-  exact InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
+  exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
 theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h : FinRun M.toAutomaton n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
@@ -74,8 +74,8 @@ theorem accepted_lang_compl [Inhabited A] :
     have h_len' : al.length = n' := by rw [h_al', List.length_ofFn (f := (fun k : Fin n' ↦ as' k))]
     have h_n_eq : n' = n := by rw [← h_len, ← h_len']
     obtain ⟨rfl⟩ := h_n_eq
-    have h_run_n := FinRun_FixSuffix h_run
-    have h_run_n' := FinRun_FixSuffix h_run'
+    have h_run_n := automata_FinRun_FixSuffix h_run
+    have h_run_n' := automata_FinRun_FixSuffix h_run'
     have h_as_eq : FixSuffix n as' default = FixSuffix n as default := by
       ext k
       rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
