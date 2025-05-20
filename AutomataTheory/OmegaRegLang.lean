@@ -4,15 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Set.Card
-import Mathlib.Data.Fin.Basic
-import Mathlib.Data.Finite.Prod
-import Mathlib.Data.Finite.Sigma
-import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataOI2
 import AutomataTheory.RegLang
 
-open BigOperators Function Set Filter Sum
+open Function Set Filter Sum
 
 section OmegaRegLang
 

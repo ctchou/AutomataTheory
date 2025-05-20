@@ -4,15 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Set.Card
-import Mathlib.Data.List.OfFn
-import Mathlib.Order.Filter.AtTopBot.Basic
-import Mathlib.Data.Fin.Basic
-import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataHist
-import AutomataTheory.Sequences
+import AutomataTheory.AutomataProd
 
-open BigOperators Function Set Filter
+open Function Set Filter
 
 section AutomataOI2
 

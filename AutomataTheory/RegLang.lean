@@ -4,19 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Set.Card
-import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Finite.Prod
 import Mathlib.Data.Finite.Sigma
 import Mathlib.Data.Finite.Sum
-import Mathlib.Data.Fintype.EquivFin
-import AutomataTheory.Languages
+import Mathlib.Data.Fintype.Powerset
 import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataPSet
 import AutomataTheory.AutomataConcat
 
-open BigOperators Function Set Filter Sum
+open Function Set Filter Sum
 
 section RegLang
 

@@ -4,11 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Set.Card
-import Mathlib.Data.List.OfFn
 import AutomataTheory.AutomataBasic
 
-open BigOperators Function Set Filter
+open Function Set Filter
 
 section DetAutomata
 

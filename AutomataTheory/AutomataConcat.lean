@@ -4,14 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Set.Card
-import Mathlib.Data.List.OfFn
-import Mathlib.Data.Sum.Basic
-import Mathlib.Order.Filter.AtTopBot.Basic
 import AutomataTheory.Languages
 import AutomataTheory.AutomataBasic
 
-open BigOperators Function Set Filter Sum
+open Function Set Filter Sum
 open Classical
 
 section AutomataConcat
