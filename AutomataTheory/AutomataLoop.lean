@@ -40,12 +40,20 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
   constructor
   · rintro ⟨ss, h_run, h_acc⟩
     induction' m using Nat.strong_induction_on with m h_ind
-    rcases Classical.em (∃ k < m, ss (k + 1) ∉ M.next (ss k) (as k)) with h_loop | h_loop
-    · let m' := Nat.findGreatest (fun k ↦ ss (k + 1) ∉ M.next (ss k) (as k)) (m - 1)
+    let loop k := k < m ∧ ss (k + 1) ∉ M.next (ss k) (as k)
+    rcases Classical.em (∃ k, loop k) with h_loop | h_loop
+    · have h_m : 0 < m := by omega
+      let m' := Nat.findGreatest loop (m - 1)
+      have h_m' : m' < m := by
+        have : m' ≤ m - 1 := by exact Nat.findGreatest_le (m - 1)
+        omega
+      have h_step' : ss (m' + 1) ∉ M.next (ss m') (as m') := by
+        obtain ⟨k, h_k⟩ := h_loop
+        exact (Nat.findGreatest_spec (by omega : k ≤ m - 1) h_k).2
       have h_run' : FinAccept M acc (m - m') (SuffixFrom m' as) := by
         sorry
       sorry
-    · simp at h_loop
+    · simp [loop] at h_loop
       sorry
 
     -- rcases Classical.em (∃ k < m, k > 0 ∧ ss (k + 1) ∉ M.next (ss k) (as k)) with h_loop | h_loop
