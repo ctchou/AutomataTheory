@@ -44,13 +44,30 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
     rcases Classical.em (∃ k, loop k) with h_loop | h_loop
     · have h_m : 0 < m := by omega
       let m' := Nat.findGreatest loop (m - 1)
-      have h_m' : m' < m := by
-        have : m' ≤ m - 1 := by exact Nat.findGreatest_le (m - 1)
-        omega
-      have h_step' : ss (m' + 1) ∉ M.next (ss m') (as m') := by
+      obtain ⟨h_m', h_notM'⟩ : m' < m ∧ ss (m' + 1) ∉ M.next (ss m') (as m') := by
         obtain ⟨k, h_k⟩ := h_loop
-        exact (Nat.findGreatest_spec (by omega : k ≤ m - 1) h_k).2
-      have h_run' : FinAccept M acc (m - m') (SuffixFrom m' as) := by
+        exact Nat.findGreatest_spec (by omega : k ≤ m - 1) h_k
+      have h_next' := h_run.2 m' h_m'
+      simp [AutomataLoop, h_notM'] at h_next'
+      obtain ⟨h_acc', s0, h_s0_init, h_s0_next⟩ := h_next'
+      have h_accept : FinAccept M acc (m - m') (SuffixFrom m' as) := by
+        use (fun k ↦ if k = 0 then s0 else ss (k + m'))
+        constructor <;> [constructor ; skip]
+        · simpa
+        · intro k h_k
+          rcases Classical.em (k = 0) with h_k' | h_k'
+          · have h0 : 1 + m' = m' + 1 := by omega
+            simpa [SuffixFrom, h_k', h0]
+          · have h_next : ss (k + m' + 1) ∈ M.next (ss (k + m')) (as (k + m')) := by
+              have h0 := Nat.findGreatest_is_greatest (by omega : m' < k + m') (by omega)
+              simp [loop, (by omega : k + m' < m)] at h0
+              exact h0
+            have h1 : k + 1 + m' = k + m' + 1 := by omega
+            simpa [SuffixFrom, h_k', h1]
+        · have h0 : m - m' ≠ 0 := by omega
+          have h1 : m - m' + m' = m := by omega
+          simpa [h0, h1]
+      have h_run' : FinRun (AutomataLoop M acc) m' as ss := by
         sorry
       sorry
     · simp [loop] at h_loop
