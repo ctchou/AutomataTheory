@@ -41,7 +41,7 @@ theorem automata_loop_fin_run {m : ℕ} {as : ℕ → A} {ss : ℕ → (Automata
   · rintro ⟨h_run, h_acc⟩
     induction' m using Nat.strong_induction_on with m h_ind
     rcases Classical.em (∃ k < m, k > 0 ∧ ss (k + 1) ∉ M.next (ss k) (as k)) with h_loop | h_loop
-    · obtain ⟨h_n, h_n_notM⟩ := Nat.find_spec h_loop
+    · obtain ⟨h_n, h_n_pos, h_n_notM⟩ := Nat.find_spec h_loop
       -- have h_run' : FinRun M (Nat.find h_loop) as ss := by
       --   constructor
       --   · exact h_run.1
