@@ -36,7 +36,7 @@ theorem automata_loop_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (Automa
 theorem automata_loop_fin_run {m : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} :
     FinRun (AutomataLoop M acc) m as ss ∧ ss m ∈ acc ↔
     ∃ φ : ℕ → ℕ, ∃ n : ℕ, Monotone φ ∧ φ 0 = 0 ∧ φ n = m ∧
-      ∀ k < n, ∃ ss_k, FinRun M (φ (k + 1) - φ k) (SuffixFrom (φ k) as) ss_k := by
+      ∀ k < n, ∃ ss_k, FinRun M (φ (k + 1) - φ k) (SuffixFrom (φ k) as) ss_k ∧ ss_k (φ (k + 1) - φ k) ∈ acc := by
   constructor
   · rintro ⟨h_run, h_acc⟩
     induction' m using Nat.strong_induction_on with m h_ind
