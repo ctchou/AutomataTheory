@@ -35,7 +35,7 @@ theorem automata_loop_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (Automa
 
 theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
     FinAccept (AutomataLoop M acc) acc m as ↔
-    ∃ n : ℕ, ∃ φ : ℕ → ℕ, Monotone φ ∧ φ 0 = 0 ∧ φ n = m ∧
+    ∃ n > 0, ∃ φ : ℕ → ℕ, Monotone φ ∧ φ 0 = 0 ∧ φ n = m ∧
       ∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as) := by
   constructor
   · rintro ⟨ss, h_run, h_acc⟩
@@ -67,8 +67,9 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         constructor
         · exact h_run.1
         intro k h_k ; exact h_run.2 k (by omega)
-      obtain ⟨n', φ', h_mono', h_φ'_0, h_φ'_n', h_accept'⟩ := h_ind m' h_m' h_run' h_acc'
-      use (n' + 1), (fun k ↦ if k ≤ n' then φ' k else m)
+      obtain ⟨n', h_n', φ', h_mono', h_φ'_0, h_φ'_n', h_accept'⟩ := h_ind m' h_m' h_run' h_acc'
+      use (n' + 1) ; simp [(show n' + 1 > 0 by omega)]
+      use (fun k ↦ if k ≤ n' then φ' k else m)
       simp [h_φ'_0] ; constructor
       · apply monotone_nat_of_le_succ ; intro k
         rcases (show k < n' ∨ k = n' ∨ k > n' by omega) with h_k | h_k | h_k
@@ -82,12 +83,19 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
           exact h_accept' k h_k'
         · simpa [h_k', h_φ'_n']
     · simp [loop] at h_loop
-      use (if m = 0 then 0 else 1), (fun k ↦ if k = 0 then 0 else m)
+      use 1 ; simp
+      use (fun k ↦ if k = 0 then 0 else m)
       constructor
       · apply monotone_nat_of_le_succ ; intro k
         rcases (show k = 0 ∨ k ≠ 0 by omega) with h_k | h_k <;> simp [h_k]
       rcases (show m = 0 ∨ m ≠ 0 by omega) with h_0 | h_1
       · simp [h_0]
+        use ss ; simp [h_0] at h_acc ; simp [h_acc]
+        constructor
+        · have h_init := h_run.1
+          simp [AutomataLoop] at h_init
+          exact h_init
+        · simp
       · simp [h_1]
         use ss ; simp [h_acc]
         constructor
@@ -95,7 +103,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
           simp [AutomataLoop] at h_init
           exact h_init
         · exact h_loop
-  · rintro ⟨n, φ, h_mono, h_φ_0, h_φ_n, h_accept⟩
+  · rintro ⟨n, h_n, φ, h_mono, h_φ_0, h_φ_n, h_accept⟩
     choose ss h_run h_acc using h_accept
     let locate j k := φ k ≤ j ∧ j ≤ φ (k + 1)
     have h_locate : ∀ j ≤ m, ∃ k ≤ n, locate j k := by
@@ -114,6 +122,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         simp [show j = m by omega, ← h_φ_n, h_k']
         exact h_mono (show n ≤ n + 1 by omega)
     choose! loc h_loc_n h_loc_lo h_loc_hi using h_locate
+--    let ss' j := if h1 : j ≤ m then (if h2 : loc j < n then ss (loc j) h2 (j - loc j) else ss 0 (by omega) 0) else
     sorry
 
 end AutomataLoop
