@@ -95,6 +95,25 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
           simp [AutomataLoop] at h_init
           exact h_init
         · exact h_loop
-  · sorry
+  · rintro ⟨n, φ, h_mono, h_φ_0, h_φ_n, h_accept⟩
+    choose ss h_run h_acc using h_accept
+    let locate j k := φ k ≤ j ∧ j ≤ φ (k + 1)
+    have h_locate : ∀ j ≤ m, ∃ k ≤ n, locate j k := by
+      intro j h_j
+      let lb k := k ≤ n ∧ φ k ≤ j
+      let k := Nat.findGreatest lb n
+      obtain ⟨h_k, h_φ_k⟩ : k ≤ n ∧ φ k ≤ j := by
+        have h_lb_0 : lb 0 := by simp [lb, h_φ_0]
+        exact Nat.findGreatest_spec (show 0 ≤ n by omega) (h_lb_0)
+      use k ; simp [locate, h_k, h_φ_k]
+      have h0 := Nat.findGreatest_is_greatest (show k < k + 1 by omega)
+      simp [lb] at h0
+      rcases (show k < n ∨ k = n by omega) with h_k' | h_k'
+      · omega
+      · simp [h_k', h_φ_n] at h_φ_k
+        simp [show j = m by omega, ← h_φ_n, h_k']
+        exact h_mono (show n ≤ n + 1 by omega)
+    choose! loc h_loc_n h_loc_lo h_loc_hi using h_locate
+    sorry
 
 end AutomataLoop
