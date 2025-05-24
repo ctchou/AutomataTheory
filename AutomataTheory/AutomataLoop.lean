@@ -108,8 +108,26 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
     induction' n with n h_ind
     · omega
     rcases (show n = 0 ∨ n > 0 by omega) with h_n' | h_n'
-    · sorry
-    · sorry
+    · simp [h_n', h_φ_0] at h_accept
+      obtain ⟨ss, h_run, h_acc⟩ := h_accept
+      simp [h_n'] ; use ss ; simp [h_acc] ; constructor
+      · exact h_run.1
+      intro k h_k
+      have h_next := h_run.2 k h_k
+      simp [SuffixFrom] at h_next
+      simp [AutomataLoop, h_next]
+    · have h_accept0 : (∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as)) := by
+        intro k h_k ; exact h_accept k (by omega)
+      obtain ⟨ss0, h_run0, h_acc0⟩ := h_ind h_n' h_accept0 (rfl)
+      obtain ⟨ss1, h_run1, h_acc1⟩ := h_accept n (by omega)
+      intro m h_m ; rw [← h_m]
+      use (fun k ↦ if k ≤ φ n then ss0 k else ss1 (k - φ n)) ; constructor
+      · sorry
+      · rcases Classical.em (φ (n + 1) ≤ φ n) with h_φ_n | h_φ_n
+        ·
+          simp [h_φ_n]
+          sorry
+        · sorry
 
     -- choose ss h_run h_acc using h_accept
     -- let locate j k := φ k ≤ j ∧ j ≤ φ (k + 1)
