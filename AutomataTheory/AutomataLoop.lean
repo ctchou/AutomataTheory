@@ -122,7 +122,13 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         simp [show j = m by omega, ← h_φ_n, h_k']
         exact h_mono (show n ≤ n + 1 by omega)
     choose! loc h_loc_n h_loc_lo h_loc_hi using h_locate
---    let ss' j := if h1 : j ≤ m then (if h2 : loc j < n then ss (loc j) h2 (j - loc j) else ss 0 (by omega) 0) else
+    let s_default := ss 0 (by omega) 0
+    let ss_all j :=
+      if h1 : j ≤ m then (
+        if h2 : loc j < n then ss (loc j) h2 (j - φ (loc j))
+        else if h3 : loc j = n then ss (n - 1) (by omega) (m - φ (n - 1))
+        else s_default
+      ) else s_default
     sorry
 
 end AutomataLoop
