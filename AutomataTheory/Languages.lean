@@ -18,6 +18,10 @@ def ConcatFin (L0 L1 : Set (List A)) : Set (List A) :=
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
   { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = AppendListInf al0 as1 }
 
+def IterFin (L : Set (List A)) : ℕ → Set (List A)
+  | 0 => {[]}
+  | n + 1 => ConcatFin (IterFin L n) L
+
 theorem lang_ConcatFin_epsilon_right {L : Set (List A)} :
     ConcatFin L {[]} = L := by
   ext al ; constructor
