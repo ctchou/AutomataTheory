@@ -4,11 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Algebra.Order.Ring.Nat
-import Mathlib.Algebra.Order.Sub.Basic
+import Mathlib
+-- import Mathlib.Algebra.Order.Ring.Nat
+-- import Mathlib.Algebra.Order.Sub.Basic
 import AutomataTheory.AutomataBasic
 
-open Function Set Filter
+open Function Set Sum Filter
 open Classical
 
 section AutomataLoop
@@ -16,29 +17,23 @@ section AutomataLoop
 variable {A : Type*}
 
 def AutomataLoop (M : Automaton A) (acc : Set M.State) : Automaton A where
+  State := Unit ⊕ M.State
+  init := {inl ()}
+  next := fun s a ↦ match (s) with
+    | inl () => inr '' { s' | ∃ s0 ∈ M.init, s' ∈ M.next s0 a } ∪
+                if ∃ s0 ∈ M.init, ∃ s' ∈ acc, s' ∈ M.next s0 a then {inl ()} else ∅
+    | inr s  => inr '' (M.next s a) ∪
+                if ∃ s' ∈ acc, s' ∈ M.next s a then {inl ()} else ∅
+
+def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
   State := M.State
   init := M.init
   next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
 
-end AutomataLoop
-
-section AcceptedLangLoop
-
 variable {M : Automaton A} {acc : Set M.State}
 
-theorem automata_loop_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State}
-    (h_pos : m > 0) (h_run : FinRun (AutomataLoop M acc) m as ss) : ∃ s0 ∈ M.init, ss 1 ∈ M.next s0 (as 0) := by
-  rcases Classical.em (ss 1 ∈ M.next (ss 0) (as 0)) with h_case | h_case
-  · use (ss 0)
-    have h_init := h_run.1
-    simp [AutomataLoop] at h_init
-    simpa [h_case]
-  · have h_next := h_run.2 0
-    simp [AutomataLoop, h_pos, h_case] at h_next
-    exact h_next.2
-
 theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
-    FinAccept (AutomataLoop M acc) acc m as ↔
+    FinAccept (AutomataLoop' M acc) acc m as ↔
     ∃ n > 0, ∃ φ : ℕ → ℕ, Monotone φ ∧ φ 0 = 0 ∧ φ n = m ∧
       ∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as) := by
   constructor
@@ -52,7 +47,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         obtain ⟨k, h_k⟩ := h_loop
         exact Nat.findGreatest_spec (show k ≤ m - 1 by omega) h_k
       have h_next' := h_run.2 m' h_m'
-      simp [AutomataLoop, h_notM'] at h_next'
+      simp [AutomataLoop', h_notM'] at h_next'
       obtain ⟨h_acc', s0, h_s0_init, h_s0_next⟩ := h_next'
       have h_accept : FinAccept M acc (m - m') (SuffixFrom m' as) := by
         use (fun k ↦ if k = 0 then s0 else ss (k + m'))
@@ -67,7 +62,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
               exact h0
             simpa [SuffixFrom, h_k', (show k + 1 + m' = k + m' + 1 by omega)]
         · simpa [(show m - m' ≠ 0 by omega), (show m - m' + m' = m by omega)]
-      have h_run' : FinRun (AutomataLoop M acc) m' as ss := by
+      have h_run' : FinRun (AutomataLoop' M acc) m' as ss := by
         constructor
         · exact h_run.1
         intro k h_k ; exact h_run.2 k (by omega)
@@ -97,14 +92,14 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         use ss ; simp [h_0] at h_acc ; simp [h_acc]
         constructor
         · have h_init := h_run.1
-          simp [AutomataLoop] at h_init
+          simp [AutomataLoop'] at h_init
           exact h_init
         · simp
       · simp [h_1]
         use ss ; simp [h_acc]
         constructor
         · have h_init := h_run.1
-          simp [AutomataLoop] at h_init
+          simp [AutomataLoop'] at h_init
           exact h_init
         · exact h_loop
   · rintro ⟨n, h_n, φ, h_mono, h_φ_0, h_φ_n, h_accept⟩
@@ -119,7 +114,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
       intro k h_k
       have h_next := h_run.2 k h_k
       simp [SuffixFrom] at h_next
-      simp [AutomataLoop, h_next]
+      simp [AutomataLoop', h_next]
     · have h_mono' : φ n ≤ φ (n + 1) := by apply h_mono ; omega
       have h_accept0 : (∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as)) := by
         intro k h_k ; exact h_accept k (by omega)
@@ -134,7 +129,7 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         rcases (show k < φ n ∨ k = φ n ∨ k > φ n by omega) with h_k' | h_k' | h_k'
         · have h_next := h_run0.2 k h_k'
           simpa [(show k ≤ φ n by omega), (show k + 1 ≤ φ n by omega)]
-        · simp [AutomataLoop, h_k', h_acc0] ; right ; use (ss1 0)
+        · simp [AutomataLoop', h_k', h_acc0] ; right ; use (ss1 0)
           have h_init := h_run1.1
           have h_next := h_run1.2 0 (by omega)
           simp [SuffixFrom] at h_next
@@ -142,11 +137,15 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
         · have h_next := h_run1.2 (k - φ n) (by omega)
           simp [SuffixFrom, (show k - φ n + φ n = k by omega),
                 (show k - φ n + 1 = k + 1 - φ n by omega)] at h_next
-          simp [AutomataLoop, h_next,
+          simp [AutomataLoop', h_next,
                 (show ¬ k ≤ φ n by omega), (show ¬ k + 1 ≤ φ n by omega)]
       · rcases Classical.em (φ (n + 1) ≤ φ n) with h_φ_n | h_φ_n
         · have h_eq : φ (n + 1) = φ n := by omega
           simpa [h_φ_n, h_eq]
         · simpa [h_φ_n]
+
+end AutomataLoop
+
+section AcceptedLangLoop
 
 end AcceptedLangLoop
