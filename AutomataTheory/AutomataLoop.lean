@@ -16,6 +16,11 @@ section AutomataLoop
 
 variable {A : Type*}
 
+def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
+  State := M.State
+  init := M.init
+  next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
+
 def AutomataLoop (M : Automaton A) (acc : Set M.State) : Automaton A where
   State := Unit ⊕ M.State
   init := {inl ()}
@@ -25,12 +30,76 @@ def AutomataLoop (M : Automaton A) (acc : Set M.State) : Automaton A where
     | inr s  => inr '' (M.next s a) ∪
                 if ∃ s' ∈ acc, s' ∈ M.next s a then {inl ()} else ∅
 
-def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
-  State := M.State
-  init := M.init
-  next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
-
 variable {M : Automaton A} {acc : Set M.State}
+
+theorem automata_loop_fin_run_0 {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} :
+    FinRun (AutomataLoop M acc) 0 as ss ∧ (∃ s0 ∈ M.init, s0 ∈ acc) ↔
+    ∃ ss', FinRun M 0 as ss' ∧ ss' 0 ∈ acc ∧ ss 0 = inl () := by
+  constructor
+  · rintro ⟨⟨h_init, _⟩, s0, h_s0_init, h_s0_acc⟩
+    simp [AutomataLoop] at h_init
+    use (fun k ↦ s0)
+    simp [FinRun, h_s0_init, h_s0_acc, h_init]
+  · rintro ⟨ss', ⟨h_init, _⟩, h_acc, h_inl⟩
+    simp [FinRun, AutomataLoop, h_inl]
+    use (ss' 0)
+
+lemma automata_loop_step_to_unit {a : A} {s : (AutomataLoop M acc).State}
+    (h : inl () ∈ (AutomataLoop M acc).next s a) : ∃ s0, ∃ s1 ∈ acc, s1 ∈ M.next s0 a := by
+  rcases s with u | s0
+  · rcases u
+    simp [AutomataLoop] at h
+    obtain ⟨s0, _, h_acc⟩ := h
+    use s0
+  · simp [AutomataLoop] at h
+    use s0
+
+theorem automata_loop_fin_run_2 {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} (h : n > 0) :
+    FinRun (AutomataLoop M acc) n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k ∈ inr '' univ) ↔
+    ∃ ss', FinRun M n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
+  constructor
+  · sorry
+  · rintro ⟨ss', ⟨h_init, h_next⟩, h_acc, h_inl_0, h_inl_n, h_inr⟩
+    constructor <;> [constructor ; constructor]
+    · simp [h_inl_0, AutomataLoop]
+    · intro k h_k_n
+      rcases (show k = 0 ∨ k > 0 by omega) with h_k_0 | h_k_0
+      · specialize h_next 0 h
+        rcases (show n = 1 ∨ n > 1 by omega) with h_n | h_n
+        · obtain ⟨rfl⟩ := h_n
+          simp [h_k_0, h_inl_0, AutomataLoop, h_inl_n]
+          use (ss' 0) ; simp [h_init] ; use (ss' 1)
+        · specialize h_inr 1 h_n (by omega)
+          simp [h_k_0, h_inl_0, AutomataLoop, h_inr]
+          use (ss' 0)
+      · specialize h_next k (h_k_n)
+        have h_ss_k := h_inr k h_k_n h_k_0
+        rcases (show k + 1 < n ∨ k = n - 1 by omega) with h_k_n' | h_k_n'
+        · have h_ss_k' := h_inr (k + 1) h_k_n' (by omega)
+          simpa [h_ss_k, h_ss_k', AutomataLoop]
+        · obtain ⟨rfl⟩ := h_k_n'
+          have h_n : n - 1 + 1 = n := by omega
+          simp [h_n] at h_next
+          simp [h_n, h_ss_k, h_inl_n, AutomataLoop]
+          use (ss' n)
+    · exact h_inl_n
+    · intro k h_k_n h_k_0
+      simp [h_inr k h_k_n h_k_0]
+
+    -- rcases (show n = 0 ∨ n = 1 ∨ n > 1 by omega) with h_n | h_n | h_n
+    -- · simp [h_n, FinRun, AutomataLoop, h_inl]
+    -- · sorry
+    -- · constructor <;> [constructor ; constructor]
+    --   · simp [h_inl, AutomataLoop]
+    --   · intro k h_k_n
+    --     rcases (show k = 0 ∨ k > 0 by omega) with h_k_0 | h_k_0
+    --     · sorry
+    --     have h_ss_k := h_inr k h_k_n h_k_0
+    --     have h_ss_k1 := h_inr (k + 1)
+    --     sorry
+    --   · sorry
+    --   · intro k h_k_n h_k_0
+    --     simp [h_inr k h_k_n h_k_0]
 
 theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
     FinAccept (AutomataLoop' M acc) acc m as ↔
