@@ -7,6 +7,7 @@ Authors: Ching-Tsun Chou
 import Mathlib
 -- import Mathlib.Algebra.Order.Ring.Nat
 -- import Mathlib.Algebra.Order.Sub.Basic
+import AutomataTheory.Languages
 import AutomataTheory.AutomataBasic
 
 open Function Set Sum Filter
@@ -15,11 +16,6 @@ open Classical
 section AutomataLoop
 
 variable {A : Type*}
-
-def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
-  State := M.State
-  init := M.init
-  next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
 
 def AutomataLoop (M : Automaton A) (acc : Set M.State) : Automaton A where
   State := Unit ⊕ M.State
@@ -117,6 +113,31 @@ theorem automata_loop_fin_run_1 {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automa
     · exact h_inl_n
     · intro k h_k_n h_k_0
       simp [h_inr k h_k_n h_k_0]
+
+end AutomataLoop
+
+section AcceptedLangLoop
+
+end AcceptedLangLoop
+
+variable {A : Type*} {M : Automaton A} {acc : Set M.State}
+
+theorem accepted_lang_loop :
+    AcceptedLang (AutomataLoop M acc) {inl ()} = IterStar (AcceptedLang M acc) := by
+  sorry
+
+theorem accepted_omega_lang_loop :
+    AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
+  sorry
+
+section DeprecatedLoop
+
+def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
+  State := M.State
+  init := M.init
+  next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
+
+variable {M : Automaton A} {acc : Set M.State}
 
 theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
     FinAccept (AutomataLoop' M acc) acc m as ↔
@@ -230,8 +251,4 @@ theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
           simpa [h_φ_n, h_eq]
         · simpa [h_φ_n]
 
-end AutomataLoop
-
-section AcceptedLangLoop
-
-end AcceptedLangLoop
+end DeprecatedLoop
