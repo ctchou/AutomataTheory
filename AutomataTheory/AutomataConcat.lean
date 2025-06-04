@@ -255,7 +255,7 @@ end AutomataConcat
 
 section AcceptedLangConcat
 
-variable {A : Type} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
+variable {A : Type*} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
 
 theorem accepted_lang_concat_e :
     AcceptedLang (AutomataConcat M0 acc0 M1) (inl '' acc0) = AcceptedLang M0 acc0 := by
