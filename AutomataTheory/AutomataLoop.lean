@@ -126,9 +126,55 @@ theorem accepted_lang_loop :
     AcceptedLang (AutomataLoop M acc) {inl ()} = IterStar (AcceptedLang M acc) := by
   sorry
 
+variable {X : Type*} {xs xs' : ℕ → X}
+
+theorem ofFn_eq_ofFn {xs xs' : ℕ → X} {m n n' : ℕ}
+    (h : List.ofFn (fun k : Fin n' ↦ xs' k) = List.ofFn (fun k : Fin (m - n) ↦ xs (k + n))) :
+    n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + m) := by
+  sorry
+
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
-  sorry
+  ext as ; constructor
+  · rintro ⟨ss, h_run, h_acc⟩ ; simp at h_acc
+    let φ m := Nat.nth (fun k ↦ ss k = inl ()) m
+    have h_inf : {k | ss k = inl ()}.Infinite := by simpa [← Nat.frequently_atTop_iff_infinite]
+    have h_mono : StrictMono φ := by exact Nat.nth_strictMono h_inf
+    use φ ; simp [h_mono] ; constructor
+    · have h_init := h_run.1
+      simp [AutomataLoop] at h_init
+      apply Nat.nth_zero_of_zero h_init
+    · intro m
+      use (φ (m + 1) - φ m), (SuffixFrom (φ m) as) ; constructor
+      · have h_pos : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
+        let ss1 := SuffixFrom (φ m) ss
+        have h_run1 : FinRun (AutomataLoop M acc) (φ (m + 1) - φ m) (SuffixFrom (φ m) as) ss1 := by sorry
+        have h_inl : ss1 (φ (m + 1) - φ m) = inl () := by
+          simp [ss1, SuffixFrom, (show φ (m + 1) - φ m + φ m = φ (m + 1) by omega)]
+          apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
+        have h_inr : ∀ k < φ (m + 1) - φ m, k > 0 → ss1 k ∈ inr '' univ := by sorry
+        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_pos).mp ⟨h_run1, h_inl, h_inr⟩
+        use ss'
+      · rw [List.ofFn_inj] ; ext k
+        simp [SuffixFrom]
+  · rintro ⟨φ, h_mono, h_0, h_acc⟩
+    choose len as' h_acc h_as' using h_acc
+    choose ss' h_run h_acc using h_acc
+    let ss k := if k ∈ φ '' univ then inl () else inr (ss' (Nat.count (φ '' univ) k) (k - φ (Nat.count (φ '' univ) k)))
+    use ss
+
+    -- have : ∀ m, len m = φ (m + 1) - φ m ∧ ∀ k < φ (m + 1) - φ m, as' m k = as (k + φ m) := by
+    --   intro m
+    --   have h_as' := List.ofFn_inj'.mp <| h_as' <| m
+    --   simp at h_as'
+    --   obtain ⟨h_len, h_as⟩ := h_as'
+    --   rw [← h_len] at h_as ; simp at h_as
+    --   simp [← h_len]
+    --   intro k h_k
+    --   obtain ⟨h1, h2⟩ := Fin.sigma_eq_iff_eq_comp_cast.mp <| List.ofFn_inj'.mp <| h_as' m
+    --   sorry
+
+    sorry
 
 section DeprecatedLoop
 
