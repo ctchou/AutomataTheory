@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import Mathlib
 import AutomataTheory.Sequences
 
 open Function Set Filter
@@ -21,6 +22,12 @@ def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
 def IterFin (L : Set (List A)) : ℕ → Set (List A)
   | 0 => {[]}
   | n + 1 => ConcatFin (IterFin L n) L
+
+def IterStar (L : Set (List A)) : Set (List A) :=
+  ⋃ n : ℕ, IterFin L n
+
+def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
+  { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, List.ofFn (fun k : Fin (φ (m + 1) - φ m) ↦ as k) ∈ L }
 
 theorem lang_ConcatFin_epsilon_right {L : Set (List A)} :
     ConcatFin L {[]} = L := by
