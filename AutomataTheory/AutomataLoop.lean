@@ -167,7 +167,11 @@ theorem accepted_omega_lang_loop :
       · have h_pos : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
         let ss1 := SuffixFrom (φ m) ss
         have h_run1 : FinRun (AutomataLoop M acc) (φ (m + 1) - φ m) (SuffixFrom (φ m) as) ss1 := by
-          sorry
+          constructor
+          · simp [ss1, SuffixFrom, AutomataLoop]
+            apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
+          intro k h_k
+          simp [ss1, SuffixFrom, (show k + 1 + φ m = k + φ m + 1 by omega), h_run.2 (k + φ m)]
         have h_inl : ss1 (φ (m + 1) - φ m) = inl () := by
           simp [ss1, SuffixFrom, (show φ (m + 1) - φ m + φ m = φ (m + 1) by omega)]
           apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
