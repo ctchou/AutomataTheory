@@ -28,6 +28,15 @@ def AutomataLoop (M : Automaton A) (acc : Set M.State) : Automaton A where
 
 variable {M : Automaton A} {acc : Set M.State}
 
+private lemma not_inl_unit {s : (AutomataLoop M acc).State} :
+    s ≠ inl () ↔ ∃ s' : M.State, s = inr s' := by
+  constructor
+  · rw [← isRight_iff, ← not_isLeft, isLeft_iff]
+    rintro h1 ⟨u, h_s⟩
+    have h_u := Unit.ext u ()
+    simp [h_s] at h1
+  · rintro ⟨s', h_s'⟩ ; simp [h_s']
+
 theorem automata_loop_fin_run_0 {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} :
     FinRun (AutomataLoop M acc) 0 as ss ∧ (∃ s0 ∈ M.init, s0 ∈ acc) ↔
     ∃ ss', FinRun M 0 as ss' ∧ ss' 0 ∈ acc ∧ ss 0 = inl () := by
@@ -133,6 +142,15 @@ theorem ofFn_eq_ofFn {xs xs' : ℕ → X} {m n n' : ℕ}
     n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + m) := by
   sorry
 
+lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
+    ∀ k < Nat.nth p (n + 1) - Nat.nth p n, k > 0 → ¬ p (k + Nat.nth p n) := by
+  intro k h_k1 h_k0 h_p_k
+  let m := Nat.count p (k + Nat.nth p n)
+  have h_k_ex : Nat.nth p m = k + Nat.nth p n := by simp [m, Nat.nth_count h_p_k]
+  have h_n_m : n < m := by apply (Nat.nth_lt_nth hf).mp ; omega
+  have h_m_n : m < n + 1 := by apply (Nat.nth_lt_nth hf).mp ; omega
+  omega
+
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
   ext as ; constructor
@@ -148,11 +166,15 @@ theorem accepted_omega_lang_loop :
       use (φ (m + 1) - φ m), (SuffixFrom (φ m) as) ; constructor
       · have h_pos : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
         let ss1 := SuffixFrom (φ m) ss
-        have h_run1 : FinRun (AutomataLoop M acc) (φ (m + 1) - φ m) (SuffixFrom (φ m) as) ss1 := by sorry
+        have h_run1 : FinRun (AutomataLoop M acc) (φ (m + 1) - φ m) (SuffixFrom (φ m) as) ss1 := by
+          sorry
         have h_inl : ss1 (φ (m + 1) - φ m) = inl () := by
           simp [ss1, SuffixFrom, (show φ (m + 1) - φ m + φ m = φ (m + 1) by omega)]
           apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
-        have h_inr : ∀ k < φ (m + 1) - φ m, k > 0 → ss1 k ∈ inr '' univ := by sorry
+        have h_inr : ∀ k < φ (m + 1) - φ m, k > 0 → ss1 k ∈ inr '' univ := by
+          intro k h_k1 h_k0
+          obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nat_nth_gap h_inf m k h_k1 h_k0
+          simp ; use s' ; symm ; exact h_s'
         obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_pos).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
       · rw [List.ofFn_inj] ; ext k
