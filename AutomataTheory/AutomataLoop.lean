@@ -145,18 +145,15 @@ lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
   have h_m_n : m < n + 1 := by apply (Nat.nth_lt_nth hf).mp ; omega
   omega
 
-variable {X : Type*} {xs xs' : ℕ → X}
-
-theorem ofFn_eq_ofFn {xs xs' : ℕ → X} {m n n' : ℕ}
+theorem ofFn_eq_ofFn {X : Type*} {xs xs' : ℕ → X} {m n n' : ℕ}
     (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
     n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + n) := by
   simp [List.ofFn_inj'] at h
-  obtain ⟨rfl, h2⟩ := h
-  simp at h2
+  obtain ⟨rfl, h'⟩ := h
+  simp [funext_iff, Fin.forall_iff] at h'
   simp ; intro k h_k
-  calc _ = (fun k : Fin (m - n) ↦ xs' ↑k) ⟨k, h_k⟩ := by simp
-       _ = (fun k : Fin (m - n) ↦ xs (↑k + n)) ⟨k, h_k⟩ := by rw [h2]
-       _ = _ := by simp
+  specialize h' k h_k
+  simp [h']
 
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
@@ -193,22 +190,22 @@ theorem accepted_omega_lang_loop :
   · rintro ⟨φ, h_mono, h_0, h_acc⟩
     choose len as' h_acc h_as' using h_acc
     choose ss' h_run h_acc using h_acc
-    let cnt := Nat.count (range φ)
-    let ss k := if k ∈ range φ then inl () else inr (ss' (cnt k) (k - φ (cnt k)))
+    let seg k := Nat.count (range φ) k
+    let ss k := if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
       simp [ss, h_0', AutomataLoop]
     · intro k
-      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (cnt k)
-      have h_mono_k : φ (cnt k + 1) - φ (cnt k) > 0 := by have := h_mono (show cnt k < cnt k + 1 by omega) ; omega
-      have h_cnt_k : φ (cnt k) ≤ k := by sorry
-      have h_cnt_k1 : k < φ (cnt k) := by sorry
+      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
+      have h_mono_k : φ (seg k + 1) - φ (seg k) > 0 := by have := h_mono (show seg k < seg k + 1 by omega) ; omega
+      have h_seg_k : φ (seg k) ≤ k := by sorry
+      have h_seg_k1 : k < φ (seg k) := by sorry
       suffices h_lhs :
-          FinRun (AutomataLoop M acc) (φ (cnt k + 1) - φ (cnt k)) (SuffixFrom (φ (cnt k)) as) (SuffixFrom (φ (cnt k)) ss) ∧
-          (SuffixFrom (φ (cnt k)) ss) (φ (cnt k + 1) - φ (cnt k)) = inl () ∧
-          (∀ j < φ (cnt k + 1) - φ (cnt k), j > 0 → (SuffixFrom (φ (cnt k)) ss) j ∈ range inr) by
-        have h_run_k := h_lhs.1.2 (k - φ (cnt k)) (show k - φ (cnt k) < φ (cnt k + 1) - φ (cnt k) by omega)
-        simp [SuffixFrom, (show k - φ (cnt k) + φ (cnt k) = k by omega), (show k - φ (cnt k) + 1 + φ (cnt k) = k + 1 by omega)] at h_run_k
+          FinRun (AutomataLoop M acc) (φ (seg k + 1) - φ (seg k)) (SuffixFrom (φ (seg k)) as) (SuffixFrom (φ (seg k)) ss) ∧
+          (SuffixFrom (φ (seg k)) ss) (φ (seg k + 1) - φ (seg k)) = inl () ∧
+          (∀ j < φ (seg k + 1) - φ (seg k), j > 0 → (SuffixFrom (φ (seg k)) ss) j ∈ range inr) by
+        have h_run_k := h_lhs.1.2 (k - φ (seg k)) (show k - φ (seg k) < φ (seg k + 1) - φ (seg k) by omega)
+        simp [SuffixFrom, (show k - φ (seg k) + φ (seg k) = k by omega), (show k - φ (seg k) + 1 + φ (seg k) = k + 1 by omega)] at h_run_k
         exact h_run_k
       apply (automata_loop_fin_run_1 h_mono_k).mpr
       sorry
