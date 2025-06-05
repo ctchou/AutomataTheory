@@ -171,7 +171,7 @@ theorem accepted_omega_lang_loop :
       apply Nat.nth_zero_of_zero h_init
     · intro m
       use (φ (m + 1) - φ m), (SuffixFrom (φ m) as) ; constructor
-      · have h_pos : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
+      · have h_mono_m : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
         let ss1 := SuffixFrom (φ m) ss
         have h_run1 : FinRun (AutomataLoop M acc) (φ (m + 1) - φ m) (SuffixFrom (φ m) as) ss1 := by
           constructor
@@ -186,7 +186,7 @@ theorem accepted_omega_lang_loop :
           intro k h_k1 h_k0
           obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nat_nth_gap h_inf m k h_k1 h_k0
           simp ; use s' ; symm ; exact h_s'
-        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_pos).mp ⟨h_run1, h_inl, h_inr⟩
+        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
       · rw [List.ofFn_inj] ; ext k
         simp [SuffixFrom]
@@ -200,14 +200,17 @@ theorem accepted_omega_lang_loop :
       simp [ss, h_0', AutomataLoop]
     · intro k
       obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (cnt k)
-      have h_pos : φ (cnt k + 1) - φ (cnt k) > 0 := by have := h_mono (show cnt k < cnt k + 1 by omega) ; omega
+      have h_mono_k : φ (cnt k + 1) - φ (cnt k) > 0 := by have := h_mono (show cnt k < cnt k + 1 by omega) ; omega
+      have h_cnt_k : φ (cnt k) ≤ k := by sorry
+      have h_cnt_k1 : k < φ (cnt k) := by sorry
       suffices h_lhs :
           FinRun (AutomataLoop M acc) (φ (cnt k + 1) - φ (cnt k)) (SuffixFrom (φ (cnt k)) as) (SuffixFrom (φ (cnt k)) ss) ∧
           (SuffixFrom (φ (cnt k)) ss) (φ (cnt k + 1) - φ (cnt k)) = inl () ∧
           (∀ j < φ (cnt k + 1) - φ (cnt k), j > 0 → (SuffixFrom (φ (cnt k)) ss) j ∈ range inr) by
-        have := h_lhs.1.2 (k - φ (cnt k)) -- (show k - φ (cnt k) < φ (cnt k + 1) - φ (cnt k) by omega)
-        sorry
-      apply (automata_loop_fin_run_1 h_pos).mpr
+        have h_run_k := h_lhs.1.2 (k - φ (cnt k)) (show k - φ (cnt k) < φ (cnt k + 1) - φ (cnt k) by omega)
+        simp [SuffixFrom, (show k - φ (cnt k) + φ (cnt k) = k by omega), (show k - φ (cnt k) + 1 + φ (cnt k) = k + 1 by omega)] at h_run_k
+        exact h_run_k
+      apply (automata_loop_fin_run_1 h_mono_k).mpr
       sorry
       -- have h_lhs : ∃ ss',
       --     FinRun M (φ (cnt k + 1) - φ (cnt k)) as ss' ∧
