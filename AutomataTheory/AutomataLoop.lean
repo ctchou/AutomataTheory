@@ -162,6 +162,22 @@ theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → 
   intro k h_k ; specialize h_next k h_k
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
+noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) := Nat.count (range φ) (k + 1) - 1
+
+variable {φ : ℕ → ℕ}
+
+example (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    φ (Segment φ k) ≤ k ∧ k < φ (Segment φ k + 1) := by
+  sorry
+
+example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
+    (hl : φ (Segment φ k) ≤ n) (hu : n < φ (Segment φ k + 1)) : Segment φ n = Segment φ k := by
+  sorry
+
+example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
+    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : ¬ ∃ m, φ m = n := by
+  sorry
+
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
   ext as ; constructor
@@ -197,7 +213,7 @@ theorem accepted_omega_lang_loop :
   · rintro ⟨φ, h_mono, h_0, h_acc⟩
     choose len as' h_acc h_as' using h_acc
     choose ss' h_run h_acc using h_acc
-    let seg k := Nat.count (range φ) (k + 1) - 1
+    let seg k := Segment φ k
     let ss k := if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
@@ -226,8 +242,8 @@ theorem accepted_omega_lang_loop :
       · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
       · intro j h_j_1 h_j_0
         have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by sorry
-        have h_j_3 : seg (j + φ (seg k)) = seg (seg k) := by sorry
-        have h_j_4 : seg (seg k) = seg k := by sorry
+        have h_j_3 : seg (j + φ (seg k)) = seg (φ (seg k)) := by sorry
+        have h_j_4 : seg (φ (seg k)) = seg k := by sorry
         simp [ss, h_j_2, h_j_3, h_j_4]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
