@@ -212,12 +212,6 @@ theorem accepted_omega_lang_loop :
         exact h_run_k
       apply (automata_loop_fin_run_1 h_mono_k).mpr
       sorry
-      -- have h_lhs : ∃ ss',
-      --     FinRun M (φ (cnt k + 1) - φ (cnt k)) as ss' ∧
-      --     ss' (φ (cnt k + 1) - φ (cnt k)) ∈ acc ∧
-      --     ss 0 = inl () ∧
-      --     ss (φ (cnt k + 1) - φ (cnt k)) = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) :=
-      --   sorry
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
       simp [Nat.frequently_atTop_iff_infinite, h_uset, h_inf]
