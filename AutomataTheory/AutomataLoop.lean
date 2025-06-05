@@ -136,24 +136,6 @@ theorem accepted_lang_loop :
     AcceptedLang (AutomataLoop M acc) {inl ()} = IterStar (AcceptedLang M acc) := by
   sorry
 
-variable {X : Type*} {xs xs' : ℕ → X}
-
-theorem ofFn_eq_ofFn {xs xs' : ℕ → X} {m n n' : ℕ}
-    (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
-    n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + m) := by
-  sorry
-
-    -- have : ∀ m, len m = φ (m + 1) - φ m ∧ ∀ k < φ (m + 1) - φ m, as' m k = as (k + φ m) := by
-    --   intro m
-    --   have h_as' := List.ofFn_inj'.mp <| h_as' <| m
-    --   simp at h_as'
-    --   obtain ⟨h_len, h_as⟩ := h_as'
-    --   rw [← h_len] at h_as ; simp at h_as
-    --   simp [← h_len]
-    --   intro k h_k
-    --   obtain ⟨h1, h2⟩ := Fin.sigma_eq_iff_eq_comp_cast.mp <| List.ofFn_inj'.mp <| h_as' m
-    --   sorry
-
 lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
     ∀ k < Nat.nth p (n + 1) - Nat.nth p n, k > 0 → ¬ p (k + Nat.nth p n) := by
   intro k h_k1 h_k0 h_p_k
@@ -162,6 +144,19 @@ lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
   have h_n_m : n < m := by apply (Nat.nth_lt_nth hf).mp ; omega
   have h_m_n : m < n + 1 := by apply (Nat.nth_lt_nth hf).mp ; omega
   omega
+
+variable {X : Type*} {xs xs' : ℕ → X}
+
+theorem ofFn_eq_ofFn {xs xs' : ℕ → X} {m n n' : ℕ}
+    (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
+    n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + n) := by
+  simp [List.ofFn_inj'] at h
+  obtain ⟨rfl, h2⟩ := h
+  simp at h2
+  simp ; intro k h_k
+  calc _ = (fun k : Fin (m - n) ↦ xs' ↑k) ⟨k, h_k⟩ := by simp
+       _ = (fun k : Fin (m - n) ↦ xs (↑k + n)) ⟨k, h_k⟩ := by rw [h2]
+       _ = _ := by simp
 
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
@@ -198,11 +193,28 @@ theorem accepted_omega_lang_loop :
   · rintro ⟨φ, h_mono, h_0, h_acc⟩
     choose len as' h_acc h_as' using h_acc
     choose ss' h_run h_acc using h_acc
-    let ss k := if k ∈ range φ then inl () else inr (ss' (Nat.count (range φ) k) (k - φ (Nat.count (range φ) k)))
+    let cnt := Nat.count (range φ)
+    let ss k := if k ∈ range φ then inl () else inr (ss' (cnt k) (k - φ (cnt k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
       simp [ss, h_0', AutomataLoop]
-    · sorry
+    · intro k
+      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (cnt k)
+      have h_pos : φ (cnt k + 1) - φ (cnt k) > 0 := by have := h_mono (show cnt k < cnt k + 1 by omega) ; omega
+      suffices h_lhs :
+          FinRun (AutomataLoop M acc) (φ (cnt k + 1) - φ (cnt k)) (SuffixFrom (φ (cnt k)) as) (SuffixFrom (φ (cnt k)) ss) ∧
+          (SuffixFrom (φ (cnt k)) ss) (φ (cnt k + 1) - φ (cnt k)) = inl () ∧
+          (∀ j < φ (cnt k + 1) - φ (cnt k), j > 0 → (SuffixFrom (φ (cnt k)) ss) j ∈ range inr) by
+        have := h_lhs.1.2 (k - φ (cnt k)) -- (show k - φ (cnt k) < φ (cnt k + 1) - φ (cnt k) by omega)
+        sorry
+      apply (automata_loop_fin_run_1 h_pos).mpr
+      sorry
+      -- have h_lhs : ∃ ss',
+      --     FinRun M (φ (cnt k + 1) - φ (cnt k)) as ss' ∧
+      --     ss' (φ (cnt k + 1) - φ (cnt k)) ∈ acc ∧
+      --     ss 0 = inl () ∧
+      --     ss (φ (cnt k + 1) - φ (cnt k)) = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) :=
+      --   sorry
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
       simp [Nat.frequently_atTop_iff_infinite, h_uset, h_inf]
