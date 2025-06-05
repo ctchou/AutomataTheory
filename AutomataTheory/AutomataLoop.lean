@@ -147,13 +147,20 @@ lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
 
 theorem ofFn_eq_ofFn {X : Type*} {xs xs' : ℕ → X} {m n n' : ℕ}
     (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
-    n' = m - n ∧ ∀ k < m - n, xs' k = xs (k + n) := by
+    m - n = n' ∧ ∀ k < n', xs (k + n) = xs' k := by
   simp [List.ofFn_inj'] at h
   obtain ⟨rfl, h'⟩ := h
   simp [funext_iff, Fin.forall_iff] at h'
   simp ; intro k h_k
   specialize h' k h_k
   simp [h']
+
+theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → M.State}
+    (ha : ∀ k < n, as k = as' k) (hs : ∀ k < n + 1, ss k = ss' k) (hr : FinRun M n as ss) : FinRun M n as' ss' := by
+  rcases hr with ⟨h_init, h_next⟩ ; constructor
+  · simpa [← hs]
+  intro k h_k ; specialize h_next k h_k
+  simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
@@ -190,16 +197,15 @@ theorem accepted_omega_lang_loop :
   · rintro ⟨φ, h_mono, h_0, h_acc⟩
     choose len as' h_acc h_as' using h_acc
     choose ss' h_run h_acc using h_acc
-    let seg k := Nat.count (range φ) k
+    let seg k := Nat.count (range φ) (k + 1) - 1
     let ss k := if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
       simp [ss, h_0', AutomataLoop]
     · intro k
-      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
-      have h_mono_k : φ (seg k + 1) - φ (seg k) > 0 := by have := h_mono (show seg k < seg k + 1 by omega) ; omega
       have h_seg_k : φ (seg k) ≤ k := by sorry
-      have h_seg_k1 : k < φ (seg k) := by sorry
+      have h_seg_k1 : k < φ (seg k + 1) := by sorry
+      have h_mono_k : φ (seg k + 1) - φ (seg k) > 0 := by omega
       suffices h_lhs :
           FinRun (AutomataLoop M acc) (φ (seg k + 1) - φ (seg k)) (SuffixFrom (φ (seg k)) as) (SuffixFrom (φ (seg k)) ss) ∧
           (SuffixFrom (φ (seg k)) ss) (φ (seg k + 1) - φ (seg k)) = inl () ∧
@@ -208,7 +214,22 @@ theorem accepted_omega_lang_loop :
         simp [SuffixFrom, (show k - φ (seg k) + φ (seg k) = k by omega), (show k - φ (seg k) + 1 + φ (seg k) = k + 1 by omega)] at h_run_k
         exact h_run_k
       apply (automata_loop_fin_run_1 h_mono_k).mpr
-      sorry
+      use (ss' (seg k))
+      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
+      simp [h_len_k, SuffixFrom]
+      constructorm* _ ∧ _
+      · apply automata_FinRun_modulo (n := len (seg k)) (as := as' (seg k)) (ss := ss' (seg k)) (hr := h_run (seg k))
+        · intro j h_j ; simp [SuffixFrom, h_as'_k j h_j]
+        · simp
+      · exact h_acc (seg k)
+      · simp [ss]
+      · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
+      · intro j h_j_1 h_j_0
+        have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by sorry
+        have h_j_3 : seg (j + φ (seg k)) = seg j := by sorry
+        simp [ss, h_j_2, h_j_3]
+        have h_j_4 : seg k = seg j := by sorry
+        simp [h_j_4]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
       simp [Nat.frequently_atTop_iff_infinite, h_uset, h_inf]
