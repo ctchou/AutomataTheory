@@ -226,10 +226,9 @@ theorem accepted_omega_lang_loop :
       · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
       · intro j h_j_1 h_j_0
         have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by sorry
-        have h_j_3 : seg (j + φ (seg k)) = seg j := by sorry
-        simp [ss, h_j_2, h_j_3]
-        have h_j_4 : seg k = seg j := by sorry
-        simp [h_j_4]
+        have h_j_3 : seg (j + φ (seg k)) = seg (seg k) := by sorry
+        have h_j_4 : seg (seg k) = seg k := by sorry
+        simp [ss, h_j_2, h_j_3, h_j_4]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
       simp [Nat.frequently_atTop_iff_infinite, h_uset, h_inf]
