@@ -167,40 +167,61 @@ noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
 
 variable {φ : ℕ → ℕ}
 
-theorem strict_mono_is_nth (hm : StrictMono φ) (h0 : φ 0 = 0) (n : ℕ) :
+theorem strict_mono_infinite (hm : StrictMono φ) :
+    (setOf (range φ)).Infinite := by
+  have h_inf := Set.infinite_range_iff <| StrictMono.injective hm
+  simp [setOf, h_inf, instInfiniteNat]
+
+theorem nth_of_strict_mono (hm : StrictMono φ) (n : ℕ) :
     φ n = Nat.nth (range φ) n := by
   sorry
 
+theorem count_out_range_pos (h0 : φ 0 = 0) (n : ℕ) (hn : ¬ range φ n) :
+    Nat.count (range φ) n > 0 := by
+  have h0 : range φ 0 := by
+    suffices h0' : 0 ∈ range φ by exact h0'
+    use 0
+  have h1 : n ≠ 0 := by rintro ⟨rfl⟩ ; contradiction
+  have h2 : 1 ≤ n := by omega
+  have h3 := Nat.count_monotone (range φ) h2
+  simp [Nat.count_succ, h0] at h3
+  omega
+
 theorem segment_zero : Segment φ 0 = 0 := by simp [Segment]
 
-theorem segment_plus_one (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+theorem segment_plus_one (h0 : φ 0 = 0) (k : ℕ) :
     Segment φ k + 1 = Nat.count (range φ) (k + 1) := by
   rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, Nat.count_succ, h_k]
   suffices _ : Nat.count (range φ) k > 0 by omega
-  sorry
+  exact count_out_range_pos h0 k h_k
 
 theorem segment_upper_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
     k < φ (Segment φ k + 1) := by
-  rw [strict_mono_is_nth hm h0 (Segment φ k + 1), segment_plus_one hm h0 k]
+  rw [nth_of_strict_mono hm (Segment φ k + 1), segment_plus_one h0 k]
   suffices _ : k + 1 ≤ Nat.nth (range φ) (Nat.count (range φ) (k + 1)) by omega
   apply Nat.le_nth_count
-  sorry
+  exact strict_mono_infinite hm
 
 theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
     φ (Segment φ k) ≤ k := by
-  rw [strict_mono_is_nth hm h0 (Segment φ k)]
+  rw [nth_of_strict_mono hm (Segment φ k)]
   rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, h_k]
   suffices _ : Nat.nth (range φ) (Nat.count (range φ) k - 1) < k by omega
   apply Nat.nth_lt_of_lt_count
-  have : Nat.count (range φ) k > 0 := by sorry
+  have : Nat.count (range φ) k > 0 := by exact count_out_range_pos h0 k h_k
   omega
+
+theorem segment_nth_gap (hm : StrictMono φ) {k n : ℕ}
+    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : ¬ range φ n := by
+  rw [nth_of_strict_mono hm (Segment φ k)] at hl
+  rw [nth_of_strict_mono hm (Segment φ k + 1)] at hu
+  have h_inf := strict_mono_infinite hm
+  have h_gap := nat_nth_gap h_inf (Segment φ k) (n - Nat.nth (range φ) (Segment φ k)) (by omega) (by omega)
+  simp [(show n - Nat.nth (range φ) (Segment φ k) + Nat.nth (range φ) (Segment φ k) = n by omega)] at h_gap
+  exact h_gap
 
 example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
     (hl : φ (Segment φ k) ≤ n) (hu : n < φ (Segment φ k + 1)) : Segment φ n = Segment φ k := by
-  sorry
-
-example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
-    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
   sorry
 
 theorem accepted_omega_lang_loop :
@@ -244,8 +265,8 @@ theorem accepted_omega_lang_loop :
     · have h_0' : ∃ k, φ k = 0 := by use 0
       simp [ss, h_0', AutomataLoop]
     · intro k
-      have h_seg_k : φ (seg k) ≤ k := by sorry
-      have h_seg_k1 : k < φ (seg k + 1) := by sorry
+      have h_seg_k : φ (seg k) ≤ k := by exact segment_lower_bound h_mono h_0 k
+      have h_seg_k1 : k < φ (seg k + 1) := by exact segment_upper_bound h_mono h_0 k
       have h_mono_k : φ (seg k + 1) - φ (seg k) > 0 := by omega
       suffices h_lhs :
           FinRun (AutomataLoop M acc) (φ (seg k + 1) - φ (seg k)) (SuffixFrom (φ (seg k)) as) (SuffixFrom (φ (seg k)) ss) ∧
@@ -266,14 +287,14 @@ theorem accepted_omega_lang_loop :
       · simp [ss]
       · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
       · intro j h_j_1 h_j_0
-        have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by sorry
+        have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by
+          exact segment_nth_gap h_mono (show φ (seg k) < j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
         have h_j_3 : seg (j + φ (seg k)) = seg (φ (seg k)) := by sorry
         have h_j_4 : seg (φ (seg k)) = seg k := by sorry
         simp [ss, h_j_2, h_j_3, h_j_4]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
-      have h_inf := Set.infinite_range_iff <| StrictMono.injective h_mono
-      simp [Nat.frequently_atTop_iff_infinite, h_uset, h_inf]
-      exact instInfiniteNat
+      simp [Nat.frequently_atTop_iff_infinite, h_uset]
+      exact strict_mono_infinite h_mono
 
 section DeprecatedLoop
 
