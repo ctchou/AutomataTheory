@@ -211,7 +211,7 @@ theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
   have : Nat.count (· ∈ range φ) k > 0 := by exact count_out_range_pos h0 k h_k
   omega
 
-theorem segment_nth_gap (hm : StrictMono φ) {k n : ℕ}
+theorem segment_range_gap (hm : StrictMono φ) {k n : ℕ}
     (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
   rw [nth_of_strict_mono hm (Segment φ k)] at hl
   rw [nth_of_strict_mono hm (Segment φ k + 1)] at hu
@@ -220,7 +220,7 @@ theorem segment_nth_gap (hm : StrictMono φ) {k n : ℕ}
   rw [(show n - Nat.nth (· ∈ range φ) (Segment φ k) + Nat.nth (· ∈ range φ) (Segment φ k) = n by omega)] at h_gap
   exact h_gap
 
-example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
+theorem segment_range_val (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
     (hl : φ (Segment φ k) ≤ n) (hu : n < φ (Segment φ k + 1)) : Segment φ n = Segment φ k := by
   sorry
 
@@ -288,10 +288,10 @@ theorem accepted_omega_lang_loop :
       · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
       · intro j h_j_1 h_j_0
         have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by
-          exact segment_nth_gap h_mono (show φ (seg k) < j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
-        have h_j_3 : seg (j + φ (seg k)) = seg (φ (seg k)) := by sorry
-        have h_j_4 : seg (φ (seg k)) = seg k := by sorry
-        simp [ss, h_j_2, h_j_3, h_j_4]
+          exact segment_range_gap h_mono (show φ (seg k) < j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
+        have h_j_3 : seg (j + φ (seg k)) = seg k := by
+          exact segment_range_val h_mono h_0 (show φ (seg k) ≤ j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
+        simp [ss, h_j_2, h_j_3]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       simp [Nat.frequently_atTop_iff_infinite, h_uset]
       exact strict_mono_infinite h_mono
