@@ -163,61 +163,61 @@ theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → 
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
 noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
-  if range φ k then Nat.count (range φ) k else Nat.count (range φ) k - 1
+  if k ∈ range φ then Nat.count (· ∈ range φ) k else Nat.count (· ∈ range φ) k - 1
 
 variable {φ : ℕ → ℕ}
 
 theorem strict_mono_infinite (hm : StrictMono φ) :
-    (setOf (range φ)).Infinite := by
-  have h_inf := Set.infinite_range_iff <| StrictMono.injective hm
-  simp [setOf, h_inf, instInfiniteNat]
+    (range φ).Infinite := by
+  exact infinite_range_of_injective hm.injective
 
+-- The following proof is due to Kyle Miller.
 theorem nth_of_strict_mono (hm : StrictMono φ) (n : ℕ) :
-    φ n = Nat.nth (range φ) n := by
-  sorry
+    φ n = Nat.nth (· ∈ range φ) n := by
+  rw [← Nat.nth_comp_of_strictMono hm (by simp)]
+  · simp
+  intro hf ; exfalso
+  have : (range φ).Infinite := strict_mono_infinite hm
+  exact absurd hf this
 
-theorem count_out_range_pos (h0 : φ 0 = 0) (n : ℕ) (hn : ¬ range φ n) :
-    Nat.count (range φ) n > 0 := by
-  have h0 : range φ 0 := by
-    suffices h0' : 0 ∈ range φ by exact h0'
-    use 0
+theorem count_out_range_pos (h0 : φ 0 = 0) (n : ℕ) (hn : n ∉ range φ) :
+    Nat.count (· ∈ range φ) n > 0 := by
+  have h0' : 0 ∈ range φ := by use 0
   have h1 : n ≠ 0 := by rintro ⟨rfl⟩ ; contradiction
   have h2 : 1 ≤ n := by omega
-  have h3 := Nat.count_monotone (range φ) h2
-  simp [Nat.count_succ, h0] at h3
+  have h3 := Nat.count_monotone (· ∈ range φ) h2
+  simp [Nat.count_succ, h0', -mem_range] at h3 ⊢
   omega
 
-theorem segment_zero : Segment φ 0 = 0 := by simp [Segment]
-
 theorem segment_plus_one (h0 : φ 0 = 0) (k : ℕ) :
-    Segment φ k + 1 = Nat.count (range φ) (k + 1) := by
-  rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, Nat.count_succ, h_k]
-  suffices _ : Nat.count (range φ) k > 0 by omega
+    Segment φ k + 1 = Nat.count (· ∈ range φ) (k + 1) := by
+  rcases Classical.em (k ∈ range φ) with h_k | h_k <;> simp [Segment, Nat.count_succ, h_k, -mem_range]
+  suffices _ : Nat.count (· ∈ range φ) k > 0 by omega
   exact count_out_range_pos h0 k h_k
 
 theorem segment_upper_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
     k < φ (Segment φ k + 1) := by
   rw [nth_of_strict_mono hm (Segment φ k + 1), segment_plus_one h0 k]
-  suffices _ : k + 1 ≤ Nat.nth (range φ) (Nat.count (range φ) (k + 1)) by omega
+  suffices _ : k + 1 ≤ Nat.nth (· ∈ range φ) (Nat.count (· ∈ range φ) (k + 1)) by omega
   apply Nat.le_nth_count
   exact strict_mono_infinite hm
 
 theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
     φ (Segment φ k) ≤ k := by
   rw [nth_of_strict_mono hm (Segment φ k)]
-  rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, h_k]
-  suffices _ : Nat.nth (range φ) (Nat.count (range φ) k - 1) < k by omega
+  rcases Classical.em (k ∈ range φ) with h_k | h_k <;> simp [Segment, h_k, -mem_range]
+  suffices _ : Nat.nth (· ∈ range φ) (Nat.count (· ∈ range φ) k - 1) < k by omega
   apply Nat.nth_lt_of_lt_count
-  have : Nat.count (range φ) k > 0 := by exact count_out_range_pos h0 k h_k
+  have : Nat.count (· ∈ range φ) k > 0 := by exact count_out_range_pos h0 k h_k
   omega
 
 theorem segment_nth_gap (hm : StrictMono φ) {k n : ℕ}
-    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : ¬ range φ n := by
+    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
   rw [nth_of_strict_mono hm (Segment φ k)] at hl
   rw [nth_of_strict_mono hm (Segment φ k + 1)] at hu
   have h_inf := strict_mono_infinite hm
-  have h_gap := nat_nth_gap h_inf (Segment φ k) (n - Nat.nth (range φ) (Segment φ k)) (by omega) (by omega)
-  simp [(show n - Nat.nth (range φ) (Segment φ k) + Nat.nth (range φ) (Segment φ k) = n by omega)] at h_gap
+  have h_gap := nat_nth_gap (p := (· ∈ range φ)) h_inf (Segment φ k) (n - Nat.nth (· ∈ range φ) (Segment φ k)) (by omega) (by omega)
+  rw [(show n - Nat.nth (· ∈ range φ) (Segment φ k) + Nat.nth (· ∈ range φ) (Segment φ k) = n by omega)] at h_gap
   exact h_gap
 
 example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
