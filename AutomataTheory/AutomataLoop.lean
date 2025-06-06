@@ -162,20 +162,45 @@ theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → 
   intro k h_k ; specialize h_next k h_k
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
-noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) := Nat.count (range φ) (k + 1) - 1
+noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
+  if range φ k then Nat.count (range φ) k else Nat.count (range φ) k - 1
 
 variable {φ : ℕ → ℕ}
 
-example (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
-    φ (Segment φ k) ≤ k ∧ k < φ (Segment φ k + 1) := by
+theorem strict_mono_is_nth (hm : StrictMono φ) (h0 : φ 0 = 0) (n : ℕ) :
+    φ n = Nat.nth (range φ) n := by
   sorry
+
+theorem segment_zero : Segment φ 0 = 0 := by simp [Segment]
+
+theorem segment_plus_one (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    Segment φ k + 1 = Nat.count (range φ) (k + 1) := by
+  rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, Nat.count_succ, h_k]
+  suffices _ : Nat.count (range φ) k > 0 by omega
+  sorry
+
+theorem segment_upper_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    k < φ (Segment φ k + 1) := by
+  rw [strict_mono_is_nth hm h0 (Segment φ k + 1), segment_plus_one hm h0 k]
+  suffices _ : k + 1 ≤ Nat.nth (range φ) (Nat.count (range φ) (k + 1)) by omega
+  apply Nat.le_nth_count
+  sorry
+
+theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    φ (Segment φ k) ≤ k := by
+  rw [strict_mono_is_nth hm h0 (Segment φ k)]
+  rcases Classical.em (range φ k) with h_k | h_k <;> simp [Segment, h_k]
+  suffices _ : Nat.nth (range φ) (Nat.count (range φ) k - 1) < k by omega
+  apply Nat.nth_lt_of_lt_count
+  have : Nat.count (range φ) k > 0 := by sorry
+  omega
 
 example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
     (hl : φ (Segment φ k) ≤ n) (hu : n < φ (Segment φ k + 1)) : Segment φ n = Segment φ k := by
   sorry
 
 example (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
-    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : ¬ ∃ m, φ m = n := by
+    (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
   sorry
 
 theorem accepted_omega_lang_loop :
