@@ -211,7 +211,7 @@ theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
   have : Nat.count (· ∈ range φ) k > 0 := by exact count_out_range_pos h0 k h_k
   omega
 
-theorem segment_idem' (hm : StrictMono φ) (k : ℕ) :
+theorem segment_idem (hm : StrictMono φ) (k : ℕ) :
     Segment φ (φ k) = k := by
   have h_rng : φ k ∈ range φ := by simp
   rw [Segment] ; simp [h_rng, -mem_range]
@@ -219,7 +219,7 @@ theorem segment_idem' (hm : StrictMono φ) (k : ℕ) :
   have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
   rw [h_eq]
 
-theorem segment_range_gap' (hm : StrictMono φ) {m k : ℕ}
+theorem segment_range_gap (hm : StrictMono φ) {m k : ℕ}
     (hl : φ m < k) (hu : k < φ (m + 1)) : k ∉ range φ := by
   rw [nth_of_strict_mono hm m] at hl
   rw [nth_of_strict_mono hm (m + 1)] at hu
@@ -228,57 +228,25 @@ theorem segment_range_gap' (hm : StrictMono φ) {m k : ℕ}
   rw [(show k - Nat.nth (· ∈ range φ) m + Nat.nth (· ∈ range φ) m = k by omega)] at h_gap
   exact h_gap
 
-theorem segment_range_val' (hm : StrictMono φ) {m k : ℕ}
+theorem segment_range_val (hm : StrictMono φ) {m k : ℕ}
     (hl : φ m ≤ k) (hu : k < φ (m + 1)) : Segment φ k = m := by
   obtain (rfl | hu') := show φ m = k ∨ φ m < k by omega
-  · exact segment_idem' hm m
+  · exact segment_idem hm m
   obtain ⟨j, h_j, rfl⟩ := show ∃ j < φ (m + 1) - φ m - 1, k = j + φ m + 1 by use (k - φ m - 1) ; omega
   induction' j with j h_ind
   · have h1 : φ m ∈ range φ := by use m
-    have h2 : φ m + 1 ∉ range φ := by apply segment_range_gap' hm (show φ m < φ m + 1 by omega) ; omega
+    have h2 : φ m + 1 ∉ range φ := by apply segment_range_gap hm (show φ m < φ m + 1 by omega) ; omega
     have h3 := nth_of_strict_mono hm m
     rw [Segment] ; simp [h1, h2, Nat.count_succ, -mem_range] ; rw [h3]
     have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
     rw [h_eq]
   have h_ind' := h_ind (by omega) (by omega) (by omega) (by omega)
-  have h1 : j + 1 + φ m ∉ range φ := by apply segment_range_gap' hm (show φ m < j + 1 + φ m by omega) ; omega
-  have h2 : j + 1 + φ m + 1 ∉ range φ := by apply segment_range_gap' hm (show φ m < j + 1 + φ m + 1 by omega) ; omega
+  have h1 : j + 1 + φ m ∉ range φ := by apply segment_range_gap hm (show φ m < j + 1 + φ m by omega) ; omega
+  have h2 : j + 1 + φ m + 1 ∉ range φ := by apply segment_range_gap hm (show φ m < j + 1 + φ m + 1 by omega) ; omega
   rw [Segment] at h_ind' ⊢
   simp [h1, (show j + φ m + 1 = j + 1 + φ m by omega), -mem_range] at h_ind'
   simp [h1, h2, Nat.count_succ, -mem_range]
   exact h_ind'
-
--- theorem segment_idem (hm : StrictMono φ) (k : ℕ) :
---     Segment φ (φ (Segment φ k)) = Segment φ k := by
---   have h_rng : φ (Segment φ k) ∈ range φ := by simp
---   rw [Segment] ; simp [h_rng, -mem_range]
---   rw [nth_of_strict_mono hm]
---   have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
---   rw [h_eq]
-
--- theorem segment_range_gap (hm : StrictMono φ) {k n : ℕ}
---     (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
---   rw [nth_of_strict_mono hm (Segment φ k)] at hl
---   rw [nth_of_strict_mono hm (Segment φ k + 1)] at hu
---   have h_inf := strict_mono_infinite hm
---   have h_gap := nth_succ_gap (p := (· ∈ range φ)) h_inf (Segment φ k) (n - Nat.nth (· ∈ range φ) (Segment φ k)) (by omega) (by omega)
---   rw [(show n - Nat.nth (· ∈ range φ) (Segment φ k) + Nat.nth (· ∈ range φ) (Segment φ k) = n by omega)] at h_gap
---   exact h_gap
-
--- theorem segment_range_val (hm : StrictMono φ) (h0 : φ 0 = 0) {k n : ℕ}
---     (hl : φ (Segment φ k) ≤ n) (hu : n < φ (Segment φ k + 1)) : Segment φ n = Segment φ k := by
---   obtain (rfl | hu') := show φ (Segment φ k) = n ∨ φ (Segment φ k) < n by omega
---   · simp [segment_idem hm k]
---   obtain ⟨m, h_m, rfl⟩ := show ∃ m < φ (Segment φ k + 1) - φ (Segment φ k) - 1, n = m + φ (Segment φ k) + 1 by
---     use (n - φ (Segment φ k) - 1) ; omega
---   induction' m with m h_ind
---   · have hl1 : φ (Segment φ k) ∈ range φ := by use (Segment φ k)
---     have hl2 : φ (Segment φ k) + 1 ∉ range φ := by
---       apply segment_range_gap hm (show φ (Segment φ k) < φ (Segment φ k) + 1 by omega) ; omega
---     simp
---     rw [Segment] ; simp [hl1, hl2, Nat.count_succ, -mem_range]
---     sorry
---   sorry
 
 theorem accepted_omega_lang_loop :
     AcceptedOmegaLang (AutomataLoop M acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
@@ -344,9 +312,9 @@ theorem accepted_omega_lang_loop :
       · simp [ss, (show len (seg k) + φ (seg k) = φ (seg k + 1) by omega)]
       · intro j h_j_1 h_j_0
         have h_j_2 : ¬ ∃ m, φ m = j + φ (seg k) := by
-          exact segment_range_gap' h_mono (show φ (seg k) < j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
+          exact segment_range_gap h_mono (show φ (seg k) < j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
         have h_j_3 : seg (j + φ (seg k)) = seg k := by
-          exact segment_range_val' h_mono (show φ (seg k) ≤ j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
+          exact segment_range_val h_mono (show φ (seg k) ≤ j + φ (seg k) by omega) (show j + φ (seg k) < φ (seg k + 1) by omega)
         simp [ss, h_j_2, h_j_3]
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       simp [Nat.frequently_atTop_iff_infinite, h_uset]
