@@ -136,7 +136,7 @@ theorem accepted_lang_loop :
     AcceptedLang (AutomataLoop M acc) {inl ()} = IterStar (AcceptedLang M acc) := by
   sorry
 
-lemma nat_nth_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
+lemma nth_succ_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
     ∀ k < Nat.nth p (n + 1) - Nat.nth p n, k > 0 → ¬ p (k + Nat.nth p n) := by
   intro k h_k1 h_k0 h_p_k
   let m := Nat.count p (k + Nat.nth p n)
@@ -211,12 +211,20 @@ theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
   have : Nat.count (· ∈ range φ) k > 0 := by exact count_out_range_pos h0 k h_k
   omega
 
+theorem segment_idem (hm : StrictMono φ) {k : ℕ} :
+    Segment φ (φ (Segment φ k)) = Segment φ k := by
+  have h_rng : φ (Segment φ k) ∈ range φ := by simp
+  rw [Segment] ; simp [h_rng, -mem_range]
+  rw [nth_of_strict_mono hm]
+  have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
+  rw [h_eq]
+
 theorem segment_range_gap (hm : StrictMono φ) {k n : ℕ}
     (hl : φ (Segment φ k) < n) (hu : n < φ (Segment φ k + 1)) : n ∉ range φ := by
   rw [nth_of_strict_mono hm (Segment φ k)] at hl
   rw [nth_of_strict_mono hm (Segment φ k + 1)] at hu
   have h_inf := strict_mono_infinite hm
-  have h_gap := nat_nth_gap (p := (· ∈ range φ)) h_inf (Segment φ k) (n - Nat.nth (· ∈ range φ) (Segment φ k)) (by omega) (by omega)
+  have h_gap := nth_succ_gap (p := (· ∈ range φ)) h_inf (Segment φ k) (n - Nat.nth (· ∈ range φ) (Segment φ k)) (by omega) (by omega)
   rw [(show n - Nat.nth (· ∈ range φ) (Segment φ k) + Nat.nth (· ∈ range φ) (Segment φ k) = n by omega)] at h_gap
   exact h_gap
 
@@ -250,7 +258,7 @@ theorem accepted_omega_lang_loop :
           apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
         have h_inr : ∀ k < φ (m + 1) - φ m, k > 0 → ss1 k ∈ range inr := by
           intro k h_k1 h_k0
-          obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nat_nth_gap h_inf m k h_k1 h_k0
+          obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nth_succ_gap h_inf m k h_k1 h_k0
           simp ; use s' ; symm ; exact h_s'
         obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
