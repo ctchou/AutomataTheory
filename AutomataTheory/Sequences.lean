@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Algebra.Order.Group.Nat
-import Mathlib.Data.List.Basic
-import Mathlib.Data.List.OfFn
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Nat.Nth
 import Mathlib.Order.Filter.AtTopBot.Basic
 
 open Function Set Filter
@@ -31,7 +31,17 @@ def Step {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
 def LeadsTo {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
   ∀ k, xs k ∈ p → ∃ k' ≥ k, xs k' ∈ q
 
-variable {X : Type*} {xl : List X} {xs : ℕ → X}
+variable {X : Type*} {xl : List X} {xs xs' : ℕ → X}
+
+theorem ofFn_eq_ofFn {m n n' : ℕ}
+    (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
+    m - n = n' ∧ ∀ k < n', xs (k + n) = xs' k := by
+  simp [List.ofFn_inj'] at h
+  obtain ⟨rfl, h'⟩ := h
+  simp [funext_iff, Fin.forall_iff] at h'
+  simp ; intro k h_k
+  specialize h' k h_k
+  simp [h']
 
 theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n < m) :
     (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
@@ -133,3 +143,104 @@ theorem frequently_leads_to_frequently {p q : Set X}
   · assumption
 
 end Sequences
+
+section Segments
+
+open Classical
+
+noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
+  if k ∈ range φ then Nat.count (· ∈ range φ) k else Nat.count (· ∈ range φ) k - 1
+
+variable {φ : ℕ → ℕ}
+
+lemma nth_succ_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
+    ∀ k < Nat.nth p (n + 1) - Nat.nth p n, k > 0 → ¬ p (k + Nat.nth p n) := by
+  intro k h_k1 h_k0 h_p_k
+  let m := Nat.count p (k + Nat.nth p n)
+  have h_k_ex : Nat.nth p m = k + Nat.nth p n := by simp [m, Nat.nth_count h_p_k]
+  have h_n_m : n < m := by apply (Nat.nth_lt_nth hf).mp ; omega
+  have h_m_n : m < n + 1 := by apply (Nat.nth_lt_nth hf).mp ; omega
+  omega
+
+theorem strict_mono_infinite (hm : StrictMono φ) :
+    (range φ).Infinite := by
+  exact infinite_range_of_injective hm.injective
+
+-- The following proof is due to Kyle Miller.
+theorem nth_of_strict_mono (hm : StrictMono φ) (n : ℕ) :
+    φ n = Nat.nth (· ∈ range φ) n := by
+  rw [← Nat.nth_comp_of_strictMono hm (by simp)]
+  · simp
+  intro hf ; exfalso
+  have : (range φ).Infinite := strict_mono_infinite hm
+  exact absurd hf this
+
+theorem count_out_range_pos (h0 : φ 0 = 0) (n : ℕ) (hn : n ∉ range φ) :
+    Nat.count (· ∈ range φ) n > 0 := by
+  have h0' : 0 ∈ range φ := by use 0
+  have h1 : n ≠ 0 := by rintro ⟨rfl⟩ ; contradiction
+  have h2 : 1 ≤ n := by omega
+  have h3 := Nat.count_monotone (· ∈ range φ) h2
+  simp [Nat.count_succ, h0', -mem_range] at h3 ⊢
+  omega
+
+theorem segment_plus_one (h0 : φ 0 = 0) (k : ℕ) :
+    Segment φ k + 1 = Nat.count (· ∈ range φ) (k + 1) := by
+  rcases Classical.em (k ∈ range φ) with h_k | h_k <;> simp [Segment, Nat.count_succ, h_k, -mem_range]
+  suffices _ : Nat.count (· ∈ range φ) k > 0 by omega
+  exact count_out_range_pos h0 k h_k
+
+theorem segment_upper_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    k < φ (Segment φ k + 1) := by
+  rw [nth_of_strict_mono hm (Segment φ k + 1), segment_plus_one h0 k]
+  suffices _ : k + 1 ≤ Nat.nth (· ∈ range φ) (Nat.count (· ∈ range φ) (k + 1)) by omega
+  apply Nat.le_nth_count
+  exact strict_mono_infinite hm
+
+theorem segment_lower_bound (hm : StrictMono φ) (h0 : φ 0 = 0) (k : ℕ) :
+    φ (Segment φ k) ≤ k := by
+  rw [nth_of_strict_mono hm (Segment φ k)]
+  rcases Classical.em (k ∈ range φ) with h_k | h_k <;> simp [Segment, h_k, -mem_range]
+  suffices _ : Nat.nth (· ∈ range φ) (Nat.count (· ∈ range φ) k - 1) < k by omega
+  apply Nat.nth_lt_of_lt_count
+  have : Nat.count (· ∈ range φ) k > 0 := by exact count_out_range_pos h0 k h_k
+  omega
+
+theorem segment_idem (hm : StrictMono φ) (k : ℕ) :
+    Segment φ (φ k) = k := by
+  have h_rng : φ k ∈ range φ := by simp
+  rw [Segment] ; simp [h_rng, -mem_range]
+  rw [nth_of_strict_mono hm]
+  have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
+  rw [h_eq]
+
+theorem segment_range_gap (hm : StrictMono φ) {m k : ℕ}
+    (hl : φ m < k) (hu : k < φ (m + 1)) : k ∉ range φ := by
+  rw [nth_of_strict_mono hm m] at hl
+  rw [nth_of_strict_mono hm (m + 1)] at hu
+  have h_inf := strict_mono_infinite hm
+  have h_gap := nth_succ_gap (p := (· ∈ range φ)) h_inf m (k - Nat.nth (· ∈ range φ) m) (by omega) (by omega)
+  rw [(show k - Nat.nth (· ∈ range φ) m + Nat.nth (· ∈ range φ) m = k by omega)] at h_gap
+  exact h_gap
+
+theorem segment_range_val (hm : StrictMono φ) {m k : ℕ}
+    (hl : φ m ≤ k) (hu : k < φ (m + 1)) : Segment φ k = m := by
+  obtain (rfl | hu') := show φ m = k ∨ φ m < k by omega
+  · exact segment_idem hm m
+  obtain ⟨j, h_j, rfl⟩ := show ∃ j < φ (m + 1) - φ m - 1, k = j + φ m + 1 by use (k - φ m - 1) ; omega
+  induction' j with j h_ind
+  · have h1 : φ m ∈ range φ := by use m
+    have h2 : φ m + 1 ∉ range φ := by apply segment_range_gap hm (show φ m < φ m + 1 by omega) ; omega
+    have h3 := nth_of_strict_mono hm m
+    rw [Segment] ; simp [h1, h2, Nat.count_succ, -mem_range] ; rw [h3]
+    have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
+    rw [h_eq]
+  have h_ind' := h_ind (by omega) (by omega) (by omega) (by omega)
+  have h1 : j + 1 + φ m ∉ range φ := by apply segment_range_gap hm (show φ m < j + 1 + φ m by omega) ; omega
+  have h2 : j + 1 + φ m + 1 ∉ range φ := by apply segment_range_gap hm (show φ m < j + 1 + φ m + 1 by omega) ; omega
+  rw [Segment] at h_ind' ⊢
+  simp [h1, (show j + φ m + 1 = j + 1 + φ m by omega), -mem_range] at h_ind'
+  simp [h1, h2, Nat.count_succ, -mem_range]
+  exact h_ind'
+
+end Segments

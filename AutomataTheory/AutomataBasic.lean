@@ -138,6 +138,13 @@ theorem automata_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss :
   simp [FixSuffix, h_k, (by omega : k < n + 1)]
   exact h_next k h_k
 
+theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → M.State}
+    (ha : ∀ k < n, as k = as' k) (hs : ∀ k < n + 1, ss k = ss' k) (hr : FinRun M n as ss) : FinRun M n as' ss' := by
+  rcases hr with ⟨h_init, h_next⟩ ; constructor
+  · simpa [← hs]
+  intro k h_k ; specialize h_next k h_k
+  simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
+
 theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
     InfRun M as ss ↔ ∀ n, FinRun M n as ss := by
   constructor
