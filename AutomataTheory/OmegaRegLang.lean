@@ -61,4 +61,12 @@ theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
   · exact Finite.instSum
   · simp [h_l0, h_l1, accepted_omega_lang_concat]
 
+theorem omega_reg_lang_iter {L : Set (List A)}
+    (h : RegLang L) : OmegaRegLang (IterOmega L) := by
+  obtain ⟨M, acc, h_fin, h_l⟩ := h
+  use (AutomataLoop M acc), {inl ()}
+  constructor
+  · exact Finite.instSum
+  · simp [h_l, accepted_omega_lang_loop]
+
 end OmegaRegLang

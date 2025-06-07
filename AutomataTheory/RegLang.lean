@@ -12,6 +12,7 @@ import AutomataTheory.AutomataSum
 import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataPSet
 import AutomataTheory.AutomataConcat
+import AutomataTheory.AutomataLoop
 
 open Function Set Filter Sum
 
