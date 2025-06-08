@@ -51,6 +51,14 @@ theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n < m) :
   rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
   simp [(by omega : k - n + n = k)]
 
+theorem ofFn_of_append_ofFn_oFn' {m n : ℕ} (h : n ≤ m) :
+    (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
+  ext k x
+  simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
+  intro h_k_m
+  rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
+  simp [(by omega : k - n + n = k)]
+
 theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
     xs = AppendListInf (List.ofFn fun k : Fin n ↦ xs ↑k) (SuffixFrom n xs) := by
   ext k ; simp [AppendListInf, SuffixFrom]

@@ -145,6 +145,12 @@ theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → 
   intro k h_k ; specialize h_next k h_k
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
+theorem automata_FinRun_imp_FinRun {m n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+    (hmn : m < n) (hr : FinRun M n as ss) : FinRun M m as ss := by
+  constructor
+  · exact hr.1
+  intro k h_k ; exact hr.2 k (by omega)
+
 theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
     InfRun M as ss ↔ ∀ n, FinRun M n as ss := by
   constructor
