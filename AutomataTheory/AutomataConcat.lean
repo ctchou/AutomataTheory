@@ -301,7 +301,7 @@ theorem accepted_lang_concat_ne :
           simpa [← inr.inj h_s1]
         · ext k a ; simp [SuffixFrom]
       · simp ; omega
-    · rw [h_al, ← ofFn_of_append_ofFn_oFn h_n]
+    · rw [h_al, ← ofFn_of_append_ofFn_oFn (show n ≤ m by omega)]
   . rintro ⟨al0, al1, h_al0, h_al1, h_al⟩
     obtain ⟨h_al1, h_al1_ne⟩ := h_al1
     simp at h_al1_ne
@@ -332,7 +332,7 @@ theorem accepted_lang_concat_ne :
           · simp [ss] ; omega
       · use (ss1 m)
         simp [h_acc1, h_ss_nm]
-    · rw [h_al, ofFn_of_append_ofFn_oFn (by omega : n < n + m)] ; congr
+    · rw [h_al, ofFn_of_append_ofFn_oFn (by omega : n ≤ n + m)] ; congr
       · simp [as, h_al0]
       · simp [as, h_al1]
 

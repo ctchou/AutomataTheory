@@ -134,7 +134,7 @@ theorem accepted_lang_loop_concat :
   rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, h_al1⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, h_al2⟩, rfl⟩
   let as k := if k < n1 then as1 k else as2 (k - n1)
   use (n1 + n2), as ; symm ; constructor
-  · simp [ofFn_of_append_ofFn_oFn' (xs := as) (show n1 ≤ n1 + n2 by omega), as, h_al1, h_al2]
+  · simp [ofFn_of_append_ofFn_oFn (xs := as) (show n1 ≤ n1 + n2 by omega), as, h_al1, h_al2]
   let ss k := if k < n1 then ss1 k else ss2 (k - n1)
   use ss ; symm ; constructor
   · simp at h_acc2 ; simp [ss, h_acc2]
@@ -194,7 +194,7 @@ theorem accepted_lang_loop [Inhabited A] :
       use al', al'' ; constructorm* _ ∧ _
       · exact h_j
       · use (n - m), (SuffixFrom m as) ; simp [al'', SuffixFrom] ; use ss''
-      · simp [h_al, al', al'', ofFn_of_append_ofFn_oFn (show m < n by omega)]
+      · simp [h_al, al', al'', ofFn_of_append_ofFn_oFn (show m ≤ n by omega)]
     · rcases (show n = 0 ∨ n > 0 by omega) with h_n | h_n
       · obtain ⟨rfl⟩ := h_n ; simp at h_al
         use 0 ; simp [h_al, IterFin]

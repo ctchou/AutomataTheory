@@ -43,15 +43,7 @@ theorem ofFn_eq_ofFn {m n n' : ℕ}
   specialize h' k h_k
   simp [h']
 
-theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n < m) :
-    (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
-  ext k x
-  simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
-  intro h_k_m
-  rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
-  simp [(by omega : k - n + n = k)]
-
-theorem ofFn_of_append_ofFn_oFn' {m n : ℕ} (h : n ≤ m) :
+theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
     (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
   ext k x
   simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
