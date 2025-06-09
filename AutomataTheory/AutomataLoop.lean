@@ -34,19 +34,7 @@ private lemma not_inl_unit {s : (AutomataLoop M acc).State} :
     simp [h_s] at h1
   · rintro ⟨s', h_s'⟩ ; simp [h_s']
 
-theorem automata_loop_fin_run_0 {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} :
-    FinRun (AutomataLoop M acc) 0 as ss ∧ (∃ s0 ∈ M.init, s0 ∈ acc) ↔
-    ∃ ss', FinRun M 0 as ss' ∧ ss' 0 ∈ acc ∧ ss 0 = inl () := by
-  constructor
-  · rintro ⟨⟨h_init, _⟩, s0, h_s0_init, h_s0_acc⟩
-    simp [AutomataLoop] at h_init
-    use (fun k ↦ s0)
-    simp [FinRun, h_s0_init, h_s0_acc, h_init]
-  · rintro ⟨ss', ⟨h_init, _⟩, h_acc, h_inl⟩
-    simp [FinRun, AutomataLoop, h_inl]
-    use (ss' 0)
-
-theorem automata_loop_fin_run_1 {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} (h : n > 0) :
+theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataLoop M acc).State} (h : n > 0) :
     FinRun (AutomataLoop M acc) n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k ∈ range inr) ↔
     ∃ ss', FinRun M n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
   constructor
@@ -59,7 +47,6 @@ theorem automata_loop_fin_run_1 {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automa
       obtain ⟨s0, h_s0, s1, h_acc, h_next⟩ := h_next
       use (fun k ↦ if k = 0 then s0 else if k = 1 then s1 else s0)
       simp [h_init, h_acc, h_inl_n, FinRun, h_s0, h_next]
---    · obtain ⟨s1, _, h_s1⟩ := h_inr 1 h_n (by omega)
     · obtain ⟨s1, h_s1⟩ := h_inr 1 h_n (by omega)
       have h_next_0 := h_next 0 h
       simp [h_init, ← h_s1, AutomataLoop] at h_next_0
@@ -128,7 +115,7 @@ theorem automata_loop_fin_run_exists {n : ℕ} {as : ℕ → A} {ss' : ℕ → M
   · use (fun k ↦ inl ()) ; simp [FinRun, AutomataLoop]
   let ss k := if k = 0 ∨ k = n then inl () else inr (ss' k)
   suffices h : ∃ ss', FinRun M n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) by
-    obtain ⟨h_run, h_ss_n, _⟩ := (automata_loop_fin_run_1 h_n).mpr h
+    obtain ⟨h_run, h_ss_n, _⟩ := (automata_loop_fin_run h_n).mpr h
     use ss ; simp [h_run, h_ss_n]
     intro k h_k_n h_k_0 ; simp [ss] ; omega
   use ss' ; simp [h_run', h_acc', ss] ; omega
@@ -201,7 +188,7 @@ theorem accepted_lang_loop [Inhabited A] :
         simp [loop, -add_pos_iff] at h_not_loop
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_not_loop (by omega) (by omega)
         simp [SuffixFrom] ; use s' ; simp [h_s']
-      obtain ⟨ss'', h_run'', h_acc'', _⟩ := (automata_loop_fin_run_1 h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
+      obtain ⟨ss'', h_run'', h_acc'', _⟩ := (automata_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
       let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
       use (j + 1) ; simp [IterFin]
       use al', al'' ; constructorm* _ ∧ _
@@ -217,7 +204,7 @@ theorem accepted_lang_loop [Inhabited A] :
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_loop k h_k_0 h_k_n
         use s' ; simp [h_s']
       simp at h_acc
-      obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_n).mp ⟨h_run, h_acc, h_inr⟩
+      obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
       use 1 ; simp [IterFin, lang_ConcatFin_epsilon_left]
       use n, as ; simp [h_al]
       use ss'
@@ -264,7 +251,7 @@ theorem accepted_omega_lang_loop :
           intro k h_k1 h_k0
           obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nth_succ_gap h_inf m k h_k1 h_k0
           simp ; use s' ; symm ; exact h_s'
-        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run_1 h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
+        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
       · rw [List.ofFn_inj] ; ext k
         simp [SuffixFrom]
@@ -287,7 +274,7 @@ theorem accepted_omega_lang_loop :
         have h_run_k := h_lhs.1.2 (k - φ (seg k)) (show k - φ (seg k) < φ (seg k + 1) - φ (seg k) by omega)
         simp [SuffixFrom, (show k - φ (seg k) + φ (seg k) = k by omega), (show k - φ (seg k) + 1 + φ (seg k) = k + 1 by omega)] at h_run_k
         exact h_run_k
-      apply (automata_loop_fin_run_1 h_mono_k).mpr
+      apply (automata_loop_fin_run h_mono_k).mpr
       use (ss' (seg k))
       obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
       simp [h_len_k, SuffixFrom]
@@ -307,126 +294,3 @@ theorem accepted_omega_lang_loop :
     · have h_uset : {k | ss k = inl ()} = range φ := by ext k ; simp [ss]
       simp [Nat.frequently_atTop_iff_infinite, h_uset]
       exact strict_mono_infinite h_mono
-
-section DeprecatedLoop
-
-def AutomataLoop' (M : Automaton A) (acc : Set M.State) : Automaton A where
-  State := M.State
-  init := M.init
-  next := fun s a ↦ M.next s a ∪ { s' | s ∈ acc ∧ ∃ s0 ∈ M.init, s' ∈ M.next s0 a }
-
-variable {M : Automaton A} {acc : Set M.State}
-
-theorem automata_loop_fin_accept {m : ℕ} {as : ℕ → A} :
-    FinAccept (AutomataLoop' M acc) acc m as ↔
-    ∃ n > 0, ∃ φ : ℕ → ℕ, Monotone φ ∧ φ 0 = 0 ∧ φ n = m ∧
-      ∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as) := by
-  constructor
-  · rintro ⟨ss, h_run, h_acc⟩
-    induction' m using Nat.strong_induction_on with m h_ind
-    let loop k := k < m ∧ ss (k + 1) ∉ M.next (ss k) (as k)
-    rcases Classical.em (∃ k, loop k) with h_loop | h_loop
-    · have h_m : 0 < m := by omega
-      let m' := Nat.findGreatest loop (m - 1)
-      obtain ⟨h_m', h_notM'⟩ : m' < m ∧ ss (m' + 1) ∉ M.next (ss m') (as m') := by
-        obtain ⟨k, h_k⟩ := h_loop
-        exact Nat.findGreatest_spec (show k ≤ m - 1 by omega) h_k
-      have h_next' := h_run.2 m' h_m'
-      simp [AutomataLoop', h_notM'] at h_next'
-      obtain ⟨h_acc', s0, h_s0_init, h_s0_next⟩ := h_next'
-      have h_accept : FinAccept M acc (m - m') (SuffixFrom m' as) := by
-        use (fun k ↦ if k = 0 then s0 else ss (k + m'))
-        constructor <;> [constructor ; skip]
-        · simpa
-        · intro k h_k
-          rcases Classical.em (k = 0) with h_k' | h_k'
-          · simpa [SuffixFrom, h_k', (show 1 + m' = m' + 1 by omega)]
-          · have h_next : ss (k + m' + 1) ∈ M.next (ss (k + m')) (as (k + m')) := by
-              have h0 := Nat.findGreatest_is_greatest (show m' < k + m' by omega) (by omega)
-              simp [loop, (show k + m' < m by omega)] at h0
-              exact h0
-            simpa [SuffixFrom, h_k', (show k + 1 + m' = k + m' + 1 by omega)]
-        · simpa [(show m - m' ≠ 0 by omega), (show m - m' + m' = m by omega)]
-      have h_run' : FinRun (AutomataLoop' M acc) m' as ss := by
-        constructor
-        · exact h_run.1
-        intro k h_k ; exact h_run.2 k (by omega)
-      obtain ⟨n', h_n', φ', h_mono', h_φ'_0, h_φ'_n', h_accept'⟩ := h_ind m' h_m' h_run' h_acc'
-      use (n' + 1) ; simp [(show n' + 1 > 0 by omega)]
-      use (fun k ↦ if k ≤ n' then φ' k else m)
-      simp [h_φ'_0] ; constructor
-      · apply monotone_nat_of_le_succ ; intro k
-        rcases (show k < n' ∨ k = n' ∨ k > n' by omega) with h_k | h_k | h_k
-        · simp [(show k ≤ n' by omega), (show k + 1 ≤ n' by omega)]
-          exact h_mono' (show k ≤ k + 1 by omega)
-        · simp [h_k, h_φ'_n'] ; omega
-        · simp [(show ¬ k ≤ n' by omega), (show ¬ k + 1 ≤ n' by omega)]
-      · intro k h_k
-        rcases (show k < n' ∨ k = n' by omega) with h_k' | h_k'
-        · simp [(show k ≤ n' by omega), (show k + 1 ≤ n' by omega)]
-          exact h_accept' k h_k'
-        · simpa [h_k', h_φ'_n']
-    · simp [loop] at h_loop
-      use 1 ; simp
-      use (fun k ↦ if k = 0 then 0 else m)
-      constructor
-      · apply monotone_nat_of_le_succ ; intro k
-        rcases (show k = 0 ∨ k ≠ 0 by omega) with h_k | h_k <;> simp [h_k]
-      rcases (show m = 0 ∨ m ≠ 0 by omega) with h_0 | h_1
-      · simp [h_0]
-        use ss ; simp [h_0] at h_acc ; simp [h_acc]
-        constructor
-        · have h_init := h_run.1
-          simp [AutomataLoop'] at h_init
-          exact h_init
-        · simp
-      · simp [h_1]
-        use ss ; simp [h_acc]
-        constructor
-        · have h_init := h_run.1
-          simp [AutomataLoop'] at h_init
-          exact h_init
-        · exact h_loop
-  · rintro ⟨n, h_n, φ, h_mono, h_0', h_φ_n, h_accept⟩
-    revert m
-    induction' n with n h_ind
-    · omega
-    rcases (show n = 0 ∨ n > 0 by omega) with h_n' | h_n'
-    · simp [h_n', h_0'] at h_accept
-      obtain ⟨ss, h_run, h_acc⟩ := h_accept
-      simp [h_n'] ; use ss ; simp [h_acc] ; constructor
-      · exact h_run.1
-      intro k h_k
-      have h_next := h_run.2 k h_k
-      simp [SuffixFrom] at h_next
-      simp [AutomataLoop', h_next]
-    · have h_mono' : φ n ≤ φ (n + 1) := by apply h_mono ; omega
-      have h_accept0 : (∀ k < n, FinAccept M acc (φ (k + 1) - φ k) (SuffixFrom (φ k) as)) := by
-        intro k h_k ; exact h_accept k (by omega)
-      obtain ⟨ss0, h_run0, h_acc0⟩ := h_ind h_n' h_accept0 (rfl)
-      obtain ⟨ss1, h_run1, h_acc1⟩ := h_accept n (by omega)
-      intro m h_m ; rw [← h_m]
-      use (fun k ↦ if k ≤ φ n then ss0 k else ss1 (k - φ n)) ; constructor
-      · constructor
-        · have h_init := h_run0.1
-          simp [h_init]
-        intro k h_k
-        rcases (show k < φ n ∨ k = φ n ∨ k > φ n by omega) with h_k' | h_k' | h_k'
-        · have h_next := h_run0.2 k h_k'
-          simpa [(show k ≤ φ n by omega), (show k + 1 ≤ φ n by omega)]
-        · simp [AutomataLoop', h_k', h_acc0] ; right ; use (ss1 0)
-          have h_init := h_run1.1
-          have h_next := h_run1.2 0 (by omega)
-          simp [SuffixFrom] at h_next
-          simp [h_init, h_next]
-        · have h_next := h_run1.2 (k - φ n) (by omega)
-          simp [SuffixFrom, (show k - φ n + φ n = k by omega),
-                (show k - φ n + 1 = k + 1 - φ n by omega)] at h_next
-          simp [AutomataLoop', h_next,
-                (show ¬ k ≤ φ n by omega), (show ¬ k + 1 ≤ φ n by omega)]
-      · rcases Classical.em (φ (n + 1) ≤ φ n) with h_φ_n | h_φ_n
-        · have h_eq : φ (n + 1) = φ n := by omega
-          simpa [h_φ_n, h_eq]
-        · simpa [h_φ_n]
-
-end DeprecatedLoop
