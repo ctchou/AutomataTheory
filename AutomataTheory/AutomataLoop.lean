@@ -7,6 +7,12 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.Languages
 import AutomataTheory.AutomataBasic
 
+/-!
+The loop construction of an automaton is used to prove that the
+regular language is closed under the Kleene star and the ω-power
+of a regular language is an ω-regular language.
+-/
+
 open Function Set Sum Filter
 open Classical
 

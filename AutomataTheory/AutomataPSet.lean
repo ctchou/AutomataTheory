@@ -6,6 +6,13 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.AutomataDet
 
+/-!
+The powerset construction that converts a nondeterministic automaton
+into a deterministic automaton.  This construction is used to prove
+the closure of regular languages under complementation and works
+even when the state type is infinite.
+-/
+
 open Function Set Filter
 
 section AutomataPSet

@@ -6,6 +6,10 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.AutomataBasic
 
+/-!
+The construction of adding history state to an automaton.
+-/
+
 open Function Set Filter
 
 section AutomataHist

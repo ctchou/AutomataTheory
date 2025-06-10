@@ -6,10 +6,27 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.Sequences
 
+/-!
+Basic definitions and theorems about automata and the acceptance of
+languages and (ω-)languages by automata.
+-/
+
 open Function Set Filter
 
 section AutomatonDefinition
 
+/- Some remarks about the definition of the `Automaton` class:
+* Note that the accepting states are not included as a part of an automaton.
+  This design decision is delibeate and motivated by two facts:
+  (1) There are multiple acceptance conditions for automata on infinite words.
+  (2) Sometimes automata constructions need to treat the accepting states differently
+      depending whether the automaton is working on finite or infinite words.
+  Also note that an automaton is by default nondeterministic.
+* Deterministic automata will be treated as an extension of the `Automaton` class later
+  (see AutomataDet.lean).
+* The ε transition is not used.  It is actually possible to prove the closure of
+  regular languages under concatenation and Kleene star withou using the ε transition。
+-/
 class Automaton (A : Type*) where
   State : Type*
   init : Set State
@@ -104,6 +121,10 @@ end AutomataFiniteRuns
 section AutomataInfiniteRuns
 
 variable {A : Type*}
+
+/-- The Büchi acceptance condition is the main one we use.
+But the Muller, Rabin, and Streett acceptance condtions are also
+included for completeness and possible future use. -/
 
 def InfRun (M : Automaton A) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)

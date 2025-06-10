@@ -7,6 +7,12 @@ Authors: Ching-Tsun Chou
 import Mathlib
 import AutomataTheory.Sequences
 
+/-!
+This file contains some basic definitions and theorems about
+languages (i.e., subsets of `List A`) and ω-languages (i.e., subsets of `ℕ → A`),
+where `A` is the type of "alphabet".
+-/
+
 open Function Set Filter
 
 section Languages

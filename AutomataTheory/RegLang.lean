@@ -14,6 +14,12 @@ import AutomataTheory.AutomataPSet
 import AutomataTheory.AutomataConcat
 import AutomataTheory.AutomataLoop
 
+/-!
+This file proves various closure properties of regular langauges.
+Note that we do require that the automaton accepting a regular language
+to have a finite state type.
+-/
+
 open Function Set Filter Sum
 
 section RegLang

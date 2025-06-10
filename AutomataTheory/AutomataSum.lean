@@ -6,6 +6,13 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.AutomataBasic
 
+/-!
+The indexed sum of automata, which is used to prove the closure of
+regular and ω-regular langauges under union.
+Note that the theorems in this file are true even when the alphabet,
+state, or index types are infinite.
+-/
+
 open Function Set Filter
 
 section AutomataSum

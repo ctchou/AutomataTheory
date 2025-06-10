@@ -7,6 +7,16 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.AutomataHist
 import AutomataTheory.AutomataProd
 
+/-!
+The OI2 [*] construction is used to prove the closure of ω-regular langauges
+under (finite) intersection.  The the new accepting condition uses the 1-bit
+history state to ensure that the accepting states of (M 0) and those of (M 1)
+alternate with each other, so that both occur infinitely often if either occurs
+infinitely often.
+
+[*] "OI2" = "Omega Intersection of 2 automata"
+-/
+
 open Function Set Filter
 
 section AutomataOI2

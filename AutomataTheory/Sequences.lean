@@ -9,6 +9,12 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Data.Nat.Nth
 import Mathlib.Order.Filter.AtTopBot.Basic
 
+/-!
+This file contains some definitions and theorem about finite and infinite sequences,
+which are modeled by objects of types `List X` and `ℕ → X` respectively
+(X being an arbitrary type).
+-/
+
 open Function Set Filter
 
 section Sequences
@@ -148,6 +154,9 @@ section Segments
 
 open Classical
 
+/- Given a strictly monotonic function `φ : ℕ → ℕ` with `φ 0 = 0` and `k : ℕ`,
+`Segment φ k` is the unique `m : ℕ` such that `φ m ≤ k < φ (k + 1)`.
+-/
 noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
   if k ∈ range φ then Nat.count (· ∈ range φ) k else Nat.count (· ∈ range φ) k - 1
 

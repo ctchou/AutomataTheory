@@ -6,6 +6,11 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.AutomataBasic
 
+/-!
+The deterministic automaton class DetAutomaton extends the Automaton class
+by providing unique initial and next states and thus making it deterministic.
+-/
+
 open Function Set Filter
 
 section DetAutomata

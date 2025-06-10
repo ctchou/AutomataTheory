@@ -7,6 +7,12 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.AutomataOI2
 import AutomataTheory.RegLang
 
+/-!
+This file proves various closure properties of ω-regular langauges.
+Note that we do require that the automaton accepting an ω-regular language
+to have a finite state type.
+-/
+
 open Function Set Filter Sum
 
 section OmegaRegLang

@@ -6,6 +6,14 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.AutomataBasic
 
+/-!
+The indexed product of automata, which is used to prove the closure of
+regular langauges under intersection.  The closure of ω-regular langauges
+under intersection requires a more elaborate construction (see AutomataOI2.lean).
+Note that the theorems in this file are true even when the alphabet,
+state, or index types are infinite.
+-/
+
 open Function Set Filter
 
 section AutomataProd

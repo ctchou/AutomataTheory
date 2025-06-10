@@ -7,6 +7,14 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.Languages
 import AutomataTheory.AutomataBasic
 
+/-!
+The concatenation of automaton M0 followed by automaton M1.
+This construction is used to prove that the regular languages are closed
+under concatenation and the concatenation of a regular language followed
+by an ω-regular language is an ω-regular language.  This contruction works
+even when the state types are infinite.
+-/
+
 open Function Set Filter Sum
 open Classical
 
