@@ -60,7 +60,7 @@ that finite sequence as a prefix and the definitions refer to finite sequences v
 their infinite-sequence representatives. -/
 
 def FinRun' (M : Automaton A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
-  ss 0 ∈ M.init ∧ ∀ k : Fin n, ss k.succ ∈ M.next (ss k) (as k)
+  ss 0 ∈ M.init ∧ ∀ k : Fin n, ss k.succ ∈ M.next (ss k.castSucc) (as k)
 
 def FinAccept' (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : Fin n → A) :=
   ∃ ss : Fin (n + 1) → M.State, FinRun' M n as ss ∧ ss ⟨n, by omega⟩ ∈ acc
@@ -72,7 +72,7 @@ theorem automata_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.St
   constructor
   · simp ; exact h.1
   rintro ⟨k, h_k⟩
-  simp [Nat.mod_eq_of_lt (by omega : k < n + 1)]
+  simp
   exact h.2 k h_k
 
 theorem automata_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fin (n + 1) → M.State}
@@ -80,11 +80,9 @@ theorem automata_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {s
   constructor
   · simp [AppendFinInf] ; exact h.1
   intro k h_k
-  have h_k1 : k < n + 1 := by omega
-  have h_k2 : (↑k : Fin (n + 1)) = ⟨k, h_k1⟩:= by simp [@Fin.eq_mk_iff_val_eq] ; omega
   have h_step := h.2 ⟨k, h_k⟩
-  simp [h_k2] at h_step
-  simpa [AppendFinInf, h_k, h_k1]
+  simp at h_step
+  simpa [AppendFinInf, h_k, (show k < n + 1 by omega)]
 
 theorem automata_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
     (h : FinAccept M acc n as) : FinAccept' M acc n (fun k ↦ as k) := by

@@ -154,7 +154,7 @@ theorem accepted_lang_loop_concat :
   · have h_next := h_run1.2 k (by omega)
     simp [as, ss, h_next, h_k, (show k < n1 by omega)]
   · have h_next := h_run1.2 k (by omega)
-    suffices h_n1 : ss2 0 = ss1 (k + 1) by simp [as, ss, h_next, h_n1, ← h_k, (show k < n1 by omega)]
+    suffices h_n1 : ss2 0 = ss1 (k + 1) by simp [as, ss, h_next, h_n1, ← h_k]
     simp [← h_k] at h_acc1
     simp [h_acc1] ; exact h_run2.1
   · have h_next := h_run2.2 (k - n1) (by omega)

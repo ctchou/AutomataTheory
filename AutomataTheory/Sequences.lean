@@ -62,7 +62,7 @@ theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
   ext k ; simp [AppendListInf, SuffixFrom]
   rcases Classical.em (k < n) with h_k | h_k
   · simp [h_k]
-  · simp [h_k, (by omega : k - n + n = k)]
+  · simp [(by omega : k - n + n = k)]
 
 theorem suffixFrom_listLength_AppendListInf :
     xs = SuffixFrom xl.length (AppendListInf xl xs) := by

@@ -45,7 +45,7 @@ theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataS
     use i, (fun k ↦ if h : k < n + 1 then ss_i k h else ss_i 0 (by omega))
     constructor
     · constructor
-      · simp [h_ss_i 0 (by omega : 0 < n + 1), Automaton.init] at h_init
+      · simp [h_ss_i 0 (by omega : 0 < n + 1)] at h_init
         simp [AutomataSum] at h_init
         obtain ⟨i, s', h_s', rfl, h_eq⟩ := h_init
         rw [heq_eq_eq] at h_eq
