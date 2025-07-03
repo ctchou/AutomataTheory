@@ -7,6 +7,7 @@ import AutomataTheory.AutomataOI2
 import AutomataTheory.AutomataPSet
 import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataSum
+import AutomataTheory.Congruences
 import AutomataTheory.Languages
 import AutomataTheory.OmegaRegLang
 import AutomataTheory.RegLang
