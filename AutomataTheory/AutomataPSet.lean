@@ -21,12 +21,8 @@ variable {A : Type*}
 
 def AutomataPSet (M : Automaton A) : DetAutomaton A where
   State := Set M.State
-  init := {M.init}
-  next := fun ps a ↦ { ⋃ s ∈ ps, M.next s a }
-  get_init := M.init
-  get_next := fun ps a ↦ ⋃ s ∈ ps, M.next s a
-  det_init := by simp
-  det_next := by simp
+  init := M.init
+  next := fun ps a ↦ ⋃ s ∈ ps, M.next s a
 
 variable {M : Automaton A}
 
@@ -74,7 +70,7 @@ variable {A : Type*} (M : Automaton A) (acc : Set M.State)
 def AutomataPSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
 
 theorem accepted_lang_pset :
-    AcceptedLang (AutomataPSet M).toAutomaton (AutomataPSet_Acc M acc) = AcceptedLang M acc := by
+    AcceptedLang (FromDetAutomaton (AutomataPSet M)) (AutomataPSet_Acc M acc) = AcceptedLang M acc := by
   ext al ; simp only [AcceptedLang, FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss', h_run', h_acc'⟩, h_al⟩
     have h_sn' := det_automata_fin_run_unique h_run' n (by omega)
