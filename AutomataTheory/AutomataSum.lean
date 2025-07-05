@@ -19,26 +19,26 @@ section AutomataSum
 
 variable {I A : Type*}
 
-def AutomataSum (M : I → Automaton A) : Automaton A where
+def Automaton.Sum (M : I → Automaton A) : Automaton A where
   State := Σ i : I, (M i).State
   init := ⋃ i : I, Sigma.mk i '' (M i).init
   next := fun ⟨i, s⟩ a ↦ Sigma.mk i '' (M i).next s a
 
 variable {M : I → Automaton A}
 
-theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataSum M).State} :
-    FinRun (AutomataSum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
+theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton.Sum M).State} :
+    FinRun (Automaton.Sum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
   constructor
   · rintro ⟨h_init, h_next⟩
     have := h_init
-    simp [AutomataSum, Automaton.init] at this
+    simp [Automaton.Sum, Automaton.init] at this
     rcases this with ⟨i, s0, h_s0_init, h_s0_ss⟩
     have h_ss_exists : ∀ k < n + 1, ∃ sk : (M i).State, ss k = Sigma.mk i sk := by
       intro k h_n ; induction' k with k h_k
       · use s0 ; simp [h_s0_ss]
       obtain ⟨sk, h_sk⟩ := h_k (by omega : k < n + 1)
       have h_next_k := h_next k
-      simp [AutomataSum, h_sk] at h_next_k
+      simp [Automaton.Sum, h_sk] at h_next_k
       obtain ⟨sk', h_sk'⟩ := h_next_k (by omega : k < n)
       use sk' ; simp [h_sk'.2]
     choose ss_i h_ss_i using h_ss_exists
@@ -46,7 +46,7 @@ theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataS
     constructor
     · constructor
       · simp [h_ss_i 0 (by omega : 0 < n + 1)] at h_init
-        simp [AutomataSum] at h_init
+        simp [Automaton.Sum] at h_init
         obtain ⟨i, s', h_s', rfl, h_eq⟩ := h_init
         rw [heq_eq_eq] at h_eq
         simp [h_eq] at h_s'
@@ -54,32 +54,32 @@ theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataS
       · intro k h_k
         have h_next_k := h_next k h_k
         rw [h_ss_i k (by omega : k < n + 1), h_ss_i (k + 1) (by omega : k + 1 < n + 1)] at h_next_k
-        simp [AutomataSum] at h_next_k
+        simp [Automaton.Sum] at h_next_k
         simpa [h_k, (by omega : k < n + 1)]
     · intro k h_k
       simp [h_k, h_ss_i k h_k]
   · rintro ⟨i, ss_i, h_run, h_ss⟩
     constructor
-    · simp [AutomataSum, h_ss 0 (by omega : 0 < n + 1)]
+    · simp [Automaton.Sum, h_ss 0 (by omega : 0 < n + 1)]
       use i, (ss_i 0)
       simp ; exact h_run.1
     · intro k h_k
       have h_run_k := h_run.2 k h_k
-      simpa [AutomataSum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
+      simpa [Automaton.Sum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
 
-theorem automata_sum_inf_run {as : ℕ → A} {ss : ℕ → (AutomataSum M).State} :
-    InfRun (AutomataSum M) as ss ↔ ∃ i ss_i, InfRun (M i) as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
+theorem automata_sum_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Sum M).State} :
+    InfRun (Automaton.Sum M) as ss ↔ ∃ i ss_i, InfRun (M i) as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
   constructor
   · rintro ⟨h_init, h_next⟩
     have := h_init
-    simp [AutomataSum, Automaton.init] at this
+    simp [Automaton.Sum, Automaton.init] at this
     rcases this with ⟨i, s0, h_s0_init, h_s0_ss⟩
     have h_ss_exists : ∀ k, ∃ sk : (M i).State, ss k = Sigma.mk i sk := by
       intro k ; induction' k with k h_k
       · use s0 ; rw [h_s0_ss]
       rcases h_k with ⟨sk, h_sk⟩
       have h_next_k := h_next k
-      simp [AutomataSum, h_sk] at h_next_k
+      simp [Automaton.Sum, h_sk] at h_next_k
       rcases h_next_k with ⟨sk', h_sk'⟩
       use sk' ; simp [h_sk'.2]
     choose ss_i h_ss_i using h_ss_exists
@@ -87,18 +87,18 @@ theorem automata_sum_inf_run {as : ℕ → A} {ss : ℕ → (AutomataSum M).Stat
     constructor
     · constructor
       · rw [h_ss_i 0, Automaton.init] at h_init
-        simp [AutomataSum] at h_init
+        simp [Automaton.Sum] at h_init
         obtain ⟨i, s', h_s', rfl, h_eq⟩ := h_init
         rw [heq_eq_eq] at h_eq
         rwa [h_eq] at h_s'
       · intro k
         have h_next_k := h_next k
         rw [h_ss_i k, h_ss_i (k + 1)] at h_next_k
-        simp [AutomataSum] at h_next_k
+        simp [Automaton.Sum] at h_next_k
         assumption
     · ext k ; rw [h_ss_i k] ; simp
   · rintro ⟨i, ss_i, h_run, h_ss⟩
-    simp [h_ss, AutomataSum]
+    simp [h_ss, Automaton.Sum]
     constructor
     · simp [Automaton.init]
       use i, (ss_i 0)
@@ -113,11 +113,11 @@ section AcceptedLangUnion
 
 variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
 
-def AutomataSum_Acc : Set (AutomataSum M).State := ⋃ i : I, Sigma.mk i '' acc i
+def Automaton.Sum_Acc : Set (Automaton.Sum M).State := ⋃ i : I, Sigma.mk i '' acc i
 
 theorem accepted_lang_union :
-    AcceptedLang (AutomataSum M) (AutomataSum_Acc M acc) = ⋃ i : I, AcceptedLang (M i) (acc i) := by
-  ext al ; simp [AutomataSum_Acc, AcceptedLang, FinAccept]
+    AcceptedLang (Automaton.Sum M) (Automaton.Sum_Acc M acc) = ⋃ i : I, AcceptedLang (M i) (acc i) := by
+  ext al ; simp [Automaton.Sum_Acc, AcceptedLang, FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_fin_run.mp h_run
@@ -146,8 +146,8 @@ theorem accepted_lang_union :
     · assumption
 
 theorem accepted_omega_lang_union :
-    AcceptedOmegaLang (AutomataSum M) (AutomataSum_Acc M acc) = ⋃ i : I, AcceptedOmegaLang (M i) (acc i) := by
-  ext as ; simp [AutomataSum_Acc, AcceptedOmegaLang, BuchiAccept]
+    AcceptedOmegaLang (Automaton.Sum M) (Automaton.Sum_Acc M acc) = ⋃ i : I, AcceptedOmegaLang (M i) (acc i) := by
+  ext as ; simp [Automaton.Sum_Acc, AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩
     obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_inf_run.mp h_run
@@ -171,7 +171,7 @@ theorem accepted_omega_lang_union :
     · apply automata_sum_inf_run.mpr
       use i, ss_i
     · let p k := ss_i k ∈ acc i
-      let q k := ∃ i', ∃ si' ∈ acc i', ⟨i', si'⟩ = ((Sigma.mk i ∘ ss_i) k : (AutomataSum M).State)
+      let q k := ∃ i', ∃ si' ∈ acc i', ⟨i', si'⟩ = ((Sigma.mk i ∘ ss_i) k : (Automaton.Sum M).State)
       have h_p : ∃ᶠ k in atTop, p k := by assumption
       have h_pq : ∀ k, p k → q k := by
         simp [p, q] ; intro k h

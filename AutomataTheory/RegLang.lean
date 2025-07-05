@@ -42,7 +42,7 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (AutomataSum M_u), (AutomataSum_Acc M_u acc_u)
+  use (Automaton.Sum M_u), (Automaton.Sum_Acc M_u acc_u)
   constructor
   · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Finite.instSigma
