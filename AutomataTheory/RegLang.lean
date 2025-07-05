@@ -13,6 +13,7 @@ import AutomataTheory.AutomataProd
 import AutomataTheory.AutomataPSet
 import AutomataTheory.AutomataConcat
 import AutomataTheory.AutomataLoop
+import AutomataTheory.AutomataCongr
 
 /-!
 This file proves various closure properties of regular langauges.
@@ -114,6 +115,13 @@ theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
   constructor
   · exact Finite.instSum
   · simp [h_l, accepted_lang_loop]
+
+theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
+    (h : Finite (Quotient c.eq)) (s : Quotient c.eq) : RegLang (Quotient.mk c.eq ⁻¹' {s}) := by
+  use (FromDetAutomaton (DetAutomaton.ofCongr c)), {s}
+  constructor
+  · exact h
+  · symm ; exact accepted_lang_congr s
 
 end RegLang
 
