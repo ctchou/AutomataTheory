@@ -17,15 +17,14 @@ section AutomatonDefinition
 
 /- Some remarks about the definition of the `Automaton` class:
 * Note that the accepting states are not included as a part of an automaton.
-  This design decision is delibeate and motivated by two facts:
-  (1) There are multiple acceptance conditions for automata on infinite words.
+  This design choice is delibeate and motivated by two facts:
+  (1) There are multiple types of acceptance conditions for automata on infinite words.
   (2) Sometimes automata constructions need to treat the accepting states differently
-      depending whether the automaton is working on finite or infinite words.
-  Also note that an automaton is by default nondeterministic.
-* Deterministic automata will be treated as an extension of the `Automaton` class later
+      depending whether the automaton works on finite or infinite words.
+* An automaton is by default nondeterministic. Deterministic automata are a separate class
   (see AutomataDet.lean).
-* The ε transition is not used.  It is actually possible to prove the closure of
-  regular languages under concatenation and Kleene star withou using the ε transition。
+* The ε transition is not included.  It is actually possible to prove the closure of
+  regular languages under concatenation and Kleene star without using the ε transition.
 -/
 class Automaton (A : Type*) where
   State : Type*
