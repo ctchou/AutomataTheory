@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.AutomataHist
 import AutomataTheory.AutomataProd
+import AutomataTheory.AutomataHist
+import AutomataTheory.Temporal
 
 /-!
 The OI2 [*] construction is used to prove the closure of ω-regular langauges

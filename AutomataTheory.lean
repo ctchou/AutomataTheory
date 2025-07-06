@@ -12,4 +12,6 @@ import AutomataTheory.Congruences
 import AutomataTheory.Languages
 import AutomataTheory.OmegaRegLang
 import AutomataTheory.RegLang
+import AutomataTheory.Segments
 import AutomataTheory.Sequences
+import AutomataTheory.Temporal

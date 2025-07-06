@@ -5,6 +5,7 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.Languages
+import AutomataTheory.Segments
 import AutomataTheory.AutomataBasic
 
 /-!
