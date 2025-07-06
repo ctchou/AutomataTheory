@@ -111,7 +111,7 @@ theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
 theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang (IterStar L) := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
-  use (AutomataLoop M acc), {inl ()}
+  use (M.Loop acc), {inl ()}
   constructor
   · exact Finite.instSum
   · simp [h_l, accepted_lang_loop]
