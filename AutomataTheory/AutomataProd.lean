@@ -20,15 +20,15 @@ section AutomataProd
 
 variable {I A : Type*}
 
-def AutomataProd (M : I → Automaton A) : Automaton A where
+def Automaton.Prod (M : I → Automaton A) : Automaton A where
   State := Π i : I, (M i).State
   init := { s | ∀ i : I, (s i) ∈ (M i).init }
   next := fun s a ↦ { s' | ∀ i : I, (s' i) ∈ (M i).next (s i) a }
 
 variable {M : I → Automaton A}
 
-theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (AutomataProd M).State} :
-    FinRun (AutomataProd M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
+theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
+    FinRun (Automaton.Prod M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
@@ -42,8 +42,8 @@ theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automata
     · intro k h_k i
       exact (h_all i).2 k h_k
 
-theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (AutomataProd M).State} :
-    InfRun (AutomataProd M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
+theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
+    InfRun (Automaton.Prod M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
@@ -60,10 +60,10 @@ section AcceptedLangInter
 
 variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
 
-def AutomataProd_Acc : Set (AutomataProd M).State := { s | ∀ i, (s i) ∈ (acc i) }
+def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
 
 theorem accepted_lang_inter [Inhabited A] :
-    AcceptedLang (AutomataProd M) (AutomataProd_Acc M acc) = ⋂ i : I, AcceptedLang (M i) (acc i) := by
+    AcceptedLang (Automaton.Prod M) (Automaton.Prod_Acc M acc) = ⋂ i : I, AcceptedLang (M i) (acc i) := by
   ext al ; simp [AcceptedLang, FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i

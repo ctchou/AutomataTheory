@@ -27,13 +27,13 @@ variable {A : Type*} (M : Fin 2 → Automaton A) (acc : (i : Fin 2) → Set ((M 
 
 def AutomataOI2_HistInit : Set (Fin 2) := {0}
 
-def AutomataOI2_HistNext : (AutomataProd M).State × Fin 2 → A → Set (Fin 2) :=
+def AutomataOI2_HistNext : (Automaton.Prod M).State × Fin 2 → A → Set (Fin 2) :=
   fun s _ ↦
     if s.1 0 ∈ acc 0 ∧ s.2 = 0 then {1} else
     if s.1 1 ∈ acc 1 ∧ s.2 = 1 then {0} else {s.2}
 
 def AutomataOI2 : Automaton A :=
-  AutomataHist (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
+  AutomataHist (Automaton.Prod M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
 
 def AutomataOI2_Acc : Set (AutomataOI2 M acc).State :=
   { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }
@@ -129,7 +129,7 @@ theorem accepted_omega_lang_inter2 :
   ext as ; simp [AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩ i
-    have h_run1 := automata_hist_inf_run_proj (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc) h_run
+    have h_run1 := automata_hist_inf_run_proj (Automaton.Prod M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc) h_run
     have h_run' := automata_prod_inf_run.mp h_run1 i
 --    have h_run' := (automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
     use (fun k ↦ (Prod.fst ∘ ss) k i) ; constructor
@@ -162,7 +162,7 @@ theorem accepted_omega_lang_inter2 :
       intro s a ; simp only [AutomataOI2_HistNext]
       rcases Classical.em (s.1 0 ∈ acc 0 ∧ s.2 = 0) with cond1 | cond1 <;> simp [cond1]
       rcases Classical.em (s.1 1 ∈ acc 1 ∧ s.2 = 1) with cond2 | cond2 <;> simp [cond2]
-    have h_runh := automata_hist_inf_run_exists (AutomataProd M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
+    have h_runh := automata_hist_inf_run_exists (Automaton.Prod M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
       h_hist_init h_hist_next h_run'
     obtain ⟨hs, h_run⟩ := h_runh
     use (fun k ↦ (ss' k, hs k))

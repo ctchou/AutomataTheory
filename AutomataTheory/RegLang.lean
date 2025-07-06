@@ -59,7 +59,7 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (AutomataProd M_u), (AutomataProd_Acc M_u acc_u)
+  use (Automaton.Prod M_u), (Automaton.Prod_Acc M_u acc_u)
   constructor
   · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Pi.finite
