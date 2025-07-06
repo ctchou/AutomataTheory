@@ -69,7 +69,7 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
 theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang (Lᶜ) := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
-  use (FromDetAutomaton (AutomataPSet M)), (AutomataPSet_Acc M acc)ᶜ
+  use (AutomataPSet M).toAutomaton, (AutomataPSet_Acc M acc)ᶜ
   constructor
   · exact Set.instFinite
   · rw [accepted_lang_compl, accepted_lang_pset, h_l]
@@ -118,7 +118,7 @@ theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
 
 theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
     (h : Finite (Quotient c.eq)) (s : Quotient c.eq) : RegLang (Quotient.mk c.eq ⁻¹' {s}) := by
-  use (FromDetAutomaton (DetAutomaton.ofCongr c)), {s}
+  use (DetAutomaton.ofCongr c).toAutomaton, {s}
   constructor
   · exact h
   · symm ; exact accepted_lang_congr s

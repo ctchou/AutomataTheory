@@ -22,7 +22,7 @@ class DetAutomaton (A : Type*) where
 
 variable {A : Type*}
 
-def FromDetAutomaton (M : DetAutomaton A) : Automaton A where
+def DetAutomaton.toAutomaton (M : DetAutomaton A) : Automaton A where
   State := M.State
   init := {M.init}
   next := fun s a ↦ {M.next s a}
@@ -34,32 +34,32 @@ def MakeDetRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
 variable {M : DetAutomaton A}
 
 theorem det_automata_inf_run_exists (as : ℕ → A) :
-    InfRun (FromDetAutomaton M) as (MakeDetRun M as) := by
-  constructor <;> simp [FromDetAutomaton, MakeDetRun]
+    InfRun M.toAutomaton as (MakeDetRun M as) := by
+  constructor <;> simp [DetAutomaton.toAutomaton, MakeDetRun]
 
 theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
-    (h : InfRun (FromDetAutomaton M) as ss) : ss = MakeDetRun M as := by
+    (h : InfRun M.toAutomaton as ss) : ss = MakeDetRun M as := by
   ext k ; induction' k with k h_ind
   · have h_init := h.1
-    simp [FromDetAutomaton] at h_init
+    simp [DetAutomaton.toAutomaton] at h_init
     assumption
   · rw [MakeDetRun, ← h_ind]
     have h_next := h.2 k
-    simp [FromDetAutomaton] at h_next
+    simp [DetAutomaton.toAutomaton] at h_next
     assumption
 
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
-    FinRun (FromDetAutomaton M) n as (MakeDetRun M as) := by
+    FinRun M.toAutomaton n as (MakeDetRun M as) := by
   exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
 theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : FinRun (FromDetAutomaton M) n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
+    (h : FinRun M.toAutomaton n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
   rcases h with ⟨h_init, h_next⟩
   intro k h_k ; induction' k with k h_ind
-  · simp [FromDetAutomaton] at h_init
+  · simp [DetAutomaton.toAutomaton] at h_init
     simpa [MakeDetRun]
   · have h_next' := h_next k (by omega)
-    simp [FromDetAutomaton] at h_next'
+    simp [DetAutomaton.toAutomaton] at h_next'
     have h_ss_k := h_ind (by omega)
     simpa [MakeDetRun, ← h_ss_k]
 
@@ -70,7 +70,7 @@ section AcceptedLangCompl
 variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
 
 theorem accepted_lang_compl [Inhabited A] :
-    AcceptedLang (FromDetAutomaton M) accᶜ = (AcceptedLang (FromDetAutomaton M) acc)ᶜ := by
+    AcceptedLang M.toAutomaton accᶜ = (AcceptedLang M.toAutomaton acc)ᶜ := by
   ext al
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
@@ -101,12 +101,12 @@ theorem accepted_lang_compl [Inhabited A] :
       intro k h_k ; simp [as, h_k]
     use al.length, as ; simp [← h_al]
     let ss := MakeDetRun M as
-    have h_run : FinRun (FromDetAutomaton M) al.length as ss := by
+    have h_run : FinRun M.toAutomaton al.length as ss := by
       exact det_automata_fin_run_exists al.length as
     use ss ; constructor
     · exact h_run
     intro h_acc
-    have : al ∈ (AcceptedLang (FromDetAutomaton M) acc) := by
+    have : al ∈ (AcceptedLang M.toAutomaton acc) := by
       use al.length, as
       simp [← h_al] ; use! ss
     contradiction
