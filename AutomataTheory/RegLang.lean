@@ -78,7 +78,7 @@ theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (ConcatFin L0 L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  use (AutomataConcat M0 acc0 M1), (inr '' acc1)
+  use (M0.Concat acc0 M1), (inr '' acc1)
   constructor
   · exact Finite.instSum
   · have h_l1' : L1 = L1 \ {[]} := by
@@ -92,7 +92,7 @@ theorem reg_lang_concat_e {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) (h_e : [] ∈ L1) : RegLang (ConcatFin L0 L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  use (AutomataConcat M0 acc0 M1), (inl '' acc0 ∪ inr '' acc1)
+  use (M0.Concat acc0 M1), (inl '' acc0 ∪ inr '' acc1)
   constructor
   · exact Finite.instSum
   · have h_l1' : L1 = (L1 \ {[]}) ∪ {[]} := by
