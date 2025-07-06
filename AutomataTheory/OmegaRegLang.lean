@@ -51,7 +51,7 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
     | 1 => acc1
   use (AutomataOI2 M_u acc_u), (AutomataOI2_Acc M_u acc_u)
   constructor
-  · simp [AutomataOI2, AutomataHist, Automaton.Prod]
+  · simp [AutomataOI2, Automaton.addHist, Automaton.Prod]
     have h_fin1 : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     have h_fin2 : Finite ((i : Fin 2) → (M_u i).State) := by exact Pi.finite
     exact Finite.instProd

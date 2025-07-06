@@ -33,7 +33,7 @@ def AutomataOI2_HistNext : (Automaton.Prod M).State × Fin 2 → A → Set (Fin 
     if s.1 1 ∈ acc 1 ∧ s.2 = 1 then {0} else {s.2}
 
 def AutomataOI2 : Automaton A :=
-  AutomataHist (Automaton.Prod M) AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
+  (Automaton.Prod M).addHist AutomataOI2_HistInit (AutomataOI2_HistNext M acc)
 
 def AutomataOI2_Acc : Set (AutomataOI2 M acc).State :=
   { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }
