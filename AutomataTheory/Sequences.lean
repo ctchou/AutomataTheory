@@ -7,7 +7,7 @@ Authors: Ching-Tsun Chou
 import Mathlib.Algebra.Order.Archimedean.Basic
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Data.Nat.Nth
-import Mathlib.Order.Filter.AtTopBot.Basic
+import Mathlib.Order.Filter.Cofinite
 
 /-!
 This file contains some definitions and theorems about finite and infinite sequences,
