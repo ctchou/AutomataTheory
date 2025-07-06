@@ -4,22 +4,18 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import AutomataTheory.Congruences
 import AutomataTheory.AutomataDet
 
 /-!
-A congruence is an equivalence relation on finite sequences that is
-preserved by concatenation either on the left or on the right or both.
-For now, we assume only the right congruence condition.  We will
-add the left congruence condition if and when it is needed.
+The deterministic automaton corresponding to a right congruence relation.
+Note that the theorems in this file do not require that the congruence
+relation is of finite index.
 -/
 
 open Function Set
 
-section Congruences
-
-class Congruence (A : Type*) extends eq : Setoid (List A) where
---  left_congr : ∀ u v, eq u v → ∀ w, eq (w ++ u) (w ++ v)
-  right_congr : ∀ u v, eq u v → ∀ w, eq (u ++ w) (v ++ w)
+section AutomataCongr
 
 variable {A : Type*}
 
@@ -57,4 +53,4 @@ theorem accepted_lang_congr [Inhabited A] (s : (DetAutomaton.ofCongr c).State) :
     · exact det_automata_fin_run_exists al.length as
     · simp [automaton_congr_run, as]
 
-end Congruences
+end AutomataCongr
