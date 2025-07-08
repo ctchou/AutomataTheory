@@ -88,6 +88,11 @@ theorem segment_idem (hm : StrictMono φ) (k : ℕ) :
   have h_eq := Nat.count_nth_of_infinite (p := (· ∈ range φ)) <| strict_mono_infinite hm
   rw [h_eq]
 
+theorem segment_zero (hm : StrictMono φ) (h0 : φ 0 = 0) :
+    Segment φ 0 = 0 := by
+  calc _ = Segment φ (φ 0) := by simp [h0]
+       _ = _ := by simp [segment_idem hm]
+
 theorem segment_range_gap (hm : StrictMono φ) {m k : ℕ}
     (hl : φ m < k) (hu : k < φ (m + 1)) : k ∉ range φ := by
   rw [nth_of_strict_mono hm m] at hl
