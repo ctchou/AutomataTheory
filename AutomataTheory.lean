@@ -11,6 +11,7 @@ import AutomataTheory.AutomataSum
 import AutomataTheory.Congruences
 import AutomataTheory.Languages
 import AutomataTheory.OmegaRegLang
+import AutomataTheory.PairLang
 import AutomataTheory.RegLang
 import AutomataTheory.Segments
 import AutomataTheory.Sequences

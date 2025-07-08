@@ -5,7 +5,9 @@ Authors: Ching-Tsun Chou
 -/
 
 import Mathlib.Algebra.Order.Archimedean.Basic
-import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Algebra.Order.Ring.Nat
+import Mathlib.Algebra.Order.Star.Basic
+import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Nat.Nth
 import Mathlib.Order.Filter.Cofinite
 
@@ -19,6 +21,9 @@ is imported directly or indirectly by all other files in AutomataTheory.
 open Function Set Filter
 
 section Sequences
+
+def List.ExtendInf {X : Type*} [Inhabited X] (xl : List X) : ℕ → X :=
+  fun k ↦ if h : k < xl.length then xl[k] else default
 
 def AppendListInf {X : Type*} (xl : List X) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else xs (k - xl.length)
@@ -62,5 +67,22 @@ theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
 theorem suffixFrom_listLength_AppendListInf :
     xs = SuffixFrom xl.length (AppendListInf xl xs) := by
   ext k ; simp [SuffixFrom, AppendListInf]
+
+theorem frequently_in_finite_set [Finite X] {s : Set X} :
+    (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by
+  constructor
+  · intro h_inf
+    rw [Nat.frequently_atTop_iff_infinite] at h_inf
+    have : Infinite (xs ⁻¹' s) := h_inf.to_subtype
+    let rf := Set.restrictPreimage s xs
+    obtain ⟨⟨x, h_x⟩, h_inf'⟩ := Finite.exists_infinite_fiber rf
+    rw [← Set.infinite_range_iff (Subtype.val_injective.comp Subtype.val_injective)] at h_inf'
+    simp [rf, Set.range, ← Nat.frequently_atTop_iff_infinite] at h_inf'
+    use x ; simp [h_x]
+    apply Frequently.mono h_inf'
+    tauto
+  · rintro ⟨x, h_x, h_inf⟩
+    apply Frequently.mono h_inf
+    intro k h_k ; simpa [h_k]
 
 end Sequences
