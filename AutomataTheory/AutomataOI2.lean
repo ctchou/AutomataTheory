@@ -130,9 +130,8 @@ theorem accepted_omega_lang_inter2 :
   ext as ; simp [AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩ i
-    have h_run1 := automata_hist_inf_run_proj (Automaton.Prod M) Automaton.OI2_HistInit (Automaton.OI2_HistNext M acc) h_run
+    have h_run1 := automata_hist_inf_run_proj h_run
     have h_run' := automata_prod_inf_run.mp h_run1 i
---    have h_run' := (automata_prod_inf_run M as (Prod.fst ∘ ss)).mp h_run1 i
     use (fun k ↦ (Prod.fst ∘ ss) k i) ; constructor
     · assumption
     let p0 k := ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 }
@@ -163,8 +162,7 @@ theorem accepted_omega_lang_inter2 :
       intro s a ; simp only [Automaton.OI2_HistNext]
       rcases Classical.em (s.1 0 ∈ acc 0 ∧ s.2 = 0) with cond1 | cond1 <;> simp [cond1]
       rcases Classical.em (s.1 1 ∈ acc 1 ∧ s.2 = 1) with cond2 | cond2 <;> simp [cond2]
-    have h_runh := automata_hist_inf_run_exists (Automaton.Prod M) Automaton.OI2_HistInit (Automaton.OI2_HistNext M acc)
-      h_hist_init h_hist_next h_run'
+    have h_runh := automata_hist_inf_run_exists h_hist_init h_hist_next h_run'
     obtain ⟨hs, h_run⟩ := h_runh
     use (fun k ↦ (ss' k, hs k))
     constructor
