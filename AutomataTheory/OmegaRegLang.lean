@@ -77,9 +77,8 @@ theorem omega_reg_lang_iter {L : Set (List A)}
 
 theorem omega_reg_lang_normal_form {L : Set (ℕ → A)} :
     OmegaRegLang L ↔
-    ∃ I : Type, Finite I ∧
-      ∃ P Q : I → Set (List A), (∀ i : I, RegLang (P i) ∧ RegLang (Q i)) ∧
-        L = ⋃ i : I, ConcatInf (P i) (IterOmega (Q i)) := by
+    ∃ n : ℕ, ∃ P Q : Fin n → Set (List A),
+      (∀ i, RegLang (P i) ∧ RegLang (Q i)) ∧ L = ⋃ i, ConcatInf (P i) (IterOmega (Q i)) := by
   sorry
 
 end OmegaRegLang
