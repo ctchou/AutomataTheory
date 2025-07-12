@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import Mathlib.Data.Finite.Card
 import AutomataTheory.AutomataOI2
-import AutomataTheory.RegLang
+import AutomataTheory.PairLang
 
 /-!
 This file proves various closure properties of ω-regular langauges.
@@ -74,5 +75,56 @@ theorem omega_reg_lang_iter {L : Set (List A)}
   constructor
   · exact Finite.instSum
   · simp [h_l, accepted_omega_lang_loop]
+
+theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)} :
+    OmegaRegLang L ↔
+    ∃ n : ℕ, ∃ U V : Fin n → Set (List A),
+      (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, ConcatInf (U i) (IterOmega (V i)) := by
+  constructor
+  · rintro ⟨M, acc, h_fin, rfl⟩
+    rw [omega_reg_lang_finite_union_form]
+    have eq_init : Fin (Nat.card ↑M.init) ≃ ↑M.init := by exact (Finite.equivFin ↑Automaton.init).symm
+    have eq_acc : Fin (Nat.card ↑acc) ≃ ↑acc := by exact (Finite.equivFin ↑acc).symm
+    have eq_prod := Equiv.prodCongr eq_init eq_acc
+    have eq_fin_prod := (finProdFinEquiv (m := Nat.card ↑M.init) (n := Nat.card ↑acc)).symm
+    have eq := Equiv.trans eq_fin_prod eq_prod
+    use ((Nat.card ↑M.init) * (Nat.card ↑acc))
+    use (fun i ↦ M.PairLang (eq i).1 (eq i).2)
+    use (fun i ↦ M.PairLang (eq i).2 (eq i).2)
+    constructor
+    · intro i ; constructor <;> exact pair_lang_regular
+    · ext as ; simp ; constructor
+      · rintro ⟨s0, h_s0, sa, h_sa, h_mem⟩
+        use (eq.invFun (⟨s0, h_s0⟩, ⟨sa, h_sa⟩))
+        simp [h_mem]
+      · rintro ⟨i, h_mem⟩
+        use (eq i).1 ; simp [(eq i).1.property]
+        use (eq i).2 ; simp [(eq i).2.property, h_mem]
+  · rintro ⟨n, U, V, h_reg, rfl⟩
+    induction' n with n h_ind
+    · use { State := Unit, init := {}, next := fun _ _ ↦ {} }, {} ; constructor
+      · exact Finite.of_fintype Unit
+      ext as ; simp ; by_contra h_contra
+      obtain ⟨ss, h_run, _⟩ := h_contra
+      simp [InfRun] at h_run
+    let U' := (fun i : Fin n ↦ U i.castSucc)
+    let V' := (fun i : Fin n ↦ V i.castSucc)
+    specialize h_ind U' V' (by intro i ; simp [U', V', h_reg i.castSucc])
+    have h : (⋃ i, ConcatInf (U i) (IterOmega (V i)))
+           = (⋃ i, ConcatInf (U' i) (IterOmega (V' i))) ∪ ConcatInf (U (Fin.last n)) (IterOmega (V (Fin.last n))) := by
+      ext as ; simp ; constructor
+      · rintro ⟨i, h_i⟩
+        obtain (⟨i', rfl⟩ | rfl) := Fin.eq_castSucc_or_eq_last i
+        . left ; use i'
+        . right ; assumption
+      · rintro (⟨i, h_i⟩ | h_n)
+        · use i.castSucc
+        · use (Fin.last n)
+    rw [h]
+    apply omega_reg_lang_union h_ind
+    apply omega_reg_lang_concat
+    · exact (h_reg (Fin.last n)).1
+    · apply omega_reg_lang_iter
+      exact (h_reg (Fin.last n)).2
 
 end OmegaRegLang
