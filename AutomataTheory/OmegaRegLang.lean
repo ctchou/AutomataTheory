@@ -5,7 +5,7 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.AutomataOI2
-import AutomataTheory.RegLang
+import AutomataTheory.PairLang
 
 /-!
 This file proves various closure properties of ω-regular langauges.
@@ -74,5 +74,12 @@ theorem omega_reg_lang_iter {L : Set (List A)}
   constructor
   · exact Finite.instSum
   · simp [h_l, accepted_omega_lang_loop]
+
+theorem omega_reg_lang_normal_form {L : Set (ℕ → A)} :
+    OmegaRegLang L ↔
+    ∃ I : Type, Finite I ∧
+      ∃ P Q : I → Set (List A), (∀ i : I, RegLang (P i) ∧ RegLang (Q i)) ∧
+        L = ⋃ i : I, ConcatInf (P i) (IterOmega (Q i)) := by
+  sorry
 
 end OmegaRegLang
