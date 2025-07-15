@@ -4,16 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Finite.Prod
-import Mathlib.Data.Finite.Sigma
-import Mathlib.Data.Finite.Sum
-import Mathlib.Data.Fintype.Powerset
-import AutomataTheory.AutomataSum
-import AutomataTheory.AutomataProd
-import AutomataTheory.AutomataPSet
-import AutomataTheory.AutomataConcat
-import AutomataTheory.AutomataLoop
-import AutomataTheory.AutomataCongr
+import AutomataTheory.Automata.Sum
+import AutomataTheory.Automata.Prod
+import AutomataTheory.Automata.PSet
+import AutomataTheory.Automata.Concat
+import AutomataTheory.Automata.Loop
+import AutomataTheory.Automata.Congr
 
 /-!
 This file proves various closure properties of regular langauges.

@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Sequences
+import AutomataTheory.Sequences.Basic
 
 /-!
 Basic definitions and theorems about automata and the acceptance of
@@ -21,8 +21,8 @@ section AutomatonDefinition
   (1) There are multiple types of acceptance conditions for automata on infinite words.
   (2) Sometimes automata constructions need to treat the accepting states differently
       depending whether the automaton works on finite or infinite words.
-* An automaton is by default nondeterministic. Deterministic automata are a separate class
-  (see AutomataDet.lean).
+* An automaton is by default nondeterministic.
+  A deterministic automaton belongs to a separate class DetAutomaton.
 * The ε transition is not included.  It is actually possible to prove the closure of
   regular languages under concatenation and Kleene star without using the ε transition.
 -/

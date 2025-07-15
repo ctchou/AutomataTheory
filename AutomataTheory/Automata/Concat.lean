@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Languages
-import AutomataTheory.AutomataBasic
+import AutomataTheory.Languages.Basic
+import AutomataTheory.Automata.Basic
 
 /-!
 The concatenation of automaton M0 followed by automaton M1.

@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.AutomataDet
+import AutomataTheory.Automata.Det
 
 /-!
 The powerset construction that converts a nondeterministic automaton

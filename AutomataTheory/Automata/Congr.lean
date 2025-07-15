@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Congruences
-import AutomataTheory.AutomataDet
+import AutomataTheory.Congruences.Basic
+import AutomataTheory.Automata.Det
 
 /-!
 The deterministic automaton corresponding to a right congruence relation.

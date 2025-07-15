@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Languages
-import AutomataTheory.Segments
-import AutomataTheory.AutomataBasic
+import AutomataTheory.Languages.Basic
+import AutomataTheory.Sequences.Segments
+import AutomataTheory.Automata.Basic
 
 /-!
 The loop construction of an automaton is used to prove that the

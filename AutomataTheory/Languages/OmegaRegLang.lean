@@ -4,9 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Data.Finite.Card
-import AutomataTheory.AutomataOI2
-import AutomataTheory.PairLang
+import AutomataTheory.Automata.OI2
+import AutomataTheory.Automata.Pair
 
 /-!
 This file proves various closure properties of ω-regular langauges.

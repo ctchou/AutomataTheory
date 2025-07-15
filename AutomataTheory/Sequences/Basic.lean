@@ -4,12 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import Mathlib.Algebra.Order.Archimedean.Basic
-import Mathlib.Algebra.Order.Ring.Nat
-import Mathlib.Algebra.Order.Star.Basic
-import Mathlib.Data.Fintype.Pigeonhole
-import Mathlib.Data.Nat.Nth
-import Mathlib.Order.Filter.Cofinite
+import AutomataTheory.MathlibImports
 
 /-!
 This file contains some definitions and theorems about finite and infinite sequences,

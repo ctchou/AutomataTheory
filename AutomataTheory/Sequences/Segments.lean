@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Sequences
+import AutomataTheory.Sequences.Basic
 
 /-!
 Given a strictly monotonic function `φ : ℕ → ℕ` with `φ 0 = 0` and `k : ℕ`,

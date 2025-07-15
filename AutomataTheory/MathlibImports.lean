@@ -1,0 +1,11 @@
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Algebra.Order.Ring.Nat
+import Mathlib.Algebra.Order.Star.Basic
+import Mathlib.Data.Fintype.Pigeonhole
+import Mathlib.Order.Filter.Cofinite
+import Mathlib.Data.Finite.Card
+import Mathlib.Data.Finite.Prod
+import Mathlib.Data.Finite.Sigma
+import Mathlib.Data.Finite.Sum
+import Mathlib.Data.Fintype.Powerset
+import Mathlib.Data.Nat.Nth

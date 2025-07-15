@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.AutomataBasic
+import AutomataTheory.Automata.Basic
 
 /-!
 The indexed sum of automata, which is used to prove the closure of
