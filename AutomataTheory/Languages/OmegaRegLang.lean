@@ -78,7 +78,7 @@ theorem omega_reg_lang_iter {L : Set (List A)}
 theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)} :
     OmegaRegLang L ↔
     ∃ n : ℕ, ∃ U V : Fin n → Set (List A),
-      (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, ConcatInf (U i) (IterOmega (V i)) := by
+      (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, ConcatOmega (U i) (V i) := by
   constructor
   · rintro ⟨M, acc, h_fin, rfl⟩
     rw [omega_reg_lang_finite_union_form]
@@ -109,8 +109,8 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     let U' := (fun i : Fin n ↦ U i.castSucc)
     let V' := (fun i : Fin n ↦ V i.castSucc)
     specialize h_ind U' V' (by intro i ; simp [U', V', h_reg i.castSucc])
-    have h : (⋃ i, ConcatInf (U i) (IterOmega (V i)))
-           = (⋃ i, ConcatInf (U' i) (IterOmega (V' i))) ∪ ConcatInf (U (Fin.last n)) (IterOmega (V (Fin.last n))) := by
+    have h : (⋃ i, ConcatOmega (U i) (V i))
+           = (⋃ i, ConcatOmega (U' i) (V' i)) ∪ ConcatOmega (U (Fin.last n)) (V (Fin.last n)) := by
       ext as ; simp ; constructor
       · rintro ⟨i, h_i⟩
         obtain (⟨i', rfl⟩ | rfl) := Fin.eq_castSucc_or_eq_last i

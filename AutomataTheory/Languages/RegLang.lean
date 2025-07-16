@@ -113,7 +113,7 @@ theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
   · simp [h_l, accepted_lang_loop]
 
 theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
-    (h : Finite (Quotient c.eq)) (s : Quotient c.eq) : RegLang (Quotient.mk c.eq ⁻¹' {s}) := by
+    (h : Finite (c.QuotType)) (s : c.QuotType) : RegLang (c.EqvCls s) := by
   use (DetAutomaton.ofCongr c).toAutomaton, {s}
   constructor
   · exact h

@@ -20,10 +20,11 @@ section AutomataCongr
 variable {A : Type*}
 
 def DetAutomaton.ofCongr (c : Congruence A) : DetAutomaton A where
-  State := Quotient c.eq
+  State := c.QuotType
   init := ⟦ [] ⟧
   next := fun s a ↦ Quotient.lift (fun u ↦ ⟦ u ++ [a] ⟧) ( by
-    intro u v h_eq ; simp ; exact Congruence.right_congr u v h_eq [a]
+    intro u v h_eq ; simp [Congruence.QuotType]
+    exact Congruence.right_congr u v h_eq [a]
   ) s
 
 variable {c : Congruence A}
@@ -33,17 +34,16 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
   induction' n with n h_ind
   · simp [MakeDetRun, DetAutomaton.ofCongr]
   simp only [MakeDetRun, h_ind]
-  simp only [DetAutomaton.ofCongr, Quotient.lift_mk, Quotient.eq]
-  suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by
-    simp [h_eq, c.eq.iseqv.refl]
+  simp only [DetAutomaton.ofCongr, Quotient.lift_mk]
+  suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
   exact Eq.symm List.ofFn_succ_last
 
 theorem accepted_lang_congr [Inhabited A] (s : (DetAutomaton.ofCongr c).State) :
-    AcceptedLang (DetAutomaton.ofCongr c).toAutomaton {s} = Quotient.mk c.eq ⁻¹' {s} := by
+    AcceptedLang (DetAutomaton.ofCongr c).toAutomaton {s} = c.EqvCls s := by
   ext al ; simp [AcceptedLang, FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, rfl⟩, rfl⟩
     have h_ss_n := det_automata_fin_run_unique h_run n (by omega)
-    simp [h_ss_n, automaton_congr_run]
+    simp [h_ss_n, automaton_congr_run, Congruence.EqvCls]
   · rintro ⟨rfl⟩
     let as := fun k ↦ if h : k < al.length then al[k] else default
     use al.length, as

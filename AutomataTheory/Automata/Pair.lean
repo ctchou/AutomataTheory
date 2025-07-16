@@ -112,7 +112,7 @@ theorem pair_acc_lang_regular [Inhabited A] {s s' : M.State} :
     simp [h_next]
 
 theorem omega_reg_lang_finite_union_form :
-    AcceptedOmegaLang M acc = ⋃ s0 ∈ M.init, ⋃ sa ∈ acc, ConcatInf (M.PairLang s0 sa) (IterOmega (M.PairLang sa sa)) := by
+    AcceptedOmegaLang M acc = ⋃ s0 ∈ M.init, ⋃ sa ∈ acc, ConcatOmega (M.PairLang s0 sa) (M.PairLang sa sa) := by
   ext as ; simp ; constructor
   · rintro ⟨ss, ⟨h_init, h_next⟩, h_acc⟩
     obtain ⟨sa, h_sa, h_acc⟩ := frequently_in_finite_set.mp h_acc

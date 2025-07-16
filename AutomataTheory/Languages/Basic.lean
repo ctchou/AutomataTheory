@@ -34,6 +34,9 @@ def IterStar (L : Set (List A)) : Set (List A) :=
 def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
   { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, List.ofFn (fun k : Fin (φ (m + 1) - φ m) ↦ as (k + φ m)) ∈ L }
 
+def ConcatOmega (L0 L1 : Set (List A)) : Set (ℕ → A) :=
+  ConcatInf L0 (IterOmega L1)
+
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     ConcatFin {[]} L = L := by
   ext al ; constructor
