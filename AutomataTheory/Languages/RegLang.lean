@@ -125,6 +125,22 @@ section BasicRegLang
 
 variable {A : Type}
 
+def M_empty : Automaton A where
+  State := Unit
+  init := {}
+  next := fun _ _ ↦ {}
+
+def acc_empty : Set Unit := {()}
+
+theorem reg_lang_empty : RegLang (∅ : Set (List A)) := by
+  use M_empty, acc_empty ; constructor
+  · exact Finite.of_fintype Unit
+  ext al ; constructor
+  · intro h
+    simp_all only [mem_empty_iff_false]
+  · rintro ⟨n, as, ⟨ss, ⟨h_init, _⟩ ,_⟩, _⟩
+    simp [M_empty] at h_init
+
 def M_epsilon : Automaton A where
   State := Unit
   init := {()}

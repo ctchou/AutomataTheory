@@ -17,6 +17,8 @@ open Function Set Filter Sum
 
 section OmegaRegLang
 
+open Classical
+
 variable {A : Type}
 
 def OmegaRegLang (L : Set (ℕ → A)) :=
@@ -87,7 +89,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     have eq_prod := Equiv.prodCongr eq_init eq_acc
     have eq_fin_prod := (finProdFinEquiv (m := Nat.card ↑M.init) (n := Nat.card ↑acc)).symm
     have eq := Equiv.trans eq_fin_prod eq_prod
-    use ((Nat.card ↑M.init) * (Nat.card ↑acc))
+    use (Nat.card ↑M.init * Nat.card ↑acc)
     use (fun i ↦ M.PairLang (eq i).1 (eq i).2)
     use (fun i ↦ M.PairLang (eq i).2 (eq i).2)
     constructor
@@ -125,5 +127,35 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     · exact (h_reg (Fin.last n)).1
     · apply omega_reg_lang_iter
       exact (h_reg (Fin.last n)).2
+
+theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (ℕ → A)}
+    (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang L := by
+  rw [congruence_ample_saturates_union h_amp h_sat, omega_reg_lang_iff_finite_union_form]
+  have eq_quot : Fin (Nat.card c.QuotType) ≃ c.QuotType := by exact (Finite.equivFin c.QuotType).symm
+  have eq_prod := Equiv.prodCongr eq_quot eq_quot
+  have eq_fin_prod := (finProdFinEquiv (m := Nat.card c.QuotType) (n := Nat.card c.QuotType)).symm
+  have eq := Equiv.trans eq_fin_prod eq_prod
+  use (Nat.card c.QuotType * Nat.card c.QuotType)
+  use (fun i ↦ if (c.ConcatOmegaLang (eq i).1 (eq i).2 ∩ L).Nonempty then c.EqvCls (eq i).1 else ∅)
+  use (fun i ↦ c.EqvCls (eq i).2)
+  constructor
+  · intro i
+    have h_reg1 := reg_lang_fin_idx_congr h_fin (eq i).1
+    have h_reg2 := reg_lang_fin_idx_congr h_fin (eq i).2
+    rcases Classical.em ((c.ConcatOmegaLang (eq i).1 (eq i).2 ∩ L).Nonempty) with h | h
+    <;> simp [h, h_reg1, h_reg2, reg_lang_empty]
+  ext as ; simp ; constructor
+  · rintro ⟨s, t, h_ne, h_as⟩
+    use (eq.invFun (s, t)) ; simp [h_ne] ; exact h_as
+  · rintro ⟨i, h_as⟩
+    rcases Classical.em ((c.ConcatOmegaLang (eq i).1 (eq i).2 ∩ L).Nonempty) with h | h
+    <;> simp [h] at h_as
+    · use (eq i).1, (eq i).2 ; simpa [h]
+    · simp [ConcatOmega, lang_ConcatInf_empty_left] at h_as
+
+theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L : Set (ℕ → A)}
+    (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang Lᶜ := by
+  have h_sat' := congruence_saturates_compl h_sat
+  exact omega_reg_lang_fin_idx_congr h_fin h_amp h_sat'
 
 end OmegaRegLang

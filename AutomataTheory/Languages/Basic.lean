@@ -61,4 +61,10 @@ theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
     · use al0, al1 ; tauto
     · use al0, al2 ; tauto
 
+theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
+    ConcatInf ∅ L = ∅ := by
+  ext as ; simp
+  rintro ⟨al, as, h_al, _⟩
+  simp at h_al
+
 end Languages
