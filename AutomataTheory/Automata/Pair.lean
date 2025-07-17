@@ -27,6 +27,87 @@ def Automaton.PairAccLang (M : Automaton A) (acc : Set M.State) (s s' : M.State)
 
 variable {M : Automaton.{0, 0} A} {acc : Set M.State}
 
+theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.State}
+    (h : M.PairPath s s' (al0 ++ al1) ss) :
+    M.PairPath s (ss al0.length) al0 ss ∧ M.PairPath (ss al0.length) s' al1 (SuffixFrom al0.length ss) := by
+  obtain ⟨rfl, rfl, h_next⟩ := h
+  constructor
+  · simp [Automaton.PairPath]
+    grind
+  · simp [Automaton.PairPath, SuffixFrom, Nat.add_comm]
+    intro k h_k ; specialize h_next (al0.length + k) (by simpa)
+    grind
+
+theorem pair_lang_split {s s' : M.State} {al0 al1 : List A}
+    (h : al0 ++ al1 ∈ M.PairLang s s') : ∃ t, al0 ∈ M.PairLang s t ∧ al1 ∈ M.PairLang t s' := by
+  obtain ⟨ss, h_path⟩ := h
+  have ⟨h_path0, h_path1⟩ := pair_path_split h_path
+  use (ss al0.length) ; constructor
+  · use ss
+  · use (SuffixFrom al0.length ss)
+
+theorem pair_acc_lang_split {s s' : M.State} {al0 al1 : List A}
+    (h : al0 ++ al1 ∈ M.PairAccLang acc s s') :
+    ∃ t, (al0 ∈ M.PairAccLang acc s t ∧ al1 ∈ M.PairLang t s') ∨
+         (al0 ∈ M.PairLang s t ∧ al1 ∈ M.PairAccLang acc t s') := by
+  obtain ⟨ss, h_path, n, h_n, h_acc⟩ := h
+  obtain ⟨h_path0, h_path1⟩ := pair_path_split h_path
+  use (ss al0.length)
+  rcases Classical.em (n < al0.length + 1) with h_n' | h_n'
+  · left ; constructor
+    · use ss ; simp [Automaton.PairAccPath, h_path0] ; use n
+    · use (SuffixFrom al0.length ss)
+  · right ; constructor
+    · use ss
+    · use (SuffixFrom al0.length ss) ; simp [Automaton.PairAccPath, h_path1]
+      use (n - al0.length) ; simp [SuffixFrom]
+      grind
+
+theorem pair_path_concat {s s' t: M.State} {al0 al1 : List A} {ss0 ss1 : ℕ → M.State}
+    (h0 : M.PairPath s t al0 ss0) (h1 : M.PairPath t s' al1 ss1) :
+    M.PairPath s s' (al0 ++ al1) (fun k ↦ if k < al0.length + 1 then ss0 k else ss1 (k - al0.length)) := by
+  obtain ⟨rfl, rfl, h_next0⟩ := h0
+  obtain ⟨h_s1, rfl, h_next1⟩ := h1
+  simp [Automaton.PairPath] ; constructor
+  · grind
+  intro k h_k
+  rcases (show k < al0.length ∨ k = al0.length ∨ k > al0.length by omega) with h_k' | h_k' | h_k'
+  · grind
+  · simp [h_k', ← h_s1]
+    grind
+  · specialize h_next1 (k - al0.length) (by omega)
+    grind
+
+theorem pair_lang_concat {s s' t: M.State} {al0 al1 : List A}
+    (h0 : al0 ∈ M.PairLang s t) (h1 : al1 ∈ M.PairLang t s') : al0 ++ al1 ∈ M.PairLang s s' := by
+  obtain ⟨ss0, h_path0⟩ := h0
+  obtain ⟨ss1, h_path1⟩ := h1
+  use (fun k ↦ if k < al0.length + 1 then ss0 k else ss1 (k - al0.length))
+  exact pair_path_concat h_path0 h_path1
+
+theorem pair_acc_lang_concat_0 {s s' t: M.State} {al0 al1 : List A}
+    (h0 : al0 ∈ M.PairAccLang acc s t) (h1 : al1 ∈ M.PairLang t s') : al0 ++ al1 ∈ M.PairAccLang acc s s' := by
+  obtain ⟨ss0, h_path0, n, h_n, h_acc⟩ := h0
+  obtain ⟨ss1, h_path1⟩ := h1
+  use (fun k ↦ if k < al0.length + 1 then ss0 k else ss1 (k - al0.length))
+  constructor
+  · exact pair_path_concat h_path0 h_path1
+  · use n ; grind
+
+theorem pair_acc_lang_concat_1 {s s' t: M.State} {al0 al1 : List A}
+    (h0 : al0 ∈ M.PairLang s t) (h1 : al1 ∈ M.PairAccLang acc t s') : al0 ++ al1 ∈ M.PairAccLang acc s s' := by
+  obtain ⟨ss0, h_path0⟩ := h0
+  obtain ⟨ss1, h_path1, n, h_n, h_acc⟩ := h1
+  use (fun k ↦ if k < al0.length + 1 then ss0 k else ss1 (k - al0.length))
+  constructor
+  · exact pair_path_concat h_path0 h_path1
+  · use (n + al0.length)
+    simp [(show n + al0.length < al0.length + al1.length + 1 by omega)]
+    rcases (show n > 0 ∨ n = 0 by omega) with h_n' | rfl
+    · grind
+    · obtain ⟨rfl⟩ := h_path1.1
+      simp [h_path0.2.1, h_acc]
+
 def Automaton.SingleInit (s : M.State) : Automaton A where
   State := M.State
   init := {s}
