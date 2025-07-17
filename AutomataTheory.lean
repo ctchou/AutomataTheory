@@ -10,6 +10,7 @@ import AutomataTheory.Automata.Pair
 import AutomataTheory.Automata.Prod
 import AutomataTheory.Automata.Sum
 import AutomataTheory.Congruences.Basic
+import AutomataTheory.Congruences.BuchiCongr
 import AutomataTheory.Languages.Basic
 import AutomataTheory.Languages.OmegaRegLang
 import AutomataTheory.Languages.RegLang
