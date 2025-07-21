@@ -32,6 +32,9 @@ def FixSuffix {X : Type*} (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
 def SuffixFrom {X : Type*} (n : ℕ) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ xs (k + n)
 
+def FinSubseq {X : Type*} (as : ℕ → X) (lo hi : ℕ) : List X :=
+  List.ofFn (fun k : Fin (hi - lo) ↦ as (k + lo))
+
 variable {X : Type*} {xl : List X} {xs xs' : ℕ → X}
 
 theorem ofFn_eq_ofFn {m n n' : ℕ}
@@ -58,6 +61,10 @@ theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
   rcases Classical.em (k < n) with h_k | h_k
   · simp [h_k]
   · simp [(by omega : k - n + n = k)]
+
+theorem appendListInf_elt_skip_list {n : ℕ} :
+    AppendListInf xl xs (n + xl.length) = xs n := by
+  simp [AppendListInf]
 
 theorem suffixFrom_listLength_AppendListInf :
     xs = SuffixFrom xl.length (AppendListInf xl xs) := by

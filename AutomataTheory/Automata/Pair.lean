@@ -206,7 +206,7 @@ theorem omega_reg_lang_finite_union_form :
     use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (SuffixFrom (nth_sa 0) as)
     simp [← appendListInf_ofFnPrefix_SuffixFrom] ; constructor
     · use ss ; simp [Automaton.PairPath, h_nth_sa, h_next]
-    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [SuffixFrom] ; constructor
+    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [FinSubseq, SuffixFrom] ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn
       have h_nth_0m := StrictMono.monotone h_mono (show 0 ≤ m by omega)
@@ -250,7 +250,7 @@ theorem omega_reg_lang_finite_union_form :
         simp [ss, h_k', h_k'', seg]
         have h_next := (h_nth_ss (Segment nth_sa (k - al0.length))).2.2
           <| (k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length)
-        simp at h_next
+        simp [FinSubseq] at h_next
         specialize h_next (by omega)
         have h1 : k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length + nth_sa (Segment nth_sa (k - al0.length))
           = k - al0.length := by omega
@@ -268,7 +268,7 @@ theorem omega_reg_lang_finite_union_form :
           have h5 := (h_nth_ss (Segment nth_sa (k - al0.length))).2.1
           have h6 : k + 1 - al0.length - nth_sa (Segment nth_sa (k - al0.length))
             = k + 1 - nth_sa (Segment nth_sa (k - al0.length)) - al0.length := by omega
-          simp [← h_k1, h6] at h5
+          simp [FinSubseq, ← h_k1, h6] at h5
           simp [h5] at h_next
           exact h_next
     · let φ k := nth_sa k + al0.length
