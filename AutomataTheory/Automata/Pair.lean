@@ -27,6 +27,13 @@ def Automaton.PairAccLang (M : Automaton A) (acc : Set M.State) (s s' : M.State)
 
 variable {M : Automaton.{0, 0} A} {acc : Set M.State}
 
+theorem pair_lang_fin_subseq {as : ℕ → A} {ss : ℕ → M.State} {m n : ℕ}
+    (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_m_n : m ≤ n) :
+    FinSubseq as m n ∈ M.PairLang (ss m) (ss n) := by
+  use (fun k ↦ ss (k + m))
+  simp [Automaton.PairPath, FinSubseq, (show n - m + m = n by omega)]
+  intro k h_k ; grind
+
 theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.State}
     (h : M.PairPath s s' (al0 ++ al1) ss) :
     M.PairPath s (ss al0.length) al0 ss ∧ M.PairPath (ss al0.length) s' al1 (SuffixFrom al0.length ss) := by
@@ -124,6 +131,95 @@ theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ
     simp [Automaton.PairPath, h_init]
     intro k h_k ; specialize h_next k h_k
     simp [List.ExtendInf, h_k] at h_next ; exact h_next
+
+theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State} {φ : ℕ → ℕ}
+    (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_acc : ∃ᶠ k in Filter.atTop, ss k ∈ acc) (h_mono : StrictMono φ) :
+    ∃ᶠ m in Filter.atTop, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
+  have h_acc' := frequently_atTop.mp h_acc
+  have h_mono' := frequently_atTop.mp <| Nat.frequently_atTop_iff_infinite.mpr <| strict_mono_infinite h_mono
+  apply frequently_atTop.mpr ; intro m
+  obtain ⟨k, h_k, h_k_acc⟩ := h_acc' (φ m)
+  let n := Segment' φ k
+  use n ; constructor
+  · exact segment'_lower_val h_mono h_k
+  · use (fun k ↦ ss (k + φ n)) ; constructor
+    · have : φ n < φ (n + 1) := h_mono (show n < n + 1 by omega)
+      simp [Automaton.PairPath, FinSubseq, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
+      intro j h_j
+      have := h_next (j + φ n)
+      simpa [(show j + 1 + φ n = j + φ n + 1 by omega)]
+    · have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le h_mono]
+      have h1 : φ 0 ≤ k := by omega
+      have : φ n ≤ k := by exact segment'_lower_bound h_mono h1
+      use (k - φ n)
+      simp [(show k - φ n + φ n = k by omega), h_k_acc, FinSubseq]
+      have : k < φ (n + 1) := by exact segment'_upper_bound h_mono h1
+      omega
+
+theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss' : ℕ → M.State)
+    (h_mono : StrictMono φ) (h_zero : φ 0 = 0)
+    (h_pair : ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairLang (ss' m) (ss' (m + 1)))
+    (h_inf : ∃ᶠ m in atTop, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) :
+    ∃ ss : ℕ → M.State, (∀ m, ss (φ m) = ss' m) ∧
+      (∀ k, ss (k + 1) ∈ M.next (ss k) (as (k))) ∧ (∃ᶠ k in atTop, ss k ∈ acc) := by
+  have h_exists : ∀ m, ∃ ps, M.PairPath (ss' m) (ss' (m + 1)) (FinSubseq as (φ m) (φ (m + 1))) ps ∧
+    ( FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1)) →
+      M.PairAccPath acc (ss' m) (ss' (m + 1)) (FinSubseq as (φ m) (φ (m + 1))) ps ) := by
+    intro m
+    rcases Classical.em (FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) with h_acc | h_acc
+    <;> simp [h_acc]
+    · obtain ⟨ps, h_ps⟩ := h_acc
+      use ps ; simp [h_ps, h_ps.1]
+    · obtain ⟨ps, h_ps⟩ := h_pair m
+      use ps
+  choose ps h_ps using h_exists
+  use (fun k ↦ ps (Segment φ k) (k - φ (Segment φ k)))
+  constructorm* _ ∧ _
+  · intro m
+    have h0 := (h_ps (Segment φ (φ m))).1.1
+    simp [segment_idem h_mono] at h0
+    simp [segment_idem h_mono, h0]
+  · intro k
+    have := segment_lower_bound h_mono h_zero k
+    have := segment_upper_bound h_mono h_zero k
+    have h_next := (h_ps (Segment φ k)).1.2.2 (k - φ (Segment φ k))
+    simp [FinSubseq,
+      (show k - φ (Segment φ k) + φ (Segment φ k) = k by omega),
+      (show k - φ (Segment φ k) + 1 = k + 1 - φ (Segment φ k) by omega),
+      (show k - φ (Segment φ k) < φ (Segment φ k + 1) - φ (Segment φ k) by omega)] at h_next
+    rcases (show k + 1 < φ (Segment φ k + 1) ∨ k + 1 = φ (Segment φ k + 1) by omega) with h_k | h_k
+    · have h1 := segment_range_val h_mono (by omega) h_k
+      simp [h1, h_next]
+    · have h1 := (h_ps (Segment φ k)).1.2.1
+      simp [FinSubseq] at h1
+      simp [h_k, h1] at h_next
+      have h2 : Segment φ (k + 1) = Segment φ k + 1 := by simp [h_k, segment_idem h_mono]
+      have h3 := (h_ps (Segment φ k + 1)).1.1
+      simp [← h_k, h2, h3, h_next]
+  · have h_inf' : ∃ᶠ m in atTop, ∃ k < φ (m + 1) - φ m + 1, ps m k ∈ acc := by
+      apply Frequently.mono h_inf
+      intro m h_m
+      obtain ⟨_, k, h_k, h_acc⟩ := (h_ps m).2 h_m
+      simp [FinSubseq] at h_k
+      use k
+    have h_φ_inf := Filter.frequently_atTop'.mp <| Nat.frequently_atTop_iff_infinite.mpr <| strict_mono_infinite h_mono
+    apply Filter.frequently_atTop'.mpr
+    intro k0
+    obtain ⟨k1, h_k1, m1, rfl⟩ := h_φ_inf k0
+    obtain ⟨m2, h_m2, k2, h_k2, h_acc⟩ := Filter.frequently_atTop'.mp h_inf' m1
+    have := h_mono h_m2
+    have : φ m2 < φ (m2 + 1) := by apply h_mono ; omega
+    rcases (show k2 < φ (m2 + 1) - φ m2 ∨ k2 = φ (m2 + 1) - φ m2 by omega) with h_k2' | rfl
+    · use (k2 + φ m2) ; constructor
+      · omega
+      have h1 := segment_range_val h_mono (show φ m2 ≤ k2 + φ m2 by omega) (by omega)
+      simp [h1, h_acc]
+    · use (φ (m2 + 1)) ; constructor
+      · omega
+      have h2 := (h_ps (m2)).1.2.1
+      simp [FinSubseq] at h2
+      simp [h2] at h_acc
+      simp [segment_idem h_mono, (h_ps (m2 + 1)).1.1, h_acc]
 
 variable [h_fin : Finite M.State]
 

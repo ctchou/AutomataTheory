@@ -63,4 +63,10 @@ theorem congruence_ample_saturates_union {L : Set (ℕ → A)}
   · rintro ⟨s, t, h_ne, h_as⟩
     exact h_sat s t h_ne h_as
 
+theorem congruence_same_eqvcls_imp_eq {s : c.QuotType} {u u' : List A}
+    (h : u ∈ c.EqvCls s) (h' : u' ∈ c.EqvCls s) : c.eq u u' := by
+  apply Quotient.exact
+  simp [Congruence.EqvCls] at h h'
+  simp [h, h']
+
 end Congruences

@@ -11,7 +11,7 @@ The theory of an automaton-based congruence used by J.R. Büchi to
 prove the closure of ω-regular langauges under complementation.
 -/
 
-open Function Set
+open Function Set Filter
 
 section BuchiCongr
 
@@ -42,5 +42,59 @@ def Automaton.BuchiCongr (M : Automaton A) (acc : Set M.State) : Congruence A wh
         exact pair_acc_lang_concat_0 h_u h_w
       · have h_u := (h s t).1.mpr h_v
         exact pair_acc_lang_concat_1 h_u h_w
+
+variable {M : Automaton A} {acc : Set M.State}
+
+theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (AcceptedOmegaLang M acc) := by
+  rintro p q ⟨as, h_congr, ss, ⟨h_init, h_next⟩, h_acc⟩ as' h_congr'
+  obtain ⟨φ, h_mono, h_eqv_p, h_eqv_q⟩ := congruence_mem_concat_omega_lang h_congr
+  obtain ⟨φ', h_mono', h_eqv_p', h_eqv_q'⟩ := congruence_mem_concat_omega_lang h_congr'
+  have h_congr_p := congruence_same_eqvcls_imp_eq h_eqv_p h_eqv_p'
+  have h_congr_q := fun m ↦ congruence_same_eqvcls_imp_eq (h_eqv_q m) (h_eqv_q' m)
+  have h_pair_0 := pair_lang_fin_subseq h_next (show 0 ≤ φ 0 by omega)
+  have h_pair_1 := fun m ↦ pair_lang_fin_subseq h_next (le_of_lt <| h_mono (show m < m + 1 by omega))
+  have h_pair_0' := (h_congr_p (ss 0) (ss (φ 0))).1.mp <| h_pair_0
+  have h_pair_1' := fun m ↦ (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).1.mp <| h_pair_1 m
+  have h_inf := pair_acc_lang_frequently_from_run h_next h_acc h_mono
+  have h_inf' : ∃ᶠ m in atTop, FinSubseq as' (φ' m) (φ' (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
+    apply Frequently.mono h_inf ; intro m
+    exact (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).2.mp
+  obtain ⟨ss0', h_ss_0, h_ss_φ0, h_next0'⟩ := h_pair_0'
+  simp [FinSubseq] at h_ss_φ0 h_next0'
+  have h_lem1 : ∀ m, FinSubseq (fun k ↦ as' (k + φ' 0)) (φ' m - φ' 0) (φ' (m + 1) - φ' 0)
+      = FinSubseq as' (φ' m) (φ' (m + 1)) := by
+    intro m
+    have : φ' 0 ≤ φ' m := by simp [StrictMono.le_iff_le h_mono']
+    simp [FinSubseq, add_assoc, (show φ' m - φ' 0 + φ' 0 = φ' m by omega),
+      (show φ' (m + 1) - φ' 0 - (φ' m - φ' 0) = φ' (m + 1) - φ' m by omega)]
+  obtain ⟨ss1', h_ss1', h_next1', h_acc1'⟩ := pair_acc_lang_frequently_to_run
+    (acc := acc) (φ := (φ' · - φ' 0)) (as := fun k ↦ as' (k + φ' 0))
+    (ss' := fun k ↦ ss (φ k)) (base_zero_strict_mono h_mono') (base_zero_shift φ')
+    (by simp [h_lem1, h_pair_1'])
+    (by simp [h_lem1, h_inf'])
+  use (fun k ↦ if k < φ' 0 then ss0' k else ss1' (k - φ' 0))
+  constructor
+  · constructor
+    · rcases (show φ' 0 = 0 ∨ φ' 0 > 0 by omega) with h_k | h_k
+      · simp [h_k] ; grind
+      · grind
+    intro k
+    rcases (show k + 1 < φ' 0 ∨ k + 1 = φ' 0 ∨ k + 1 > φ' 0 by omega) with h_k | h_k | h_k
+    · grind
+    · have h_k' : k < φ' 0 := by omega
+      have h1 := h_ss1' 0
+      simp at h1
+      have h2 := h_next0' k h_k'
+      simp [h_k, h_ss_φ0] at h2
+      simp [h_k, h_k', h1, h2]
+    · simp [(show ¬ k < φ' 0 by omega), (show ¬ k + 1 < φ' 0 by omega)]
+      have h1 := h_next1' (k - φ' 0)
+      simp [(show k - φ' 0 + φ' 0 = k by omega)] at h1
+      simp [(show k + 1 - φ' 0 = k - φ' 0 + 1 by omega), h1]
+  · simp [Filter.frequently_atTop] at h_acc1' ⊢
+    intro k0
+    obtain ⟨k1, h_k1, h_k1_acc⟩ := h_acc1' (k0 + φ' 0)
+    use (k1 + φ' 0)
+    simp [(show k0 ≤ k1 + φ' 0 by omega), h_k1_acc]
 
 end BuchiCongr

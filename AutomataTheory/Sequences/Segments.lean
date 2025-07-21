@@ -22,7 +22,7 @@ open Classical
 /- Given a strictly monotonic function `φ : ℕ → ℕ` with `φ 0 = 0` and `k : ℕ`,
 `Segment φ k` is the unique `m : ℕ` such that `φ m ≤ k < φ (k + 1)`.
 -/
-noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) :=
+noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) : ℕ :=
   if k ∈ range φ then Nat.count (· ∈ range φ) k else Nat.count (· ∈ range φ) k - 1
 
 variable {φ : ℕ → ℕ}
@@ -122,4 +122,81 @@ theorem segment_range_val (hm : StrictMono φ) {m k : ℕ}
   simp [h1, h2, Nat.count_succ, -mem_range]
   exact h_ind'
 
+theorem segment_galois_connection (hm : StrictMono φ) (h0 : φ 0 = 0) :
+    GaloisConnection φ (Segment φ) := by
+  intro m k ; constructor
+  · intro h
+    by_contra! h_con
+    have h1 : Segment φ k + 1 ≤ m := by omega
+    have := (StrictMono.le_iff_le hm).mpr h1
+    have := segment_upper_bound hm h0 k
+    omega
+  · intro h
+    by_contra! h_con
+    have := (StrictMono.le_iff_le hm).mpr h
+    have := segment_lower_bound hm h0 k
+    omega
+
 end Segments
+
+section Segments'
+
+/- Segment' φ k does not assume φ 0 = 0, but returns a meaningful value
+   only when k ≥ φ 0 and returns 0 for all k < φ 0.
+-/
+noncomputable def Segment' (φ : ℕ → ℕ) (k : ℕ) : ℕ :=
+  Segment (φ · - φ 0) (k - φ 0)
+
+lemma base_zero_shift (φ : ℕ → ℕ) :
+    (φ · - φ 0) 0 = 0 := by
+  simp
+
+lemma base_zero_strict_mono {φ : ℕ → ℕ} (hm : StrictMono φ) :
+    StrictMono (φ · - φ 0) := by
+  intro m n h_m_n ; simp
+  have := hm h_m_n
+  have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le hm]
+  have : φ 0 ≤ φ n := by simp [StrictMono.le_iff_le hm]
+  omega
+
+variable {φ : ℕ → ℕ}
+
+theorem segment'_zero (hm : StrictMono φ) {k : ℕ} (h : k ≤ φ 0) :
+    Segment' φ k = 0 := by
+  simp [Segment', (show k - φ 0 = 0 by omega)]
+  exact segment_zero (base_zero_strict_mono hm) (base_zero_shift φ)
+
+theorem segment'_upper_bound (hm : StrictMono φ) {k : ℕ} (h : φ 0 ≤ k) :
+    k < φ (Segment' φ k + 1) := by
+  simp [Segment']
+  have := segment_upper_bound (base_zero_strict_mono hm) (base_zero_shift φ) (k - φ 0)
+  omega
+
+theorem segment'_lower_bound (hm : StrictMono φ) {k : ℕ} (h : φ 0 ≤ k) :
+    φ (Segment' φ k) ≤ k := by
+  simp [Segment']
+  have := segment_lower_bound (base_zero_strict_mono hm) (base_zero_shift φ) (k - φ 0)
+  omega
+
+theorem segment'_idem (hm : StrictMono φ) (k : ℕ) :
+    Segment' φ (φ k) = k := by
+  simp [Segment']
+  exact segment_idem (base_zero_strict_mono hm) k
+
+theorem segment'_range_val (hm : StrictMono φ) {m k : ℕ}
+    (hl : φ m ≤ k) (hu : k < φ (m + 1)) : Segment' φ k = m := by
+  simp [Segment']
+  have h : φ 0 ≤ k := by
+    have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le hm]
+    omega
+  have hl' : (φ · - φ 0) m ≤ k - φ 0 := by simp ; omega
+  have hu' : k - φ 0 < (φ · - φ 0) (m + 1) := by simp ; omega
+  exact segment_range_val (base_zero_strict_mono hm) hl' hu'
+
+theorem segment'_lower_val (hm : StrictMono φ) {m k : ℕ}
+    (hl : φ m ≤ k) : m ≤ Segment' φ k := by
+  simp [Segment']
+  have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le hm]
+  exact (segment_galois_connection (base_zero_strict_mono hm) (base_zero_shift φ) m (k - φ 0)).mp (by omega)
+
+end Segments'

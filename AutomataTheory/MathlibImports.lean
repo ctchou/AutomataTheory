@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Order.Archimedean.Basic
 import Mathlib.Algebra.Order.Ring.Nat
 import Mathlib.Algebra.Order.Star.Basic
+import Mathlib.Algebra.Order.Sub.Basic
 import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Order.Filter.Cofinite
 import Mathlib.Data.Finite.Card
