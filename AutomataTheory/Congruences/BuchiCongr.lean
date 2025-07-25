@@ -13,7 +13,7 @@ prove the closure of ω-regular langauges under complementation.
 
 open Function Set Filter
 
-section BuchiCongr
+section BuchiCongrBasic
 
 variable {A : Type}
 
@@ -97,4 +97,37 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (AcceptedOmegaLang 
     use (k1 + φ' 0)
     simp [(show k0 ≤ k1 + φ' 0 by omega), h_k1_acc]
 
-end BuchiCongr
+end BuchiCongrBasic
+
+section BuchiCongrFinite
+
+open Classical
+
+variable {A : Type}
+
+noncomputable def Automaton.BuchiCongrParam (M : Automaton A) (acc : Set M.State)
+    (π : M.State → M.State → Prop × Prop) : (M.BuchiCongr acc).QuotType :=
+  if h : ∃ u, ∀ s s', ((π s s').1 ↔ u ∈ M.PairLang s s') ∧ ((π s s').2 ↔ u ∈ M.PairAccLang acc s s')
+  then ⟦ choose h ⟧
+  else ⟦ [] ⟧
+
+variable {M : Automaton A} {acc : Set M.State}
+
+theorem buchi_congr_param_surjective : Surjective (M.BuchiCongrParam acc) := by
+  intro q
+  let π s s' := (q.out ∈ M.PairLang s s', q.out ∈ M.PairAccLang acc s s')
+  have h : ∃ u, ∀ s s', ((π s s').1 ↔ u ∈ M.PairLang s s') ∧ ((π s s').2 ↔ u ∈ M.PairAccLang acc s s') := by
+    use q.out ; intro s s' ; simp [π]
+  use π
+  simp [Automaton.BuchiCongrParam, h]
+  rw [← Quotient.out_eq q]
+  apply Quotient.sound
+  intro s s'
+  have h1 := choose_spec h s s'
+  simp [π] at h1
+  simp [h1]
+
+theorem buchi_congr_finite_index [Finite M.State] : Finite (M.BuchiCongr acc).QuotType := by
+  exact Finite.of_surjective (M.BuchiCongrParam acc) buchi_congr_param_surjective
+
+end BuchiCongrFinite
