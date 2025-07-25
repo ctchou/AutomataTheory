@@ -14,7 +14,7 @@ import AutomataTheory.Congruences.BuchiCongr
 import AutomataTheory.Languages.Basic
 import AutomataTheory.Languages.OmegaRegLang
 import AutomataTheory.Languages.RegLang
-import AutomataTheory.MathlibImports
+import AutomataTheory.Mathlib.Imports
 import AutomataTheory.Sequences.Basic
 import AutomataTheory.Sequences.Segments
 import AutomataTheory.Sequences.Temporal

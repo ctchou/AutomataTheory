@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.MathlibImports
+import AutomataTheory.Mathlib.Imports
 
 /-!
 This file contains some definitions and theorems about finite and infinite sequences,
