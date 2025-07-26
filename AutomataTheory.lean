@@ -15,6 +15,7 @@ import AutomataTheory.Languages.Basic
 import AutomataTheory.Languages.OmegaRegLang
 import AutomataTheory.Languages.RegLang
 import AutomataTheory.Mathlib.Imports
+import AutomataTheory.Mathlib.InfGraphRamsey
 import AutomataTheory.Sequences.Basic
 import AutomataTheory.Sequences.Segments
 import AutomataTheory.Sequences.Temporal
