@@ -5,6 +5,7 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.Automata.Pair
+import AutomataTheory.Mathlib.InfGraphRamsey
 
 /-!
 The theory of an automaton-based congruence used by J.R. Büchi to
@@ -129,5 +130,51 @@ theorem buchi_congr_param_surjective : Surjective (M.BuchiCongrParam acc) := by
 
 theorem buchi_congr_finite_index [Finite M.State] : Finite (M.BuchiCongr acc).QuotType := by
   exact Finite.of_surjective (M.BuchiCongrParam acc) buchi_congr_param_surjective
+
+theorem strict_mono_of_infinite {ns : Set ℕ} (h : ns.Infinite) :
+    ∃ φ : ℕ → ℕ, StrictMono φ ∧ range φ = ns := by
+  use (Nat.nth (· ∈ ns)) ; constructor
+  · exact Nat.nth_strictMono h
+  · exact Nat.range_nth_of_infinite h
+
+lemma nonempty_of_card2 {X : Type*} (t : Finset X) (h : t.card = 2) : t.Nonempty := by
+  refine Finset.card_pos.mp ?_ ; omega
+
+theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
+  intro as
+  have : Finite (M.BuchiCongr acc).QuotType := buchi_congr_finite_index
+  let color (t : Finset ℕ) (h : t.card = 2) : (M.BuchiCongr acc).QuotType :=
+    ⟦ FinSubseq as (t.min' (nonempty_of_card2 t h)) (t.max' (nonempty_of_card2 t h)) ⟧
+  obtain ⟨q, ns, h_ns, h_color⟩ := inf_graph_ramsey color
+  obtain ⟨φ, h_mono, rfl⟩ := strict_mono_of_infinite h_ns
+  let p : (M.BuchiCongr acc).QuotType := ⟦ FinSubseq as 0 (φ 0) ⟧
+  use p, q, (FinSubseq as 0 (φ 0)), (SuffixFrom (φ 0) as) ; constructorm* _ ∧ _
+  · simp [Congruence.EqvCls, p]
+  · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
+    intro m
+    have h_lem1 : FinSubseq (SuffixFrom (φ 0) as) (φ m - φ 0) (φ (m + 1) - φ 0) = FinSubseq as (φ m) (φ (m + 1)) := by
+      have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le h_mono]
+      simp [FinSubseq, SuffixFrom, add_assoc, (show φ m - φ 0 + φ 0 = φ m by omega),
+        (show φ (m + 1) - φ 0 - (φ m - φ 0) = φ (m + 1) - φ m by omega)]
+    simp [h_lem1]
+    have h_card2 : Finset.card {φ m, φ (m + 1)} = 2 := by
+      apply Finset.card_pair
+      have := h_mono (show m < m + 1 by omega)
+      omega
+    have h_ne2 := nonempty_of_card2 {φ m, φ (m + 1)} h_card2
+    have h_min : Finset.min' {φ m, φ (m + 1)} h_ne2 = φ m := by
+      have := h_mono (show m < m + 1 by omega)
+      have := Finset.min'_le {φ m, φ (m + 1)} (φ m) (by simp)
+      have := Finset.min'_mem {φ m, φ (m + 1)} h_ne2
+      simp at this ; omega
+    have h_max : Finset.max' {φ m, φ (m + 1)} h_ne2 = φ (m + 1) := by
+      have := h_mono (show m < m + 1 by omega)
+      have := Finset.le_max' {φ m, φ (m + 1)} (φ (m + 1)) (by simp)
+      have := Finset.max'_mem {φ m, φ (m + 1)} h_ne2
+      simp at this ; omega
+    have h_color := h_color {φ m, φ (m + 1)} h_card2 (by intro x ; simp ; grind)
+    simp [color, h_min, h_max] at h_color
+    simp [Congruence.EqvCls, h_color]
+  · simp [FinSubseq, ← appendListInf_ofFnPrefix_SuffixFrom]
 
 end BuchiCongrFinite
