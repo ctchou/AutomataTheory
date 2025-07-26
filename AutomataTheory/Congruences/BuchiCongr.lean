@@ -5,6 +5,7 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.Automata.Pair
+import AutomataTheory.Mathlib.InfGraphRamsey
 
 /-!
 The theory of an automaton-based congruence used by J.R. Büchi to
@@ -129,5 +130,29 @@ theorem buchi_congr_param_surjective : Surjective (M.BuchiCongrParam acc) := by
 
 theorem buchi_congr_finite_index [Finite M.State] : Finite (M.BuchiCongr acc).QuotType := by
   exact Finite.of_surjective (M.BuchiCongrParam acc) buchi_congr_param_surjective
+
+theorem strict_mono_of_infinite {ns : Set ℕ} (h : ns.Infinite) :
+    ∃ φ : ℕ → ℕ, StrictMono φ ∧ range φ = ns := by
+  use (Nat.nth (· ∈ ns)) ; constructor
+  · exact Nat.nth_strictMono h
+  · exact Nat.range_nth_of_infinite h
+
+lemma nonempty_of_card2 {X : Type*} (t : Finset X) (h : t.card = 2) : t.Nonempty := by
+  refine Finset.card_pos.mp ?_ ; omega
+
+theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
+  intro as
+  have : Finite (M.BuchiCongr acc).QuotType := buchi_congr_finite_index
+  let color (t : Finset ℕ) (h : t.card = 2) : (M.BuchiCongr acc).QuotType :=
+    ⟦ FinSubseq as (t.min' (nonempty_of_card2 t h)) (t.max' (nonempty_of_card2 t h)) ⟧
+  obtain ⟨q, ns, h_ns, h_color⟩ := inf_graph_ramsey color
+  obtain ⟨φ, h_mono, rfl⟩ := strict_mono_of_infinite h_ns
+  let p : (M.BuchiCongr acc).QuotType := ⟦ FinSubseq as 0 (φ 0) ⟧
+  use p, q, (FinSubseq as 0 (φ 0)), (SuffixFrom (φ 0) as) ; constructorm* _ ∧ _
+  · simp [Congruence.EqvCls, p]
+  · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
+    intro m
+    sorry
+  · simp [FinSubseq, ← appendListInf_ofFnPrefix_SuffixFrom]
 
 end BuchiCongrFinite
