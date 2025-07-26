@@ -15,8 +15,8 @@ open Function Set
 
 section InfGraphRamsey
 
-theorem inf_graph_ramsey {X C : Type*} [Infinite X] [Finite C] (color : (t : Finset X) → (t.card = 2) → C) :
-    ∃ c : C, ∃ s : Set X, s.Infinite ∧ ∀ t : Finset X, (h : t.card = 2) → t.toSet ⊆ s → color t h = c := by
+theorem inf_graph_ramsey {C : Type*} [Finite C] (color : (t : Finset ℕ) → (t.card = 2) → C) :
+    ∃ c : C, ∃ s : Set ℕ, s.Infinite ∧ ∀ t : Finset ℕ, (h : t.card = 2) → t.toSet ⊆ s → color t h = c := by
   sorry
 
 end InfGraphRamsey
