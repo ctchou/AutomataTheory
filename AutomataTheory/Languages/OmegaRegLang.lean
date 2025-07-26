@@ -5,7 +5,7 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.Automata.OI2
-import AutomataTheory.Automata.Pair
+import AutomataTheory.Congruences.BuchiCongr
 
 /-!
 This file proves various closure properties of ω-regular langauges.
@@ -157,5 +157,11 @@ theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L :
     (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang Lᶜ := by
   have h_sat' := congruence_saturates_compl h_sat
   exact omega_reg_lang_fin_idx_congr h_fin h_amp h_sat'
+
+theorem omega_reg_lang_compl [Inhabited A] {L : Set (ℕ → A)}
+    (h : OmegaRegLang L) : OmegaRegLang (Lᶜ) := by
+  obtain ⟨M, acc, h_fin, rfl⟩ := h
+  exact omega_reg_lang_fin_idx_congr_compl (c := M.BuchiCongr acc)
+    buchi_congr_finite_index buchi_congr_ample buchi_congr_saturates
 
 end OmegaRegLang
