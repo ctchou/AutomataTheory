@@ -13,7 +13,7 @@ Although our ultimate aim is to formalize the theory of finite
 automata and the languages and $\omega$-languages they accept,
 finiteness assumptions are made only when necessary.
 
-As of 2025-06-09, the following theorems have been proved:
+*Update 2025-06-09:* The following theorems have been proved:
 
 * Regular languages are closed under union, intersection, complementation,
   concatenation, and the Kleene star.
@@ -22,7 +22,7 @@ As of 2025-06-09, the following theorems have been proved:
   Both the concatenation of a regular language followed by an $\omega$-regular
   and the $\omega$-power of a regular language yield an $\omega$-regular language.
 
-As of 2025-07-21, more theorems have been proved:
+*Update 2025-07-21:* More theorems have been proved:
 
 * All equivalence classes of a (right) congruence relation (on finite words)
   of finite index are regular languages.
@@ -35,11 +35,18 @@ As of 2025-07-21, more theorems have been proved:
   an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular
   (see `AutomataTheory/Congruences/Basic.lean` for the definitions of "ample" and "saturates").
 
-The last result above will allow us to prove that $\omega$-regular languages are closed
-under complementation, using a congruence relation invented by J.R. Büchi [1]
-(see `Automaton.BuchiCongr` defined in `AutomataTheory/Congruences/BuchiCongr.lean`).
-Our formalization follows the first two sections of W. Thomas's survey article [2]
-and the Wikipedia article on Büchi automaton [3].
+*Update 2025-07-26:* We have proved that $\omega$-regular languages are closed
+under complementation, modulo a Ramsey theorem on infinite graphs.  Our proof
+is essentially that by J.R. Büchi [1] and follows the modern presentation in the
+first 2 sections of W. Thomas's survey article [2], an outline of which can also
+be found in Wikipedia [3].  The crux of the proof uses an intricate congruence
+relation invented by Büchi
+(see `Automaton.BuchiCongr` defined in `AutomataTheory/Congruences/BuchiCongr.lean`)
+that is of finite index and has the ampleness and saturation properties
+mentioned above.
+
+Now only the Ramsey theorem on infinite graphs in
+`AutomataTheory/Mathlib/InfGraphRamsey.lean` remains to be proved.
 
 [1] Büchi, J.R. (1962). "On a Decision Method in Restricted Second Order Arithmetic".
     The Collected Works of J. Richard Büchi. Stanford: Stanford University Press. pp. 425–435.
