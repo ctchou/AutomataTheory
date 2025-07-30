@@ -30,10 +30,10 @@ def DetAutomaton.ofCongr (c : Congruence A) : DetAutomaton A where
 variable {c : Congruence A}
 
 theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
-    MakeDetRun (DetAutomaton.ofCongr c) as n = ⟦ List.ofFn (fun k : Fin n ↦ as k) ⟧ := by
+    (DetAutomaton.ofCongr c).DetRun as n = ⟦ List.ofFn (fun k : Fin n ↦ as k) ⟧ := by
   induction' n with n h_ind
-  · simp [MakeDetRun, DetAutomaton.ofCongr]
-  simp only [MakeDetRun, h_ind]
+  · simp [DetAutomaton.DetRun, DetAutomaton.ofCongr]
+  simp only [DetAutomaton.DetRun, h_ind]
   simp only [DetAutomaton.ofCongr, Quotient.lift_mk]
   suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
   exact Eq.symm List.ofFn_succ_last
@@ -48,7 +48,7 @@ theorem accepted_lang_congr [Inhabited A] (s : (DetAutomaton.ofCongr c).State) :
     let as := fun k ↦ if h : k < al.length then al[k] else default
     use al.length, as
     constructor <;> [skip ; simp [as]]
-    use (MakeDetRun (DetAutomaton.ofCongr c) as)
+    use ((DetAutomaton.ofCongr c).DetRun as)
     constructor
     · exact det_automata_fin_run_exists al.length as
     · simp [automaton_congr_run, as]

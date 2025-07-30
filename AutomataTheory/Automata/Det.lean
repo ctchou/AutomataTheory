@@ -27,41 +27,41 @@ def DetAutomaton.toND (M : DetAutomaton A) : Automaton A where
   init := {M.init}
   next := fun s a ↦ {M.next s a}
 
-def MakeDetRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
+def DetAutomaton.DetRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
   | 0 => M.init
-  | k + 1 => M.next (MakeDetRun M as k) (as k)
+  | k + 1 => M.next (DetRun M as k) (as k)
 
 variable {M : DetAutomaton A}
 
 theorem det_automata_inf_run_exists (as : ℕ → A) :
-    M.toND.InfRun as (MakeDetRun M as) := by
-  constructor <;> simp [DetAutomaton.toND, MakeDetRun]
+    M.toND.InfRun as (M.DetRun as) := by
+  constructor <;> simp [DetAutomaton.toND, DetAutomaton.DetRun]
 
 theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
-    (h : M.toND.InfRun as ss) : ss = MakeDetRun M as := by
+    (h : M.toND.InfRun as ss) : ss = M.DetRun as := by
   ext k ; induction' k with k h_ind
   · have h_init := h.1
     simp [DetAutomaton.toND] at h_init
     assumption
-  · rw [MakeDetRun, ← h_ind]
+  · rw [DetAutomaton.DetRun, ← h_ind]
     have h_next := h.2 k
     simp [DetAutomaton.toND] at h_next
     assumption
 
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
-    M.toND.FinRun n as (MakeDetRun M as) := by
+    M.toND.FinRun n as (M.DetRun as) := by
   exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
 theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : M.toND.FinRun n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
+    (h : M.toND.FinRun n as ss) : ∀ k < n + 1, ss k = M.DetRun as k := by
   rcases h with ⟨h_init, h_next⟩
   intro k h_k ; induction' k with k h_ind
   · simp [DetAutomaton.toND] at h_init
-    simpa [MakeDetRun]
+    simpa [DetAutomaton.DetRun]
   · have h_next' := h_next k (by omega)
     simp [DetAutomaton.toND] at h_next'
     have h_ss_k := h_ind (by omega)
-    simpa [MakeDetRun, ← h_ss_k]
+    simpa [DetAutomaton.DetRun, ← h_ss_k]
 
 end DetAutomata
 
@@ -100,7 +100,7 @@ theorem accepted_lang_compl [Inhabited A] :
       simp [List.ext_get_iff]
       intro k h_k ; simp [as, h_k]
     use al.length, as ; simp [← h_al]
-    let ss := MakeDetRun M as
+    let ss := M.DetRun as
     have h_run : M.toND.FinRun al.length as ss := by
       exact det_automata_fin_run_exists al.length as
     use ss ; constructor

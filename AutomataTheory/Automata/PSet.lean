@@ -29,15 +29,15 @@ variable {M : Automaton A}
 instance : Membership M.State M.PSet.State := by exact { mem := fun s ↦ s }
 
 theorem automata_pset_reach_init (as : ℕ → A) :
-    MakeDetRun M.PSet as 0 = M.init := by
-  simp [MakeDetRun, Automaton.PSet]
+    M.PSet.DetRun as 0 = M.init := by
+  simp [DetAutomaton.DetRun, Automaton.PSet]
 
 theorem automata_pset_reach_next (as : ℕ → A) (k : ℕ) :
-    MakeDetRun M.PSet as (k + 1) = ⋃ s ∈ MakeDetRun M.PSet as k, M.next s (as k) := by
-  simp [MakeDetRun, Automaton.PSet]
+    M.PSet.DetRun as (k + 1) = ⋃ s ∈ M.PSet.DetRun as k, M.next s (as k) := by
+  simp [DetAutomaton.DetRun, Automaton.PSet]
 
 theorem automata_pset_run (as : ℕ → A) (k : ℕ) :
-    MakeDetRun M.PSet as k = { s : M.State | ∃ ss, M.FinRun k as ss ∧ ss k = s } := by
+    M.PSet.DetRun as k = { s : M.State | ∃ ss, M.FinRun k as ss ∧ ss k = s } := by
   induction' k with k h_ind
   · rw [automata_pset_reach_init as, Set.ext_iff]
     intro s ; constructor
@@ -83,7 +83,7 @@ theorem accepted_lang_pset :
     use ss ; simp [h_run, h_sn, h_acc]
   · rintro ⟨n, as, ⟨ss, h_run, h_sn⟩, h_al⟩
     use n, as ; simp [h_al]
-    use (MakeDetRun M.PSet as) ; constructor
+    use (M.PSet.DetRun as) ; constructor
     · apply det_automata_fin_run_exists
     · rw [automata_pset_run, Automaton.PSet_Acc]
       use (ss n) ; simp [h_sn] ; use ss
