@@ -68,7 +68,7 @@ theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton
       simpa [Automaton.Sum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
 
 theorem automata_sum_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Sum M).State} :
-    InfRun (Automaton.Sum M) as ss ↔ ∃ i ss_i, InfRun (M i) as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
+    (Automaton.Sum M).InfRun as ss ↔ ∃ i ss_i, (M i).InfRun as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
   constructor
   · rintro ⟨h_init, h_next⟩
     have := h_init

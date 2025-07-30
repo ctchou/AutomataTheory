@@ -43,7 +43,7 @@ theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automato
       exact (h_all i).2 k h_k
 
 theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
-    InfRun (Automaton.Prod M) as ss ↔ ∀ i, InfRun (M i) as (fun k ↦ ss k i) := by
+    (Automaton.Prod M).InfRun as ss ↔ ∀ i, (M i).InfRun as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor

@@ -175,9 +175,9 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
       use (ss1 (m - n))
 
 theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
-    InfRun (M0.Concat acc0 M1) as ss ∧ (∃ n s1, ss n = inr s1) ↔
+    (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) ↔
     ∃ n, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-         (∃ ss1, InfRun M1 (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
+         (∃ ss1, M1.InfRun (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_n⟩
     use (Nat.find h_n - 1)
@@ -367,7 +367,7 @@ theorem accepted_omega_lang_concat :
   · rintro ⟨al0, as1, ⟨n, as0, ⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, h_al0⟩, ⟨ss1, h_run1, h_acc1⟩, h_as⟩
     let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
     use ss  ; constructor
-    · suffices InfRun (M0.Concat acc0 M1) as ss ∧ (∃ n s1, ss n = inr s1) by tauto
+    · suffices (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) by tauto
       apply automata_concat_inf_run.mpr
       use n ; constructor
       · use ss0 ; simp [ss, h_acc0] ; constructor

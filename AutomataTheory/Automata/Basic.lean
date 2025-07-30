@@ -123,23 +123,23 @@ variable {A : Type*}
 But the Muller, Rabin, and Streett acceptance condtions are also
 included for completeness and possible future use. -/
 
-def InfRun (M : Automaton A) (as : ℕ → A) (ss : ℕ → M.State) :=
+def Automaton.InfRun (M : Automaton A) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)
 
 def Automaton.BuchiAccept (M : Automaton A) (acc : Set M.State) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
+  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
 
 def Automaton.MullerAccept (M : Automaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ acc ∈ accSet, ∀ s, s ∈ acc ↔ (∃ᶠ k in atTop, ss k = s)
+  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ acc ∈ accSet, ∀ s, s ∈ acc ↔ (∃ᶠ k in atTop, ss k = s)
 
 def Automaton.RabinAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) ∧ (∀ᶠ k in atTop, ss k ∉ pair.2)
+  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) ∧ (∀ᶠ k in atTop, ss k ∉ pair.2)
 
 def Automaton.StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
+  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
 
 def Automaton.AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=
-  { as | BuchiAccept M acc as }
+  { as | M.BuchiAccept acc as }
 
 end AutomataInfiniteRuns
 
@@ -170,7 +170,7 @@ theorem automata_FinRun_imp_FinRun {m n : ℕ} {as : ℕ → A} {ss : ℕ → M.
   intro k h_k ; exact hr.2 k (by omega)
 
 theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
-    InfRun M as ss ↔ ∀ n, M.FinRun n as ss := by
+    M.InfRun as ss ↔ ∀ n, M.FinRun n as ss := by
   constructor
   · rintro ⟨h_init, h_next⟩ n
     constructor

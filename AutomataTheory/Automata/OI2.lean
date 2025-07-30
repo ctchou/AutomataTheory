@@ -40,7 +40,7 @@ def Automaton.OI2_Acc : Set (Automaton.OI2 M acc).State :=
   { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }
 
 private lemma automata_oi2_lemma1 {as : ℕ → A} {ss : ℕ → (Automaton.OI2 M acc).State}
-    (h_run : InfRun (Automaton.OI2 M acc) as ss) :
+    (h_run : (Automaton.OI2 M acc).InfRun as ss) :
       (∃ᶠ k in atTop, ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 }) ↔
       (∃ᶠ k in atTop, ss k ∈ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }) := by
   constructor <;> intro h_inf
@@ -94,7 +94,7 @@ private lemma automata_oi2_lemma1 {as : ℕ → A} {ss : ℕ → (Automaton.OI2 
     exact leads_to_trans h_lt1 h_lt2
 
 private lemma automata_oi2_lemma2 {as : ℕ → A} {ss : ℕ → (Automaton.OI2 M acc).State}
-    (h_run : InfRun (Automaton.OI2 M acc) as ss)
+    (h_run : (Automaton.OI2 M acc).InfRun as ss)
     (h_inf0 : ∃ᶠ k in atTop, ss k ∈ { s | s.1 0 ∈ acc 0 })
     (h_inf1 : ∃ᶠ k in atTop, ss k ∈ { s | s.1 1 ∈ acc 1 }) :
       ∃ᶠ k in atTop, ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 } := by
@@ -155,7 +155,7 @@ theorem accepted_omega_lang_inter2 :
   · intro h_all
     choose ss h_ss using h_all
     let ss' := fun k i ↦ ss i k
-    have h_ss' : ∀ i, InfRun (M i) as (fun k ↦ ss' k i) := by intro i ; exact (h_ss i).1
+    have h_ss' : ∀ i, (M i).InfRun as (fun k ↦ ss' k i) := by intro i ; exact (h_ss i).1
     have h_run' := automata_prod_inf_run.mpr h_ss'
     have h_hist_init : Automaton.OI2_HistInit.Nonempty := by simp [Automaton.OI2_HistInit]
     have h_hist_next : ∀ s a, (Automaton.OI2_HistNext M acc s a).Nonempty := by

@@ -35,7 +35,7 @@ theorem automata_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.St
     exact h'.1
 
 theorem automata_hist_inf_run_proj {as : ℕ → A} {ss : ℕ → M.State × H}
-    (h : InfRun (M.addHist hist_init hist_next) as ss) : InfRun M as (Prod.fst ∘ ss) := by
+    (h : (M.addHist hist_init hist_next).InfRun as ss) : M.InfRun as (Prod.fst ∘ ss) := by
   constructor
   · have h' := h.1
     simp [Automaton.addHist] at h'
@@ -64,7 +64,7 @@ theorem automata_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.
 
 theorem automata_hist_inf_run_exists {as : ℕ → A} {ss : ℕ → M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
-    (h : InfRun M as ss) : ∃ hs : ℕ → H, InfRun (M.addHist hist_init hist_next) as (fun k ↦ (ss k, hs k)) := by
+    (h : M.InfRun as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).InfRun as (fun k ↦ (ss k, hs k)) := by
   obtain ⟨hs0, h_hs0⟩ := h_init
   choose hs' h_hs' using h_next
   let hs := MakeHist as ss hs0 hs'

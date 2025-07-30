@@ -34,11 +34,11 @@ def MakeDetRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
 variable {M : DetAutomaton A}
 
 theorem det_automata_inf_run_exists (as : ℕ → A) :
-    InfRun M.toAutomaton as (MakeDetRun M as) := by
+    M.toAutomaton.InfRun as (MakeDetRun M as) := by
   constructor <;> simp [DetAutomaton.toAutomaton, MakeDetRun]
 
 theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
-    (h : InfRun M.toAutomaton as ss) : ss = MakeDetRun M as := by
+    (h : M.toAutomaton.InfRun as ss) : ss = MakeDetRun M as := by
   ext k ; induction' k with k h_ind
   · have h_init := h.1
     simp [DetAutomaton.toAutomaton] at h_init

@@ -107,7 +107,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
       · exact Finite.of_fintype Unit
       ext as ; simp ; by_contra h_contra
       obtain ⟨ss, h_run, _⟩ := h_contra
-      simp [InfRun] at h_run
+      simp [Automaton.InfRun] at h_run
     let U' := (fun i : Fin n ↦ U i.castSucc)
     let V' := (fun i : Fin n ↦ V i.castSucc)
     specialize h_ind U' V' (by intro i ; simp [U', V', h_reg i.castSucc])
