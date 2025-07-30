@@ -12,6 +12,8 @@ of languages and $\omega$-languages.
 Although our ultimate aim is to formalize the theory of finite
 automata and the languages and $\omega$-languages they accept,
 finiteness assumptions are made only when necessary.
+The main formalized results can be found in `AutomataTheory/Languages/RegLang.lean`
+and `AutomataTheory/Languages/OmegaRegLang.lean`.
 
 This project was started on 2025-04-03 in a different repo and
 migrated to this stand-alone repo on 2025-04-27.
