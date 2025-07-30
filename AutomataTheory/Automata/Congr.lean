@@ -39,7 +39,7 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
   exact Eq.symm List.ofFn_succ_last
 
 theorem accepted_lang_congr [Inhabited A] (s : (DetAutomaton.ofCongr c).State) :
-    (DetAutomaton.ofCongr c).toAutomaton.AcceptedLang {s} = c.EqvCls s := by
+    (DetAutomaton.ofCongr c).toND.AcceptedLang {s} = c.EqvCls s := by
   ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, rfl⟩, rfl⟩
     have h_ss_n := det_automata_fin_run_unique h_run n (by omega)
