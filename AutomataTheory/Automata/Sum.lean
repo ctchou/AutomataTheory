@@ -117,7 +117,7 @@ def Automaton.Sum_Acc : Set (Automaton.Sum M).State := ⋃ i : I, Sigma.mk i '' 
 
 theorem accepted_lang_union :
     (Automaton.Sum M).AcceptedLang (Automaton.Sum_Acc M acc) = ⋃ i : I, (M i).AcceptedLang (acc i) := by
-  ext al ; simp [Automaton.Sum_Acc, Automaton.AcceptedLang, FinAccept]
+  ext al ; simp [Automaton.Sum_Acc, Automaton.AcceptedLang, Automaton.FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_fin_run.mp h_run

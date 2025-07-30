@@ -64,7 +64,7 @@ def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ 
 
 theorem accepted_lang_inter [Inhabited A] :
     (Automaton.Prod M).AcceptedLang (Automaton.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
-  ext al ; simp [Automaton.AcceptedLang, FinAccept]
+  ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i
     use n, as ; simp [h_al]

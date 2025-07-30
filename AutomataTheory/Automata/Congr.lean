@@ -40,7 +40,7 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
 
 theorem accepted_lang_congr [Inhabited A] (s : (DetAutomaton.ofCongr c).State) :
     (DetAutomaton.ofCongr c).toAutomaton.AcceptedLang {s} = c.EqvCls s := by
-  ext al ; simp [Automaton.AcceptedLang, FinAccept] ; constructor
+  ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, rfl⟩, rfl⟩
     have h_ss_n := det_automata_fin_run_unique h_run n (by omega)
     simp [h_ss_n, automaton_congr_run, Congruence.EqvCls]

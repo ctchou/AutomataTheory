@@ -40,7 +40,7 @@ variable {A : Type*}
 def FinRun (M : Automaton A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k < n, ss (k + 1) ∈ M.next (ss k) (as k)
 
-def FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
+def Automaton.FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, FinRun M n as ss ∧ ss n ∈ acc
 
 def Automaton.AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
@@ -61,7 +61,7 @@ their infinite-sequence representatives. -/
 def FinRun' (M : Automaton A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : Fin n, ss k.succ ∈ M.next (ss k.castSucc) (as k)
 
-def FinAccept' (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : Fin n → A) :=
+def Automaton.FinAccept' (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : Fin n → A) :=
   ∃ ss : Fin (n + 1) → M.State, FinRun' M n as ss ∧ ss ⟨n, by omega⟩ ∈ acc
 
 variable {M : Automaton A} {acc : Set M.State}
@@ -84,7 +84,7 @@ theorem automata_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {s
   simpa [AppendFinInf, h_k, (show k < n + 1 by omega)]
 
 theorem automata_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
-    (h : FinAccept M acc n as) : FinAccept' M acc n (fun k ↦ as k) := by
+    (h : M.FinAccept acc n as) : M.FinAccept' acc n (fun k ↦ as k) := by
   rcases h with ⟨ss, h_run, h_n⟩
   use (fun k ↦ ss k)
   constructor
@@ -92,7 +92,7 @@ theorem automata_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
   simpa
 
 theorem automata_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n → A}
-    (h : FinAccept' M acc n as) : FinAccept M acc n (AppendFinInf as (const ℕ default)) := by
+    (h : M.FinAccept' acc n as) : M.FinAccept acc n (AppendFinInf as (const ℕ default)) := by
   rcases h with ⟨ss, h_run, h_n⟩
   use (AppendFinInf ss (const ℕ (ss 0)))
   constructor
@@ -100,7 +100,7 @@ theorem automata_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n →
   simpa [AppendFinInf]
 
 theorem automata_AcceptedLang_of_FinAccept' [Inhabited A] :
-    M.AcceptedLang acc = { al | ∃ n as, FinAccept' M acc n as ∧ al = List.ofFn as } := by
+    M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ al = List.ofFn as } := by
   rw [Automaton.AcceptedLang, Set.ext_iff] ; intro al ; constructor
   · rintro ⟨n, as, h_acc, h_al⟩
     use n, (fun k : Fin n ↦ as k)
