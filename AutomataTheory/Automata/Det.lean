@@ -70,7 +70,7 @@ section AcceptedLangCompl
 variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
 
 theorem accepted_lang_compl [Inhabited A] :
-    AcceptedLang M.toAutomaton accᶜ = (AcceptedLang M.toAutomaton acc)ᶜ := by
+    M.toAutomaton.AcceptedLang accᶜ = (M.toAutomaton.AcceptedLang acc)ᶜ := by
   ext al
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
@@ -106,7 +106,7 @@ theorem accepted_lang_compl [Inhabited A] :
     use ss ; constructor
     · exact h_run
     intro h_acc
-    have : al ∈ (AcceptedLang M.toAutomaton acc) := by
+    have : al ∈ (M.toAutomaton.AcceptedLang acc) := by
       use al.length, as
       simp [← h_al] ; use! ss
     contradiction

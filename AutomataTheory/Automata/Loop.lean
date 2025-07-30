@@ -134,8 +134,8 @@ section AcceptedLangLoop
 variable {A : Type*} {M : Automaton A} {acc : Set M.State}
 
 theorem accepted_lang_loop_concat :
-    ConcatFin (AcceptedLang (M.Loop acc) {inl ()}) (AcceptedLang (M.Loop acc) {inl ()}) ⊆
-    AcceptedLang (M.Loop acc) {inl ()} := by
+    ConcatFin ((M.Loop acc).AcceptedLang {inl ()}) ((M.Loop acc).AcceptedLang {inl ()}) ⊆
+    (M.Loop acc).AcceptedLang {inl ()} := by
   rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, h_al1⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, h_al2⟩, rfl⟩
   let as k := if k < n1 then as1 k else as2 (k - n1)
   use (n1 + n2), as ; symm ; constructor
@@ -160,7 +160,7 @@ theorem accepted_lang_loop_concat :
     simp [as, ss, h_next, (show ¬ k < n1 by omega), (show ¬ k + 1 < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
 theorem accepted_lang_loop [Inhabited A] :
-    AcceptedLang (M.Loop acc) {inl ()} = IterStar (AcceptedLang M acc) := by
+    (M.Loop acc).AcceptedLang {inl ()} = IterStar (M.AcceptedLang acc) := by
   ext al ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ ; simp [IterStar]
     revert al
@@ -221,7 +221,7 @@ theorem accepted_lang_loop [Inhabited A] :
       use (fun k ↦ default), (fun k ↦ inl ()) ; simp [FinRun, Automaton.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
     specialize h_ind al1 h_al1
-    suffices _ : al2 ∈ AcceptedLang (M.Loop acc) {inl ()} by
+    suffices _ : al2 ∈ (M.Loop acc).AcceptedLang {inl ()} by
       apply accepted_lang_loop_concat ; use al1, al2
     obtain ⟨n2, as2, ⟨ss2', h_run2, h_acc2⟩, h_al2⟩ := h_al2
     obtain ⟨ss2, h_run2, h_acc2, _⟩ := automata_loop_fin_run_exists h_run2 h_acc2
@@ -229,7 +229,7 @@ theorem accepted_lang_loop [Inhabited A] :
     use ss2 ; simp [h_run2, h_acc2]
 
 theorem accepted_omega_lang_loop :
-    AcceptedOmegaLang (M.Loop acc) {inl ()} = IterOmega (AcceptedLang M acc) := by
+    AcceptedOmegaLang (M.Loop acc) {inl ()} = IterOmega (M.AcceptedLang acc) := by
   ext as ; constructor
   · rintro ⟨ss, h_run, h_acc⟩ ; simp at h_acc
     let φ m := Nat.nth (fun k ↦ ss k = inl ()) m

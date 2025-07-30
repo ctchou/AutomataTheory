@@ -266,7 +266,7 @@ section AcceptedLangConcat
 variable {A : Type*} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
 
 theorem accepted_lang_concat_e :
-    AcceptedLang (M0.Concat acc0 M1) (inl '' acc0) = AcceptedLang M0 acc0 := by
+    (M0.Concat acc0 M1).AcceptedLang (inl '' acc0) = M0.AcceptedLang acc0 := by
   ext al ; constructor
   · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     have h_m : ∃ s0, ss m = inl s0 := by
@@ -289,8 +289,8 @@ theorem accepted_lang_concat_e :
     · simp [ss] ; use (ss0 m)
 
 theorem accepted_lang_concat_ne :
-    AcceptedLang (M0.Concat acc0 M1) (inr '' acc1) =
-    ConcatFin (AcceptedLang M0 acc0) (AcceptedLang M1 acc1 \ {[]}) := by
+    (M0.Concat acc0 M1).AcceptedLang (inr '' acc1) =
+    ConcatFin (M0.AcceptedLang acc0) (M1.AcceptedLang acc1 \ {[]}) := by
   ext al ; constructor
   · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     have h_s1_ex : ∃ s1, ss m = inr s1 := by
@@ -346,7 +346,7 @@ theorem accepted_lang_concat_ne :
 
 theorem accepted_omega_lang_concat :
     AcceptedOmegaLang (M0.Concat acc0 M1) (inr '' acc1) =
-    ConcatInf (AcceptedLang M0 acc0) (AcceptedOmegaLang M1 acc1) := by
+    ConcatInf (M0.AcceptedLang acc0) (AcceptedOmegaLang M1 acc1) := by
   ext as ; constructor
   · rintro ⟨ss, h_run, h_acc⟩
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc

@@ -63,8 +63,8 @@ variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).Sta
 def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
 
 theorem accepted_lang_inter [Inhabited A] :
-    AcceptedLang (Automaton.Prod M) (Automaton.Prod_Acc M acc) = ⋂ i : I, AcceptedLang (M i) (acc i) := by
-  ext al ; simp [AcceptedLang, FinAccept]
+    (Automaton.Prod M).AcceptedLang (Automaton.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
+  ext al ; simp [Automaton.AcceptedLang, FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i
     use n, as ; simp [h_al]

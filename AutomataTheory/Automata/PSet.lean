@@ -72,8 +72,8 @@ variable {A : Type*} (M : Automaton A) (acc : Set M.State)
 def Automaton.PSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
 
 theorem accepted_lang_pset :
-    AcceptedLang M.PSet.toAutomaton (M.PSet_Acc acc) = AcceptedLang M acc := by
-  ext al ; simp only [AcceptedLang, FinAccept] ; constructor
+    M.PSet.toAutomaton.AcceptedLang (M.PSet_Acc acc) = M.AcceptedLang acc := by
+  ext al ; simp only [Automaton.AcceptedLang, FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss', h_run', h_acc'⟩, h_al⟩
     have h_sn' := det_automata_fin_run_unique h_run' n (by omega)
     rw [automata_pset_run] at h_sn'

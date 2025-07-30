@@ -43,7 +43,7 @@ def FinRun (M : Automaton A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :
 def FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, FinRun M n as ss ∧ ss n ∈ acc
 
-def AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
+def Automaton.AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
   { al | ∃ n as, FinAccept M acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
 /- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
@@ -100,8 +100,8 @@ theorem automata_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n →
   simpa [AppendFinInf]
 
 theorem automata_AcceptedLang_of_FinAccept' [Inhabited A] :
-    AcceptedLang M acc = { al | ∃ n as, FinAccept' M acc n as ∧ al = List.ofFn as } := by
-  rw [AcceptedLang, Set.ext_iff] ; intro al ; constructor
+    M.AcceptedLang acc = { al | ∃ n as, FinAccept' M acc n as ∧ al = List.ofFn as } := by
+  rw [Automaton.AcceptedLang, Set.ext_iff] ; intro al ; constructor
   · rintro ⟨n, as, h_acc, h_al⟩
     use n, (fun k : Fin n ↦ as k)
     constructor
@@ -184,7 +184,7 @@ theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
     apply (h_run (k + 1)).2 k ; omega
 
 theorem accepted_lang_acc_union {acc0 acc1 : Set M.State} :
-    AcceptedLang M (acc0 ∪ acc1) = AcceptedLang M acc0 ∪ AcceptedLang M acc1 := by
+    M.AcceptedLang (acc0 ∪ acc1) = M.AcceptedLang acc0 ∪ M.AcceptedLang acc1 := by
   ext al ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, (h_acc0 | h_acc1)⟩, h_al⟩
     · left ; use n, as ; simp [h_al] ; use ss

@@ -26,7 +26,7 @@ open Classical
 variable {A : Type}
 
 def RegLang (L : Set (List A)) :=
-  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedLang M acc
+  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
 
 theorem reg_lang_union {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∪ L1) := by
