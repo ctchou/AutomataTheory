@@ -43,8 +43,8 @@ private lemma not_M1_state {s : (M0.Concat acc0 M1).State}
   simpa [← isLeft_iff]
 
 theorem automata_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
-    FinRun (M0.Concat acc0 M1) m as ss ∧ (∃ s0, ss m = inl s0) ↔
-    (∃ ss0, FinRun M0 m as ss0 ∧ ∀ k < m + 1, ss k = inl (ss0 k)) := by
+    (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s0, ss m = inl s0) ↔
+    (∃ ss0, M0.FinRun m as ss0 ∧ ∀ k < m + 1, ss k = inl (ss0 k)) := by
   constructor
   · rintro ⟨⟨h_init, h_next⟩, ⟨s0_m, h_s0_m⟩⟩
     have h_all0 : ∀ k < m + 1, ∃ s0, ss k = inl s0 := by
@@ -81,9 +81,9 @@ theorem automata_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
     · use (ss0 m) ; exact h_ss0 m (by omega)
 
 theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
-    FinRun (M0.Concat acc0 M1) m as ss ∧ (∃ s1, ss m = inr s1) ↔
-    ∃ n < m, (∃ ss0, FinRun M0 n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-             (∃ ss1, FinRun M1 (m - n) (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
+    (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s1, ss m = inr s1) ↔
+    ∃ n < m, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
+             (∃ ss1, M1.FinRun (m - n) (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_sm⟩
     have h_n : ∃ n s1, ss n = inr s1 := by use m
@@ -176,7 +176,7 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
 
 theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     InfRun (M0.Concat acc0 M1) as ss ∧ (∃ n s1, ss n = inr s1) ↔
-    ∃ n, (∃ ss0, FinRun M0 n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
+    ∃ n, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
          (∃ ss1, InfRun M1 (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_n⟩
@@ -282,7 +282,7 @@ theorem accepted_lang_concat_e :
     use m, as ; simp [h_al]
     let ss : ℕ → (M0.Concat acc0 M1).State := inl ∘ ss0
     use ss ; constructor
-    · suffices FinRun (M0.Concat acc0 M1) m as ss ∧ (∃ s0, ss m = inl s0) by tauto
+    · suffices (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s0, ss m = inl s0) by tauto
       apply automata_concat_fin_run_0.mpr
       use ss0 ; simp [h_run0]
       intro k h_k ; simp [ss]
@@ -327,7 +327,7 @@ theorem accepted_lang_concat_ne :
         have h_m1 : ¬ n + m < n + 1 := by omega
         simp [ss, h_m1]
       constructor
-      · suffices FinRun (M0.Concat acc0 M1) (n + m) as ss ∧ (∃ s1, ss (n + m) = inr s1) by tauto
+      · suffices (M0.Concat acc0 M1).FinRun (n + m) as ss ∧ (∃ s1, ss (n + m) = inr s1) by tauto
         apply automata_concat_fin_run_1.mpr
         use n ; constructor <;> [skip ; constructor]
         · omega

@@ -28,7 +28,7 @@ def Automaton.Prod (M : I → Automaton A) : Automaton A where
 variable {M : I → Automaton A}
 
 theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
-    FinRun (Automaton.Prod M) n as ss ↔ ∀ i, FinRun (M i) n as (fun k ↦ ss k i) := by
+    (Automaton.Prod M).FinRun n as ss ↔ ∀ i, (M i).FinRun n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
@@ -73,7 +73,7 @@ theorem accepted_lang_inter [Inhabited A] :
     · exact automata_prod_fin_run.mp h_run i
     · exact h_acc i
   · intro h_all
-    have h_all' : ∀ i, ∃ ss_i, FinRun (M i) al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
+    have h_all' : ∀ i, ∃ ss_i, (M i).FinRun al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
       intro i
       obtain ⟨n, as, ⟨ss_i, h_run_i, h_acc_i⟩, h_al⟩ := h_all i
       have h_n : n = al.length := by rw [h_al, List.length_ofFn]

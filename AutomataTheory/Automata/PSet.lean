@@ -37,12 +37,12 @@ theorem automata_pset_reach_next (as : ℕ → A) (k : ℕ) :
   simp [MakeDetRun, Automaton.PSet]
 
 theorem automata_pset_run (as : ℕ → A) (k : ℕ) :
-    MakeDetRun M.PSet as k = { s : M.State | ∃ ss, FinRun M k as ss ∧ ss k = s } := by
+    MakeDetRun M.PSet as k = { s : M.State | ∃ ss, M.FinRun k as ss ∧ ss k = s } := by
   induction' k with k h_ind
   · rw [automata_pset_reach_init as, Set.ext_iff]
     intro s ; constructor
     · intro h_init
-      use (fun k ↦ s) ; simpa [FinRun]
+      use (fun k ↦ s) ; simpa [Automaton.FinRun]
     · rintro ⟨ss, ⟨h_init, h_next⟩, h_s⟩
       simpa [← h_s]
   rw [automata_pset_reach_next as k, h_ind, Set.ext_iff]

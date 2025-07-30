@@ -155,7 +155,7 @@ theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
   · simp ; intro h_al
     use 0, (fun k ↦ default) ; simp [h_al]
     use (fun k ↦ ())
-    simp [FinRun, M_epsilon, acc_epsilon]
+    simp [Automaton.FinRun, M_epsilon, acc_epsilon]
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
     suffices h_n : n = 0 by
       simp [h_n] at h_al ; simp [h_al]

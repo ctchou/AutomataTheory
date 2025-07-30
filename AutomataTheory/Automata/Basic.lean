@@ -37,14 +37,14 @@ section AutomataFiniteRuns
 
 variable {A : Type*}
 
-def FinRun (M : Automaton A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :=
+def Automaton.FinRun (M : Automaton A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k < n, ss (k + 1) ∈ M.next (ss k) (as k)
 
 def Automaton.FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, FinRun M n as ss ∧ ss n ∈ acc
+  ∃ ss : ℕ → M.State, M.FinRun n as ss ∧ ss n ∈ acc
 
 def Automaton.AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
-  { al | ∃ n as, FinAccept M acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
+  { al | ∃ n as, M.FinAccept acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
 /- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
 in the definitions about finite runs above.  In the following we give alternative
@@ -58,16 +58,16 @@ view a finite sequence as the equivalence class of all infinite sequences that s
 that finite sequence as a prefix and the definitions refer to finite sequences via
 their infinite-sequence representatives. -/
 
-def FinRun' (M : Automaton A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
+def Automaton.FinRun' (M : Automaton A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : Fin n, ss k.succ ∈ M.next (ss k.castSucc) (as k)
 
 def Automaton.FinAccept' (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : Fin n → A) :=
-  ∃ ss : Fin (n + 1) → M.State, FinRun' M n as ss ∧ ss ⟨n, by omega⟩ ∈ acc
+  ∃ ss : Fin (n + 1) → M.State, M.FinRun' n as ss ∧ ss ⟨n, by omega⟩ ∈ acc
 
 variable {M : Automaton A} {acc : Set M.State}
 
 theorem automata_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : FinRun M n as ss) : FinRun' M n (fun k ↦ as k) (fun k ↦ ss k) := by
+    (h : M.FinRun n as ss) : M.FinRun' n (fun k ↦ as k) (fun k ↦ ss k) := by
   constructor
   · simp ; exact h.1
   rintro ⟨k, h_k⟩
@@ -75,7 +75,7 @@ theorem automata_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.St
   exact h.2 k h_k
 
 theorem automata_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fin (n + 1) → M.State}
-    (h : FinRun' M n as ss) : FinRun M n (AppendFinInf as (const ℕ default)) (AppendFinInf ss (const ℕ (ss 0))) := by
+    (h : M.FinRun' n as ss) : M.FinRun n (AppendFinInf as (const ℕ default)) (AppendFinInf ss (const ℕ (ss 0))) := by
   constructor
   · simp [AppendFinInf] ; exact h.1
   intro k h_k
@@ -148,7 +148,7 @@ section AutomataBasicResults
 variable {A : Type*} {M : Automaton A}
 
 theorem automata_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : FinRun M n as ss) : FinRun M n (FixSuffix n as default) (FixSuffix (n + 1) ss (ss 0)) := by
+    (h : M.FinRun n as ss) : M.FinRun n (FixSuffix n as default) (FixSuffix (n + 1) ss (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
   · simpa [FixSuffix]
@@ -157,20 +157,20 @@ theorem automata_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss :
   exact h_next k h_k
 
 theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → M.State}
-    (ha : ∀ k < n, as k = as' k) (hs : ∀ k < n + 1, ss k = ss' k) (hr : FinRun M n as ss) : FinRun M n as' ss' := by
+    (ha : ∀ k < n, as k = as' k) (hs : ∀ k < n + 1, ss k = ss' k) (hr : M.FinRun n as ss) : M.FinRun n as' ss' := by
   rcases hr with ⟨h_init, h_next⟩ ; constructor
   · simpa [← hs]
   intro k h_k ; specialize h_next k h_k
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
 theorem automata_FinRun_imp_FinRun {m n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (hmn : m < n) (hr : FinRun M n as ss) : FinRun M m as ss := by
+    (hmn : m < n) (hr : M.FinRun n as ss) : M.FinRun m as ss := by
   constructor
   · exact hr.1
   intro k h_k ; exact hr.2 k (by omega)
 
 theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
-    InfRun M as ss ↔ ∀ n, FinRun M n as ss := by
+    InfRun M as ss ↔ ∀ n, M.FinRun n as ss := by
   constructor
   · rintro ⟨h_init, h_next⟩ n
     constructor

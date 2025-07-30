@@ -27,7 +27,7 @@ def Automaton.Sum (M : I → Automaton A) : Automaton A where
 variable {M : I → Automaton A}
 
 theorem automata_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton.Sum M).State} :
-    FinRun (Automaton.Sum M) n as ss ↔ ∃ i ss_i, FinRun (M i) n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
+    (Automaton.Sum M).FinRun n as ss ↔ ∃ i ss_i, (M i).FinRun n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
   constructor
   · rintro ⟨h_init, h_next⟩
     have := h_init

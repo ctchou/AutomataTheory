@@ -121,10 +121,10 @@ def Automaton.SingleInit (s : M.State) : Automaton A where
   next := M.next
 
 theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ → M.State} :
-    M.PairPath s s' al ss ↔ FinRun (M.SingleInit s) al.length al.ExtendInf ss ∧ ss al.length = s' := by
+    M.PairPath s s' al ss ↔ (M.SingleInit s).FinRun al.length al.ExtendInf ss ∧ ss al.length = s' := by
   constructor
   · rintro ⟨rfl, rfl, h_next⟩
-    simp [FinRun, Automaton.SingleInit, List.ExtendInf]
+    simp [Automaton.FinRun, Automaton.SingleInit, List.ExtendInf]
     intro k h_k ; simp [h_k, h_next]
   · rintro ⟨⟨h_init, h_next⟩, rfl⟩
     simp [Automaton.SingleInit] at h_init h_next
@@ -234,7 +234,7 @@ theorem pair_lang_regular [Inhabited A] {s s' : M.State} :
     use ss ; exact pair_path_fin_run.mp h_path
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, rfl⟩, rfl⟩
     use ss ; apply pair_path_fin_run.mpr
-    simp [FinRun, h_init]
+    simp [Automaton.FinRun, h_init]
     intro k h_k ; simp [List.ExtendInf, h_k, h_next]
 
 theorem pair_acc_lang_regular [Inhabited A] {s s' : M.State} :

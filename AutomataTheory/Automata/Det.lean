@@ -49,11 +49,11 @@ theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
     assumption
 
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
-    FinRun M.toAutomaton n as (MakeDetRun M as) := by
+    M.toAutomaton.FinRun n as (MakeDetRun M as) := by
   exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
 theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : FinRun M.toAutomaton n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
+    (h : M.toAutomaton.FinRun n as ss) : ∀ k < n + 1, ss k = MakeDetRun M as k := by
   rcases h with ⟨h_init, h_next⟩
   intro k h_k ; induction' k with k h_ind
   · simp [DetAutomaton.toAutomaton] at h_init
@@ -101,7 +101,7 @@ theorem accepted_lang_compl [Inhabited A] :
       intro k h_k ; simp [as, h_k]
     use al.length, as ; simp [← h_al]
     let ss := MakeDetRun M as
-    have h_run : FinRun M.toAutomaton al.length as ss := by
+    have h_run : M.toAutomaton.FinRun al.length as ss := by
       exact det_automata_fin_run_exists al.length as
     use ss ; constructor
     · exact h_run

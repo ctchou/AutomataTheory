@@ -24,7 +24,7 @@ def Automaton.addHist (M : Automaton A) (hist_init : Set H) (hist_next : M.State
 variable {M : Automaton A} {hist_init : Set H} {hist_next : M.State × H → A → Set H}
 
 theorem automata_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State × H}
-    (h : FinRun (M.addHist hist_init hist_next) n as ss) : FinRun M n as (Prod.fst ∘ ss) := by
+    (h : (M.addHist hist_init hist_next).FinRun n as ss) : M.FinRun n as (Prod.fst ∘ ss) := by
   constructor
   · have h' := h.1
     simp [Automaton.addHist] at h'
@@ -51,7 +51,7 @@ private def MakeHist (as : ℕ → A) (ss : ℕ → M.State) (hs0 : H) (hs' : M.
 
 theorem automata_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
-    (h : FinRun M n as ss) : ∃ hs : ℕ → H, FinRun (M.addHist hist_init hist_next) n as (fun k ↦ (ss k, hs k)) := by
+    (h : M.FinRun n as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).FinRun n as (fun k ↦ (ss k, hs k)) := by
   obtain ⟨hs0, h_hs0⟩ := h_init
   choose hs' h_hs' using h_next
   let hs := MakeHist as ss hs0 hs'
