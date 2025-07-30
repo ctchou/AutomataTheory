@@ -126,16 +126,16 @@ included for completeness and possible future use. -/
 def InfRun (M : Automaton A) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)
 
-def BuchiAccept (M : Automaton A) (acc : Set M.State) (as : ℕ → A) :=
+def Automaton.BuchiAccept (M : Automaton A) (acc : Set M.State) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
 
-def MullerAccept (M : Automaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
+def Automaton.MullerAccept (M : Automaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ acc ∈ accSet, ∀ s, s ∈ acc ↔ (∃ᶠ k in atTop, ss k = s)
 
-def RabinAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
+def Automaton.RabinAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∃ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) ∧ (∀ᶠ k in atTop, ss k ∉ pair.2)
 
-def StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
+def Automaton.StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
 
 def Automaton.AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=

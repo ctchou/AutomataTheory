@@ -127,7 +127,7 @@ private lemma automata_oi2_lemma2 {as : ℕ → A} {ss : ℕ → (Automaton.OI2 
 
 theorem accepted_omega_lang_inter2 :
     (Automaton.OI2 M acc).AcceptedOmegaLang (Automaton.OI2_Acc M acc) = ⋂ i : Fin 2, (M i).AcceptedOmegaLang (acc i) := by
-  ext as ; simp [Automaton.AcceptedOmegaLang, BuchiAccept]
+  ext as ; simp [Automaton.AcceptedOmegaLang, Automaton.BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩ i
     have h_run1 := automata_hist_inf_run_proj h_run
