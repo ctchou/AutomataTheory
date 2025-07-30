@@ -22,7 +22,7 @@ open Classical
 variable {A : Type}
 
 def OmegaRegLang (L : Set (ℕ → A)) :=
-  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = AcceptedOmegaLang M acc
+  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
 
 theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∪ L1) := by

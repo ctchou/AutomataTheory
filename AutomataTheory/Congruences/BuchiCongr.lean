@@ -46,7 +46,7 @@ def Automaton.BuchiCongr (M : Automaton A) (acc : Set M.State) : Congruence A wh
 
 variable {M : Automaton A} {acc : Set M.State}
 
-theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (AcceptedOmegaLang M acc) := by
+theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLang acc) := by
   rintro p q ⟨as, h_congr, ss, ⟨h_init, h_next⟩, h_acc⟩ as' h_congr'
   obtain ⟨φ, h_mono, h_eqv_p, h_eqv_q⟩ := congruence_mem_concat_omega_lang h_congr
   obtain ⟨φ', h_mono', h_eqv_p', h_eqv_q'⟩ := congruence_mem_concat_omega_lang h_congr'

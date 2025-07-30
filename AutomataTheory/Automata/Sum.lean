@@ -146,8 +146,8 @@ theorem accepted_lang_union :
     · assumption
 
 theorem accepted_omega_lang_union :
-    AcceptedOmegaLang (Automaton.Sum M) (Automaton.Sum_Acc M acc) = ⋃ i : I, AcceptedOmegaLang (M i) (acc i) := by
-  ext as ; simp [Automaton.Sum_Acc, AcceptedOmegaLang, BuchiAccept]
+    (Automaton.Sum M).AcceptedOmegaLang (Automaton.Sum_Acc M acc) = ⋃ i : I, (M i).AcceptedOmegaLang (acc i) := by
+  ext as ; simp [Automaton.Sum_Acc, Automaton.AcceptedOmegaLang, BuchiAccept]
   constructor
   · rintro ⟨ss, h_run, h_inf⟩
     obtain ⟨i, ss_i, h_run_i, h_ss_i⟩ := automata_sum_inf_run.mp h_run

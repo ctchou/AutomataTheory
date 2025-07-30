@@ -138,7 +138,7 @@ def RabinAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) 
 def StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, InfRun M as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
 
-def AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=
+def Automaton.AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=
   { as | BuchiAccept M acc as }
 
 end AutomataInfiniteRuns
