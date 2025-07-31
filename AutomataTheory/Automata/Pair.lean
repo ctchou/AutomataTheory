@@ -36,12 +36,12 @@ theorem pair_lang_fin_subseq {as : ℕ → A} {ss : ℕ → M.State} {m n : ℕ}
 
 theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.State}
     (h : M.PairPath s s' (al0 ++ al1) ss) :
-    M.PairPath s (ss al0.length) al0 ss ∧ M.PairPath (ss al0.length) s' al1 (SuffixFrom al0.length ss) := by
+    M.PairPath s (ss al0.length) al0 ss ∧ M.PairPath (ss al0.length) s' al1 (ss <<< al0.length) := by
   obtain ⟨rfl, rfl, h_next⟩ := h
   constructor
   · simp [Automaton.PairPath]
     grind
-  · simp [Automaton.PairPath, SuffixFrom, Nat.add_comm]
+  · simp [Automaton.PairPath, instSuffixFrom, SuffixFrom, Nat.add_comm]
     intro k h_k ; specialize h_next (al0.length + k) (by simpa)
     grind
 
@@ -51,7 +51,7 @@ theorem pair_lang_split {s s' : M.State} {al0 al1 : List A}
   have ⟨h_path0, h_path1⟩ := pair_path_split h_path
   use (ss al0.length) ; constructor
   · use ss
-  · use (SuffixFrom al0.length ss)
+  · use (ss <<< al0.length)
 
 theorem pair_acc_lang_split {s s' : M.State} {al0 al1 : List A}
     (h : al0 ++ al1 ∈ M.PairAccLang acc s s') :
@@ -63,11 +63,11 @@ theorem pair_acc_lang_split {s s' : M.State} {al0 al1 : List A}
   rcases Classical.em (n < al0.length + 1) with h_n' | h_n'
   · left ; constructor
     · use ss ; simp [Automaton.PairAccPath, h_path0] ; use n
-    · use (SuffixFrom al0.length ss)
+    · use (ss <<< al0.length)
   · right ; constructor
     · use ss
-    · use (SuffixFrom al0.length ss) ; simp [Automaton.PairAccPath, h_path1]
-      use (n - al0.length) ; simp [SuffixFrom]
+    · use (ss <<< al0.length) ; simp [Automaton.PairAccPath, h_path1]
+      use (n - al0.length) ; simp [instSuffixFrom, SuffixFrom]
       grind
 
 theorem pair_path_concat {s s' t: M.State} {al0 al1 : List A} {ss0 ss1 : ℕ → M.State}
@@ -302,22 +302,22 @@ theorem omega_reg_lang_finite_union_form :
     let nth_sa := Nat.nth (fun k ↦ ss k = sa)
     have h_nth_sa : ∀ n, ss (nth_sa n) = sa := by exact Nat.nth_mem_of_infinite h_inf
     have h_mono : StrictMono nth_sa := by exact Nat.nth_strictMono h_inf
-    use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (SuffixFrom (nth_sa 0) as)
+    use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (as <<< (nth_sa 0))
     simp [← appendListInf_ofFnPrefix_SuffixFrom] ; constructor
     · use ss ; simp [Automaton.PairPath, h_nth_sa, h_next]
-    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [FinSubseq, SuffixFrom] ; constructor
+    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [FinSubseq] ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn
       have h_nth_0m := StrictMono.monotone h_mono (show 0 ≤ m by omega)
       have h_nth_0n := StrictMono.monotone h_mono (show 0 ≤ n by omega)
       omega
     intro n
-    use (SuffixFrom (nth_sa n) ss)
+    use (ss <<< (nth_sa n))
     have h_nth_0n := StrictMono.monotone h_mono (show 0 ≤ n by omega)
     have h_nth_nn1 := h_mono (show n < n + 1 by omega)
     have h1 : nth_sa (n + 1) - nth_sa 0 - (nth_sa n - nth_sa 0) = nth_sa (n + 1) - nth_sa n := by omega
     have h2 : nth_sa (n + 1) - nth_sa n + nth_sa n = nth_sa (n + 1) := by omega
-    simp [Automaton.PairPath, SuffixFrom, h_nth_sa, h1, h2]
+    simp [Automaton.PairPath, instSuffixFrom, SuffixFrom, h_nth_sa, h1, h2]
     intro k h_k
     specialize h_next (k + nth_sa n)
     have h3 : k + 1 + nth_sa n = k + nth_sa n + 1 := by omega

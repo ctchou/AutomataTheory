@@ -145,13 +145,13 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
   obtain ⟨q, ns, h_ns, h_color⟩ := inf_graph_ramsey color
   obtain ⟨φ, h_mono, rfl⟩ := strict_mono_of_infinite h_ns
   let p : (M.BuchiCongr acc).QuotType := ⟦ FinSubseq as 0 (φ 0) ⟧
-  use p, q, (FinSubseq as 0 (φ 0)), (SuffixFrom (φ 0) as) ; constructorm* _ ∧ _
+  use p, q, (FinSubseq as 0 (φ 0)), (as <<< (φ 0)) ; constructorm* _ ∧ _
   · simp [Congruence.EqvCls, p]
   · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
     intro m
-    have h_lem1 : FinSubseq (SuffixFrom (φ 0) as) (φ m - φ 0) (φ (m + 1) - φ 0) = FinSubseq as (φ m) (φ (m + 1)) := by
+    have h_lem1 : FinSubseq (as <<< (φ 0)) (φ m - φ 0) (φ (m + 1) - φ 0) = FinSubseq as (φ m) (φ (m + 1)) := by
       have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le h_mono]
-      simp [FinSubseq, SuffixFrom, add_assoc, (show φ m - φ 0 + φ 0 = φ m by omega),
+      simp [FinSubseq, instSuffixFrom, SuffixFrom, add_assoc, (show φ m - φ 0 + φ 0 = φ m by omega),
         (show φ (m + 1) - φ 0 - (φ m - φ 0) = φ (m + 1) - φ m by omega)]
     simp [h_lem1]
     have h_card2 : Finset.card {φ m, φ (m + 1)} = 2 := by

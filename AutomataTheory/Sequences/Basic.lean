@@ -31,14 +31,17 @@ def AppendFinInf {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
 instance instAppendFinInf {n : ℕ} : HAppend (Fin n → X) (ℕ → X) (ℕ → X) :=
   { hAppend := AppendFinInf }
 
-def SuffixFrom (n : ℕ) (xs : ℕ → X) : ℕ → X :=
+def SuffixFrom (xs : ℕ → X) (n : ℕ) : ℕ → X :=
   fun k ↦ xs (k + n)
+
+instance instSuffixFrom : HShiftLeft (ℕ → X) (ℕ) (ℕ → X) :=
+  { hShiftLeft := SuffixFrom }
 
 def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
-def FinSubseq (as : ℕ → X) (lo hi : ℕ) : List X :=
-  List.ofFn (fun k : Fin (hi - lo) ↦ as (k + lo))
+def FinSubseq (xs : ℕ → X) (lo hi : ℕ) : List X :=
+  List.ofFn (fun k : Fin (hi - lo) ↦ xs (k + lo))
 
 variable {xl : List X} {xs xs' : ℕ → X}
 
@@ -61,8 +64,8 @@ theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
   simp [(by omega : k - n + n = k)]
 
 theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
-    xs = (List.ofFn fun k : Fin n ↦ xs ↑k) ++ (SuffixFrom n xs) := by
-  ext k ; simp [instAppendListInf, AppendListInf, SuffixFrom]
+    xs = (List.ofFn fun k : Fin n ↦ xs ↑k) ++ (xs <<< n) := by
+  ext k ; simp [instAppendListInf, AppendListInf, instSuffixFrom, SuffixFrom]
   rcases Classical.em (k < n) with h_k | h_k
   · simp [h_k]
   · simp [(by omega : k - n + n = k)]
@@ -72,8 +75,8 @@ theorem appendListInf_elt_skip_list {n : ℕ} :
   simp [instAppendListInf, AppendListInf]
 
 theorem suffixFrom_listLength_AppendListInf :
-    xs = SuffixFrom xl.length (xl ++ xs) := by
-  ext k ; simp [SuffixFrom, instAppendListInf, AppendListInf]
+    xs = (xl ++ xs) <<< xl.length := by
+  ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
 
 theorem frequently_in_finite_set [Finite X] {s : Set X} :
     (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by

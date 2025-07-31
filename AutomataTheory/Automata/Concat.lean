@@ -83,7 +83,7 @@ theorem automata_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
 theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s1, ss m = inr s1) ↔
     ∃ n < m, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-             (∃ ss1, M1.FinRun (m - n) (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
+             (∃ ss1, M1.FinRun (m - n) (as <<< n) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_sm⟩
     have h_n : ∃ n s1, ss n = inr s1 := by use m
@@ -140,7 +140,7 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
         · have h_ss_n'' := h_ss1 0
           simp [h_ss_n] at h_ss_n''
           rw [inr.inj_iff] at h_ss_n''
-          simpa [SuffixFrom, h_k, ← h_ss_n'']
+          simpa [instSuffixFrom, SuffixFrom, h_k, ← h_ss_n'']
         · have h_k0 : k - 1 + Nat.find h_n + 1 = k + Nat.find h_n := by omega
           have h_next_k := h_next (k - 1 + Nat.find h_n) (by omega)
           simp [Automaton.Concat, h_k0, h_ss1 (k - 1) (by omega)] at h_next_k
@@ -149,7 +149,7 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
           have h_k2 : k < m - Nat.find h_n + 2 := by omega
           have h_k3 : k + (Nat.find h_n - 1) = (k - 1) + Nat.find h_n := by omega
           rw [h_ss1 k (by omega), inr.inj_iff] at h_sk1
-          simpa [SuffixFrom, h_k, h_k1, h_k2, h_k3, ← h_sk1]
+          simpa [instSuffixFrom, SuffixFrom, h_k, h_k1, h_k2, h_k3, ← h_sk1]
       · intro k h_k h_k_m
         have h_k1 : k - (Nat.find h_n - 1) ≠ 0 := by omega
         have h_k2 : (k - (Nat.find h_n - 1) - 1) = k - Nat.find h_n := by omega
@@ -165,11 +165,11 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
         simpa [h_ss0 k (by omega), h_ss0 (k + 1) (by omega), Automaton.Concat]
       · obtain ⟨rfl⟩ := h_k
         have h_next_k := h_next1 0 (by omega)
-        simp [SuffixFrom] at h_next_k
+        simp [instSuffixFrom, SuffixFrom] at h_next_k
         simp [h_ss0 n (by omega), h_ss1 (n + 1) (by omega) (by omega), Automaton.Concat, h_acc0]
         use (ss1 0)
       · have h_next_k := h_next1 (k - n) (by omega)
-        simp [SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
+        simp [instSuffixFrom, SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
         simpa [h_ss1 k (by omega) (by omega), h_ss1 (k + 1) (by omega) (by omega), Automaton.Concat]
     . have := h_ss1 m (by omega) (by omega)
       use (ss1 (m - n))
@@ -177,7 +177,7 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
 theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) ↔
     ∃ n, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-         (∃ ss1, M1.InfRun (SuffixFrom n as) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
+         (∃ ss1, M1.InfRun (as <<< n) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_n⟩
     use (Nat.find h_n - 1)
@@ -230,12 +230,12 @@ theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M
         · have h_ss_n'' := h_ss1 0
           simp [h_ss_n] at h_ss_n''
           rw [inr.inj_iff] at h_ss_n''
-          simpa [SuffixFrom, h_k, ← h_ss_n'']
+          simpa [instSuffixFrom, SuffixFrom, h_k, ← h_ss_n'']
         · have h_next_k := h_next ((k - 1) + Nat.find h_n)
           rw [(by omega : k = (k - 1) + 1)] at h_next_k
           simp [(by omega : (k - 1 + Nat.find h_n + 1) = k + Nat.find h_n)] at h_next_k
           simp [h_ss1, Automaton.Concat] at h_next_k
-          simpa [SuffixFrom, h_k, (by omega : k + (Nat.find h_n - 1) = (k - 1) + Nat.find h_n)]
+          simpa [instSuffixFrom, SuffixFrom, h_k, (by omega : k + (Nat.find h_n - 1) = (k - 1) + Nat.find h_n)]
       · intro k h_k
         have h_k1 : k - (Nat.find h_n - 1) ≠ 0 := by omega
         have h_k2 : (k - (Nat.find h_n - 1) - 1) = k - Nat.find h_n := by omega
@@ -250,11 +250,11 @@ theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M
         simpa [h_ss0 k (by omega), h_ss0 (k + 1) (by omega), Automaton.Concat]
       · obtain ⟨rfl⟩ := h_k
         have h_next_k := h_next1 0
-        simp [SuffixFrom] at h_next_k
+        simp [instSuffixFrom, SuffixFrom] at h_next_k
         simp [h_ss0 n (by omega), h_ss1 (n + 1) (by omega), Automaton.Concat, h_acc0]
         use (ss1 0)
       · have h_next_k := h_next1 (k - n)
-        simp [SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
+        simp [instSuffixFrom, SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
         simpa [h_ss1 k (by omega), h_ss1 (k + 1) (by omega), Automaton.Concat]
     . have := h_ss1 (n + 1) (by omega)
       use (n + 1), (ss1 (n + 1 - n))
@@ -302,12 +302,12 @@ theorem accepted_lang_concat_ne :
     constructor <;> [skip ; constructor]
     · use n, as ; simp ; use ss0
     · constructor
-      · use (m - n), (SuffixFrom n as)
+      · use (m - n), (as <<< n)
         constructor
         · use ss1 ; simp [h_run1]
           obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
           simpa [← inr.inj h_s1]
-        · ext k a ; simp [SuffixFrom]
+        · ext k a ; simp [instSuffixFrom, SuffixFrom]
       · simp ; omega
     · rw [h_al, ← ofFn_of_append_ofFn_oFn (show n ≤ m by omega)]
   . rintro ⟨al0, al1, h_al0, h_al1, h_al⟩
@@ -336,7 +336,7 @@ theorem accepted_lang_concat_ne :
           · intro k h_k ; simp [h_k, h_next0 k h_k]
         · use ss1 ; constructor <;> [constructor ; skip]
           · exact h_init1
-          · simp [SuffixFrom, as] ; exact h_next1
+          · simp [instSuffixFrom, SuffixFrom, as] ; exact h_next1
           · simp [ss] ; omega
       · use (ss1 m)
         simp [h_acc1, h_ss_nm]
@@ -352,7 +352,7 @@ theorem accepted_omega_lang_concat :
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc
     have h_s1_ex : ∃ n s1, ss n = inr s1 := by use n, s1 ; simp [h_s1]
     obtain ⟨n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := automata_concat_inf_run.mp ⟨h_run, h_s1_ex⟩
-    use (List.ofFn (fun k : Fin n ↦ as k)), (SuffixFrom n as)
+    use (List.ofFn (fun k : Fin n ↦ as k)), (as <<< n)
     constructor <;> [skip ; constructor]
     · use n, as ; simp ; use ss0
     · use ss1 ; simp [h_run1]
