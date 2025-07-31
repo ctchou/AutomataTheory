@@ -80,7 +80,7 @@ theorem omega_reg_lang_iter {L : Set (List A)}
 theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)} :
     OmegaRegLang L ↔
     ∃ n : ℕ, ∃ U V : Fin n → Set (List A),
-      (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, ConcatOmega (U i) (V i) := by
+      (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, (U i) * (V i)^ω := by
   constructor
   · rintro ⟨M, acc, h_fin, rfl⟩
     rw [omega_reg_lang_finite_union_form]
@@ -111,8 +111,8 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     let U' := (fun i : Fin n ↦ U i.castSucc)
     let V' := (fun i : Fin n ↦ V i.castSucc)
     specialize h_ind U' V' (by intro i ; simp [U', V', h_reg i.castSucc])
-    have h : (⋃ i, ConcatOmega (U i) (V i))
-           = (⋃ i, ConcatOmega (U' i) (V' i)) ∪ ConcatOmega (U (Fin.last n)) (V (Fin.last n)) := by
+    have h : (⋃ i, (U i) * (V i)^ω)
+           = (⋃ i, (U' i) * (V' i)^ω) ∪ (U (Fin.last n)) * (V (Fin.last n))^ω := by
       ext as ; simp ; constructor
       · rintro ⟨i, h_i⟩
         obtain (⟨i', rfl⟩ | rfl) := Fin.eq_castSucc_or_eq_last i
@@ -151,7 +151,7 @@ theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (
     rcases Classical.em ((c.ConcatOmegaLang (eq i).1 (eq i).2 ∩ L).Nonempty) with h | h
     <;> simp [h] at h_as
     · use (eq i).1, (eq i).2 ; simpa [h]
-    · simp [ConcatOmega, lang_ConcatInf_empty_left] at h_as
+    · simp [lang_ConcatInf_empty_left] at h_as
 
 theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L : Set (ℕ → A)}
     (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang Lᶜ := by

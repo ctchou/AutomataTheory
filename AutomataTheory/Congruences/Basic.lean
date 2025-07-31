@@ -32,7 +32,7 @@ def Congruence.EqvCls (c : Congruence A) (s : c.QuotType) : Set (List A) :=
   (Quotient.mk c.eq) ⁻¹' {s}
 
 def Congruence.ConcatOmegaLang (c : Congruence A) (s t : c.QuotType) : Set (ℕ → A) :=
-  ConcatOmega (c.EqvCls s) (c.EqvCls t)
+  (c.EqvCls s) * (c.EqvCls t)^ω
 
 def Congruence.Saturates (c : Congruence A) (L : Set (ℕ → A)) :=
   ∀ s t : c.QuotType, (c.ConcatOmegaLang s t ∩ L).Nonempty → c.ConcatOmegaLang s t ⊆ L

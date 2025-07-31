@@ -55,9 +55,6 @@ postfix:1024 "^ω" => OmegaPower.omegaPower
 instance instIterOmega : OmegaPower (Set (List A)) (Set (ℕ → A)) :=
   { omegaPower := IterOmega }
 
-def ConcatOmega (L0 L1 : Set (List A)) : Set (ℕ → A) :=
-  L0 * L1^ω
-
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     {[]} * L = L := by
   ext al ; constructor
@@ -89,7 +86,7 @@ theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
   simp at h_al
 
 theorem congruence_mem_concat_omega_lang {L0 L1 : Set (List A)} {as : ℕ → A}
-    (h : as ∈ ConcatOmega L0 L1) : ∃ φ : ℕ → ℕ, StrictMono φ ∧
+    (h : as ∈ L0 * L1^ω) : ∃ φ : ℕ → ℕ, StrictMono φ ∧
       FinSubseq as 0 (φ 0) ∈ L0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L1 := by
   obtain ⟨al0, as1, h_al0, ⟨φ1, h_mono, h_φ1_0, h_φ1_sub⟩, rfl⟩ := h
   use (fun m ↦ φ1 (m) + al0.length)
