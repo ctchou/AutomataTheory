@@ -21,12 +21,15 @@ variable {A : Type*}
 def ConcatFin (L0 L1 : Set (List A)) : Set (List A) :=
   { al | ∃ al0 al1, al0 ∈ L0 ∧ al1 ∈ L1 ∧ al = al0 ++ al1 }
 
+instance : Mul (Set (List A)) :=
+  { mul := ConcatFin }
+
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
   { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = AppendListInf al0 as1 }
 
 def IterFin (L : Set (List A)) : ℕ → Set (List A)
   | 0 => {[]}
-  | n + 1 => ConcatFin (IterFin L n) L
+  | n + 1 => (IterFin L n) * L
 
 def IterStar (L : Set (List A)) : Set (List A) :=
   ⋃ n : ℕ, IterFin L n
@@ -38,21 +41,21 @@ def ConcatOmega (L0 L1 : Set (List A)) : Set (ℕ → A) :=
   ConcatInf L0 (IterOmega L1)
 
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
-    ConcatFin {[]} L = L := by
+    {[]} * L = L := by
   ext al ; constructor
   · rintro ⟨al1, al2, h_al1, h_al2, h_al⟩
     simp at h_al1 ; simp [h_al1] at h_al ; simpa [h_al]
   · intro h_al ; use [], al ; simp [h_al]
 
 theorem lang_ConcatFin_epsilon_right {L : Set (List A)} :
-    ConcatFin L {[]} = L := by
+    L * {[]} = L := by
   ext al ; constructor
   · rintro ⟨al1, al2, h_al1, h_al2, h_al⟩
     simp at h_al2 ; simp [h_al2] at h_al ; simpa [h_al]
   · intro h_al ; use al, [] ; simp [h_al]
 
 theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
-    ConcatFin L0 (L1 ∪ L2) = ConcatFin L0 L1 ∪ ConcatFin L0 L2 := by
+    L0 * (L1 ∪ L2) = L0 * L1 ∪ L0 * L2 := by
   ext al ; constructor
   · rintro ⟨al0, alu, h_al0, (h_al1 | h_al2), h_al⟩
     · left ; use al0, alu

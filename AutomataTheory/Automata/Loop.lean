@@ -134,7 +134,7 @@ section AcceptedLangLoop
 variable {A : Type*} {M : Automaton A} {acc : Set M.State}
 
 theorem accepted_lang_loop_concat :
-    ConcatFin ((M.Loop acc).AcceptedLang {inl ()}) ((M.Loop acc).AcceptedLang {inl ()}) ⊆
+    ((M.Loop acc).AcceptedLang {inl ()}) * ((M.Loop acc).AcceptedLang {inl ()}) ⊆
     (M.Loop acc).AcceptedLang {inl ()} := by
   rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, h_al1⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, h_al2⟩, rfl⟩
   let as k := if k < n1 then as1 k else as2 (k - n1)

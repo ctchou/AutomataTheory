@@ -290,7 +290,7 @@ theorem accepted_lang_concat_e :
 
 theorem accepted_lang_concat_ne :
     (M0.Concat acc0 M1).AcceptedLang (inr '' acc1) =
-    ConcatFin (M0.AcceptedLang acc0) (M1.AcceptedLang acc1 \ {[]}) := by
+    (M0.AcceptedLang acc0) * (M1.AcceptedLang acc1 \ {[]}) := by
   ext al ; constructor
   · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     have h_s1_ex : ∃ s1, ss m = inr s1 := by

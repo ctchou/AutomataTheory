@@ -71,7 +71,7 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   · rw [accepted_lang_compl, accepted_lang_pset, h_l]
 
 theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
-    (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (ConcatFin L0 L1) := by
+    (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
   use (M0.Concat acc0 M1), (inr '' acc1)
@@ -85,7 +85,7 @@ theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
     rw [h_l0, h_l1, h_l1', accepted_lang_concat_ne]
 
 theorem reg_lang_concat_e {L0 L1 : Set (List A)}
-    (h0 : RegLang L0) (h1 : RegLang L1) (h_e : [] ∈ L1) : RegLang (ConcatFin L0 L1) := by
+    (h0 : RegLang L0) (h1 : RegLang L1) (h_e : [] ∈ L1) : RegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
   use (M0.Concat acc0 M1), (inl '' acc0 ∪ inr '' acc1)
@@ -99,7 +99,7 @@ theorem reg_lang_concat_e {L0 L1 : Set (List A)}
         accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
 
 theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
-    (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (ConcatFin L0 L1) := by
+    (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 * L1) := by
   rcases Classical.em ([] ∈ L1) with h_e | h_ne
   · exact reg_lang_concat_e h0 h1 h_e
   . exact reg_lang_concat_ne h0 h1 h_ne
