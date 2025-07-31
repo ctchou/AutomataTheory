@@ -31,11 +31,11 @@ def AppendFinInf {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
 instance instAppendFinInf {n : ℕ} : HAppend (Fin n → X) (ℕ → X) (ℕ → X) :=
   { hAppend := AppendFinInf }
 
-def FixSuffix (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
-  fun k ↦ if k < n then xs k else x
-
 def SuffixFrom (n : ℕ) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ xs (k + n)
+
+def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
+  fun k ↦ if k < n then xs k else x
 
 def FinSubseq (as : ℕ → X) (lo hi : ℕ) : List X :=
   List.ofFn (fun k : Fin (hi - lo) ↦ as (k + lo))

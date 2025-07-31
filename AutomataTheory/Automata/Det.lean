@@ -81,7 +81,7 @@ theorem accepted_lang_compl [Inhabited A] :
     obtain ⟨rfl⟩ := h_n_eq
     have h_run_n := automata_FinRun_FixSuffix h_run
     have h_run_n' := automata_FinRun_FixSuffix h_run'
-    have h_as_eq : FixSuffix n as' default = FixSuffix n as default := by
+    have h_as_eq : FixSuffix as' n default = FixSuffix as n default := by
       ext k
       rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
       have h_as_k : as k = al.get ⟨k, (by omega : k < al.length)⟩ := by simp [h_al]

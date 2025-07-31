@@ -148,7 +148,7 @@ section AutomataBasicResults
 variable {A : Type*} {M : Automaton A}
 
 theorem automata_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : M.FinRun n as ss) : M.FinRun n (FixSuffix n as default) (FixSuffix (n + 1) ss (ss 0)) := by
+    (h : M.FinRun n as ss) : M.FinRun n (FixSuffix as n default) (FixSuffix ss (n + 1) (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
   · simpa [FixSuffix]
