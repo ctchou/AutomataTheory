@@ -230,7 +230,7 @@ theorem accepted_lang_loop [Inhabited A] :
     use ss2 ; simp [h_run2, h_acc2]
 
 theorem accepted_omega_lang_loop :
-    (M.Loop acc).AcceptedOmegaLang {inl ()} = IterOmega (M.AcceptedLang acc) := by
+    (M.Loop acc).AcceptedOmegaLang {inl ()} = (M.AcceptedLang acc)^ω := by
   ext as ; constructor
   · rintro ⟨ss, h_run, h_acc⟩ ; simp at h_acc
     let φ m := Nat.nth (fun k ↦ ss k = inl ()) m

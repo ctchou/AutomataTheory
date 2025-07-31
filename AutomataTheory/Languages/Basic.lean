@@ -46,8 +46,17 @@ instance instIterStar : KStar (Set (List A)) :=
 def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
   { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L }
 
+@[notation_class]
+class OmegaPower (α : Type*) (β : outParam (Type*)) where
+  omegaPower : α → β
+
+postfix:1024 "^ω" => OmegaPower.omegaPower
+
+instance instIterOmega : OmegaPower (Set (List A)) (Set (ℕ → A)) :=
+  { omegaPower := IterOmega }
+
 def ConcatOmega (L0 L1 : Set (List A)) : Set (ℕ → A) :=
-  L0 * (IterOmega L1)
+  L0 * L1^ω
 
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     {[]} * L = L := by

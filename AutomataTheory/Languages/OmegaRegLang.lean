@@ -70,7 +70,7 @@ theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
   · simp [h_l0, h_l1, accepted_omega_lang_concat]
 
 theorem omega_reg_lang_iter {L : Set (List A)}
-    (h : RegLang L) : OmegaRegLang (IterOmega L) := by
+    (h : RegLang L) : OmegaRegLang L^ω := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use (M.Loop acc), {inl ()}
   constructor
@@ -159,7 +159,7 @@ theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L :
   exact omega_reg_lang_fin_idx_congr h_fin h_amp h_sat'
 
 theorem omega_reg_lang_compl [Inhabited A] {L : Set (ℕ → A)}
-    (h : OmegaRegLang L) : OmegaRegLang (Lᶜ) := by
+    (h : OmegaRegLang L) : OmegaRegLang Lᶜ := by
   obtain ⟨M, acc, h_fin, rfl⟩ := h
   exact omega_reg_lang_fin_idx_congr_compl (c := M.BuchiCongr acc)
     buchi_congr_finite_index buchi_congr_ample buchi_congr_saturates
