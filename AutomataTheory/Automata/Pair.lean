@@ -120,6 +120,9 @@ def Automaton.SingleInit (s : M.State) : Automaton A where
   init := {s}
   next := M.next
 
+def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
+  fun k ↦ if h : k < al.length then al[k] else default
+
 theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ → M.State} :
     M.PairPath s s' al ss ↔ (M.SingleInit s).FinRun al.length al.ExtendInf ss ∧ ss al.length = s' := by
   constructor

@@ -19,9 +19,6 @@ section Sequences
 
 variable {X : Type*}
 
-def List.ExtendInf [Inhabited X] (xl : List X) : ℕ → X :=
-  fun k ↦ if h : k < xl.length then xl[k] else default
-
 def AppendListInf (xl : List X) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else xs (k - xl.length)
 
