@@ -9,33 +9,41 @@ import AutomataTheory.Mathlib.Imports
 /-!
 This file contains some definitions and theorems about finite and infinite sequences,
 which are modeled by types `List X` and `ℕ → X` respectively (X being an arbitrary type).
-This file also contains all Mathlib imports concerning finite and infinite sequences and
-is imported directly or indirectly by all other files in AutomataTheory.
+It is imported directly or indirectly by all other files in AutomataTheory except those
+in AutomataTheort.Mathlib.
 -/
 
 open Function Set Filter
 
 section Sequences
 
-def List.ExtendInf {X : Type*} [Inhabited X] (xl : List X) : ℕ → X :=
+variable {X : Type*}
+
+def List.ExtendInf [Inhabited X] (xl : List X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else default
 
-def AppendListInf {X : Type*} (xl : List X) (xs : ℕ → X) : ℕ → X :=
+def AppendListInf (xl : List X) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else xs (k - xl.length)
 
-def AppendFinInf {X : Type*} {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
+instance instAppendListInf : HAppend (List X) (ℕ → X) (ℕ → X) :=
+  { hAppend := AppendListInf }
+
+def AppendFinInf {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < n then xs ⟨k, h⟩ else xs' (k - n)
 
-def FixSuffix {X : Type*} (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
+instance instAppendFinInf {n : ℕ} : HAppend (Fin n → X) (ℕ → X) (ℕ → X) :=
+  { hAppend := AppendFinInf }
+
+def FixSuffix (n : ℕ) (xs : ℕ → X) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
-def SuffixFrom {X : Type*} (n : ℕ) (xs : ℕ → X) : ℕ → X :=
+def SuffixFrom (n : ℕ) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ xs (k + n)
 
-def FinSubseq {X : Type*} (as : ℕ → X) (lo hi : ℕ) : List X :=
+def FinSubseq (as : ℕ → X) (lo hi : ℕ) : List X :=
   List.ofFn (fun k : Fin (hi - lo) ↦ as (k + lo))
 
-variable {X : Type*} {xl : List X} {xs xs' : ℕ → X}
+variable {xl : List X} {xs xs' : ℕ → X}
 
 theorem ofFn_eq_ofFn {m n n' : ℕ}
     (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
@@ -56,19 +64,19 @@ theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
   simp [(by omega : k - n + n = k)]
 
 theorem appendListInf_ofFnPrefix_SuffixFrom {n : ℕ} :
-    xs = AppendListInf (List.ofFn fun k : Fin n ↦ xs ↑k) (SuffixFrom n xs) := by
-  ext k ; simp [AppendListInf, SuffixFrom]
+    xs = (List.ofFn fun k : Fin n ↦ xs ↑k) ++ (SuffixFrom n xs) := by
+  ext k ; simp [instAppendListInf, AppendListInf, SuffixFrom]
   rcases Classical.em (k < n) with h_k | h_k
   · simp [h_k]
   · simp [(by omega : k - n + n = k)]
 
 theorem appendListInf_elt_skip_list {n : ℕ} :
-    AppendListInf xl xs (n + xl.length) = xs n := by
-  simp [AppendListInf]
+    (xl ++ xs) (n + xl.length) = xs n := by
+  simp [instAppendListInf, AppendListInf]
 
 theorem suffixFrom_listLength_AppendListInf :
-    xs = SuffixFrom xl.length (AppendListInf xl xs) := by
-  ext k ; simp [SuffixFrom, AppendListInf]
+    xs = SuffixFrom xl.length (xl ++ xs) := by
+  ext k ; simp [SuffixFrom, instAppendListInf, AppendListInf]
 
 theorem frequently_in_finite_set [Finite X] {s : Set X} :
     (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by

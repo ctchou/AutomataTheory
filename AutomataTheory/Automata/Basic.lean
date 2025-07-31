@@ -75,13 +75,13 @@ theorem automata_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.St
   exact h.2 k h_k
 
 theorem automata_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fin (n + 1) → M.State}
-    (h : M.FinRun' n as ss) : M.FinRun n (AppendFinInf as (const ℕ default)) (AppendFinInf ss (const ℕ (ss 0))) := by
+    (h : M.FinRun' n as ss) : M.FinRun n (as ++ (const ℕ (default : A))) (ss ++ (const ℕ (ss 0))) := by
   constructor
-  · simp [AppendFinInf] ; exact h.1
+  · simp [instAppendFinInf, AppendFinInf] ; exact h.1
   intro k h_k
   have h_step := h.2 ⟨k, h_k⟩
   simp at h_step
-  simpa [AppendFinInf, h_k, (show k < n + 1 by omega)]
+  simpa [instAppendFinInf, AppendFinInf, h_k, (show k < n + 1 by omega)]
 
 theorem automata_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
     (h : M.FinAccept acc n as) : M.FinAccept' acc n (fun k ↦ as k) := by
@@ -92,12 +92,12 @@ theorem automata_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
   simpa
 
 theorem automata_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n → A}
-    (h : M.FinAccept' acc n as) : M.FinAccept acc n (AppendFinInf as (const ℕ default)) := by
+    (h : M.FinAccept' acc n as) : M.FinAccept acc n (as ++ (const ℕ (default : A))) := by
   rcases h with ⟨ss, h_run, h_n⟩
-  use (AppendFinInf ss (const ℕ (ss 0)))
+  use (ss ++ (const ℕ (ss 0)))
   constructor
   · exact automata_FinRun_of_FinRun' h_run
-  simpa [AppendFinInf]
+  simpa [instAppendFinInf, AppendFinInf]
 
 theorem automata_AcceptedLang_of_FinAccept' [Inhabited A] :
     M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ al = List.ofFn as } := by
@@ -108,10 +108,10 @@ theorem automata_AcceptedLang_of_FinAccept' [Inhabited A] :
     · exact automata_FinAccept'_of_FinAccept h_acc
     · exact h_al
   · rintro ⟨n, as, h_acc, h_al⟩
-    use n, (AppendFinInf as (const ℕ default))
+    use n, (as ++ (const ℕ (default : A)))
     constructor
     · exact automata_FinAccept_of_FinAccept' h_acc
-    · simpa [AppendFinInf]
+    · simpa [instAppendFinInf, AppendFinInf]
 
 end AutomataFiniteRuns
 

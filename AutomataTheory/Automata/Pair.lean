@@ -330,7 +330,7 @@ theorem omega_reg_lang_finite_union_form :
         · simp [ss, h_al0, h_path0.1, h_s0]
         have h_seg_0 : seg 0 = 0 := by simp [seg, segment_zero h_mono h_sa_0]
         simp [ss, h_al0, h_seg_0, (h_nth_ss 0).1, ← h_path0.2.1, h_path0.1, h_s0]
-      intro k ; simp [AppendListInf]
+      intro k ; simp [instAppendListInf, AppendListInf]
       rcases (show k + 1 < al0.length ∨ k + 1 = al0.length ∨ k ≥ al0.length by omega) with h_k | h_k | h_k
       · have h_k' : k < al0.length := by omega
         have h_next := h_path0.2.2 k h_k'

@@ -25,7 +25,7 @@ instance : Mul (Set (List A)) :=
   { mul := ConcatFin }
 
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
-  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = AppendListInf al0 as1 }
+  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = al0 ++ as1 }
 
 instance : HMul (Set (List A)) (Set (ℕ → A)) (Set (ℕ → A)) :=
   { hMul := ConcatInf }
@@ -94,7 +94,7 @@ theorem congruence_mem_concat_omega_lang {L0 L1 : Set (List A)} {as : ℕ → A}
   · intro m n h_mn
     have := h_mono h_mn
     grind
-  · simp [FinSubseq, AppendListInf, h_φ1_0, h_al0]
+  · simp [FinSubseq, instAppendListInf, AppendListInf, h_φ1_0, h_al0]
   · intro m
     have h1 : φ1 (m + 1) + al0.length - (φ1 m + al0.length) = φ1 (m + 1) - φ1 m := by omega
     specialize h_φ1_sub m

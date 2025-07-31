@@ -372,7 +372,7 @@ theorem accepted_omega_lang_concat :
       use n ; constructor
       · use ss0 ; simp [ss, h_acc0] ; constructor
         · exact h_init0
-        · intro k h_k ; simp [h_as, h_al0, AppendListInf, h_k]
+        · intro k h_k ; simp [h_as, h_al0, instAppendListInf, AppendListInf, h_k]
           exact h_next0 k (by omega)
       · use ss1
         have h_len : n = al0.length := by simp [h_al0, List.length_ofFn]
