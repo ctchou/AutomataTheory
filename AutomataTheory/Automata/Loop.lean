@@ -16,6 +16,7 @@ of a regular language is an ω-regular language.
 
 open Function Set Sum Filter
 open Classical
+open scoped Computability
 
 section AutomataLoop
 
@@ -160,9 +161,9 @@ theorem accepted_lang_loop_concat :
     simp [as, ss, h_next, (show ¬ k < n1 by omega), (show ¬ k + 1 < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
 theorem accepted_lang_loop [Inhabited A] :
-    (M.Loop acc).AcceptedLang {inl ()} = IterStar (M.AcceptedLang acc) := by
+    (M.Loop acc).AcceptedLang {inl ()} = (M.AcceptedLang acc)∗ := by
   ext al ; constructor
-  · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ ; simp [IterStar]
+  · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ ; simp [instIterStar, IterStar]
     revert al
     induction' n using Nat.strong_induction_on with n h_ind
     intro al h_al

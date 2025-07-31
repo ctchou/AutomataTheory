@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Algebra.Order.Kleene
 import Mathlib.Algebra.Order.Ring.Nat
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Algebra.Order.Star.Basic

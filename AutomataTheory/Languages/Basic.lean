@@ -34,8 +34,14 @@ def IterFin (L : Set (List A)) : ℕ → Set (List A)
   | 0 => {[]}
   | n + 1 => (IterFin L n) * L
 
+instance : HPow (Set (List A)) (ℕ) (Set (List A)) :=
+  { hPow := IterFin }
+
 def IterStar (L : Set (List A)) : Set (List A) :=
   ⋃ n : ℕ, IterFin L n
+
+instance instIterStar : KStar (Set (List A)) :=
+  { kstar := IterStar }
 
 def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
   { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L }

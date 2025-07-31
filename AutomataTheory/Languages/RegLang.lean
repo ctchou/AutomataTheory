@@ -18,6 +18,7 @@ to have a finite state type.
 -/
 
 open Function Set Filter Sum
+open scoped Computability
 
 section RegLang
 
@@ -63,7 +64,7 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
 theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
-    (h : RegLang L) : RegLang (Lᶜ) := by
+    (h : RegLang L) : RegLang Lᶜ := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use M.PSet.toNA, (M.PSet_Acc acc)ᶜ
   constructor
@@ -105,7 +106,7 @@ theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
   . exact reg_lang_concat_ne h0 h1 h_ne
 
 theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
-    (h : RegLang L) : RegLang (IterStar L) := by
+    (h : RegLang L) : RegLang L∗ := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use (M.Loop acc), {inl ()}
   constructor
