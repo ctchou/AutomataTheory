@@ -346,7 +346,7 @@ theorem accepted_lang_concat_ne :
 
 theorem accepted_omega_lang_concat :
     (M0.Concat acc0 M1).AcceptedOmegaLang (inr '' acc1) =
-    ConcatInf (M0.AcceptedLang acc0) (M1.AcceptedOmegaLang acc1) := by
+    (M0.AcceptedLang acc0) * (M1.AcceptedOmegaLang acc1) := by
   ext as ; constructor
   · rintro ⟨ss, h_run, h_acc⟩
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc

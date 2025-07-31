@@ -61,7 +61,7 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
     simp [h_l0, h_l1, accepted_omega_lang_inter2 M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
 theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
-    (h0 : RegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (ConcatInf L0 L1) := by
+    (h0 : RegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
   use (M0.Concat acc0 M1), (inr '' acc1)

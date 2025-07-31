@@ -27,6 +27,9 @@ instance : Mul (Set (List A)) :=
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
   { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = AppendListInf al0 as1 }
 
+instance : HMul (Set (List A)) (Set (ℕ → A)) (Set (ℕ → A)) :=
+  { hMul := ConcatInf }
+
 def IterFin (L : Set (List A)) : ℕ → Set (List A)
   | 0 => {[]}
   | n + 1 => (IterFin L n) * L
@@ -38,7 +41,7 @@ def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
   { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L }
 
 def ConcatOmega (L0 L1 : Set (List A)) : Set (ℕ → A) :=
-  ConcatInf L0 (IterOmega L1)
+  L0 * (IterOmega L1)
 
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     {[]} * L = L := by
@@ -65,7 +68,7 @@ theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
     · use al0, al2 ; tauto
 
 theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
-    ConcatInf ∅ L = ∅ := by
+    (∅ : Set (List A)) * L = ∅ := by
   ext as ; simp
   rintro ⟨al, as, h_al, _⟩
   simp at h_al
