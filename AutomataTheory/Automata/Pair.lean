@@ -29,9 +29,9 @@ variable {M : Automaton.{0, 0} A} {acc : Set M.State}
 
 theorem pair_lang_fin_subseq {as : ℕ → A} {ss : ℕ → M.State} {m n : ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_m_n : m ≤ n) :
-    FinSubseq as m n ∈ M.PairLang (ss m) (ss n) := by
+    as ⇊ m n ∈ M.PairLang (ss m) (ss n) := by
   use (fun k ↦ ss (k + m))
-  simp [Automaton.PairPath, FinSubseq, (show n - m + m = n by omega)]
+  simp [Automaton.PairPath, instFinSubseq, FinSubseq, (show n - m + m = n by omega)]
   intro k h_k ; grind
 
 theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.State}
@@ -137,7 +137,7 @@ theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ
 
 theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State} {φ : ℕ → ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_acc : ∃ᶠ k in Filter.atTop, ss k ∈ acc) (h_mono : StrictMono φ) :
-    ∃ᶠ m in Filter.atTop, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
+    ∃ᶠ m in Filter.atTop, as ⇊ (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
   have h_acc' := frequently_atTop.mp h_acc
   have h_mono' := frequently_atTop.mp <| Nat.frequently_atTop_iff_infinite.mpr <| strict_mono_infinite h_mono
   apply frequently_atTop.mpr ; intro m
@@ -147,7 +147,7 @@ theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State
   · exact segment'_lower_val h_mono h_k
   · use (fun k ↦ ss (k + φ n)) ; constructor
     · have : φ n < φ (n + 1) := h_mono (show n < n + 1 by omega)
-      simp [Automaton.PairPath, FinSubseq, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
+      simp [Automaton.PairPath, instFinSubseq, FinSubseq, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
       intro j h_j
       have := h_next (j + φ n)
       simpa [(show j + 1 + φ n = j + φ n + 1 by omega)]
@@ -155,21 +155,21 @@ theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State
       have h1 : φ 0 ≤ k := by omega
       have : φ n ≤ k := by exact segment'_lower_bound h_mono h1
       use (k - φ n)
-      simp [(show k - φ n + φ n = k by omega), h_k_acc, FinSubseq]
+      simp [(show k - φ n + φ n = k by omega), h_k_acc, instFinSubseq, FinSubseq]
       have : k < φ (n + 1) := by exact segment'_upper_bound h_mono h1
       omega
 
 theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss' : ℕ → M.State)
     (h_mono : StrictMono φ) (h_zero : φ 0 = 0)
-    (h_pair : ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairLang (ss' m) (ss' (m + 1)))
-    (h_inf : ∃ᶠ m in atTop, FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) :
+    (h_pair : ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ M.PairLang (ss' m) (ss' (m + 1)))
+    (h_inf : ∃ᶠ m in atTop, as ⇊ (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) :
     ∃ ss : ℕ → M.State, (∀ m, ss (φ m) = ss' m) ∧
       (∀ k, ss (k + 1) ∈ M.next (ss k) (as (k))) ∧ (∃ᶠ k in atTop, ss k ∈ acc) := by
-  have h_exists : ∀ m, ∃ ps, M.PairPath (ss' m) (ss' (m + 1)) (FinSubseq as (φ m) (φ (m + 1))) ps ∧
-    ( FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1)) →
-      M.PairAccPath acc (ss' m) (ss' (m + 1)) (FinSubseq as (φ m) (φ (m + 1))) ps ) := by
+  have h_exists : ∀ m, ∃ ps, M.PairPath (ss' m) (ss' (m + 1)) (as ⇊ (φ m) (φ (m + 1))) ps ∧
+    ( as ⇊ (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1)) →
+      M.PairAccPath acc (ss' m) (ss' (m + 1)) (as ⇊ (φ m) (φ (m + 1))) ps ) := by
     intro m
-    rcases Classical.em (FinSubseq as (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) with h_acc | h_acc
+    rcases Classical.em (as ⇊ (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss' m) (ss' (m + 1))) with h_acc | h_acc
     <;> simp [h_acc]
     · obtain ⟨ps, h_ps⟩ := h_acc
       use ps ; simp [h_ps, h_ps.1]
@@ -186,7 +186,7 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
     have := segment_lower_bound h_mono h_zero k
     have := segment_upper_bound h_mono h_zero k
     have h_next := (h_ps (Segment φ k)).1.2.2 (k - φ (Segment φ k))
-    simp [FinSubseq,
+    simp [instFinSubseq, FinSubseq,
       (show k - φ (Segment φ k) + φ (Segment φ k) = k by omega),
       (show k - φ (Segment φ k) + 1 = k + 1 - φ (Segment φ k) by omega),
       (show k - φ (Segment φ k) < φ (Segment φ k + 1) - φ (Segment φ k) by omega)] at h_next
@@ -194,7 +194,7 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
     · have h1 := segment_range_val h_mono (by omega) h_k
       simp [h1, h_next]
     · have h1 := (h_ps (Segment φ k)).1.2.1
-      simp [FinSubseq] at h1
+      simp [instFinSubseq, FinSubseq] at h1
       simp [h_k, h1] at h_next
       have h2 : Segment φ (k + 1) = Segment φ k + 1 := by simp [h_k, segment_idem h_mono]
       have h3 := (h_ps (Segment φ k + 1)).1.1
@@ -203,7 +203,7 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
       apply Frequently.mono h_inf
       intro m h_m
       obtain ⟨_, k, h_k, h_acc⟩ := (h_ps m).2 h_m
-      simp [FinSubseq] at h_k
+      simp [instFinSubseq, FinSubseq] at h_k
       use k
     have h_φ_inf := Filter.frequently_atTop'.mp <| Nat.frequently_atTop_iff_infinite.mpr <| strict_mono_infinite h_mono
     apply Filter.frequently_atTop'.mpr
@@ -220,7 +220,7 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
     · use (φ (m2 + 1)) ; constructor
       · omega
       have h2 := (h_ps (m2)).1.2.1
-      simp [FinSubseq] at h2
+      simp [instFinSubseq, FinSubseq] at h2
       simp [h2] at h_acc
       simp [segment_idem h_mono, (h_ps (m2 + 1)).1.1, h_acc]
 
@@ -305,7 +305,7 @@ theorem omega_reg_lang_finite_union_form :
     use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (as <<< (nth_sa 0))
     simp [← appendListInf_ofFnPrefix_SuffixFrom] ; constructor
     · use ss ; simp [Automaton.PairPath, h_nth_sa, h_next]
-    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [FinSubseq] ; constructor
+    use (fun n ↦ nth_sa n - nth_sa 0) ; simp [instFinSubseq, FinSubseq] ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn
       have h_nth_0m := StrictMono.monotone h_mono (show 0 ≤ m by omega)
@@ -349,7 +349,7 @@ theorem omega_reg_lang_finite_union_form :
         simp [ss, h_k', h_k'', seg]
         have h_next := (h_nth_ss (Segment nth_sa (k - al0.length))).2.2
           <| (k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length)
-        simp [FinSubseq] at h_next
+        simp [instFinSubseq, FinSubseq] at h_next
         specialize h_next (by omega)
         have h1 : k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length + nth_sa (Segment nth_sa (k - al0.length))
           = k - al0.length := by omega
@@ -367,7 +367,7 @@ theorem omega_reg_lang_finite_union_form :
           have h5 := (h_nth_ss (Segment nth_sa (k - al0.length))).2.1
           have h6 : k + 1 - al0.length - nth_sa (Segment nth_sa (k - al0.length))
             = k + 1 - nth_sa (Segment nth_sa (k - al0.length)) - al0.length := by omega
-          simp [FinSubseq, ← h_k1, h6] at h5
+          simp [instFinSubseq, FinSubseq, ← h_k1, h6] at h5
           simp [h5] at h_next
           exact h_next
     · let φ k := nth_sa k + al0.length

@@ -37,11 +37,20 @@ def SuffixFrom (xs : ℕ → X) (n : ℕ) : ℕ → X :=
 instance instSuffixFrom : HShiftLeft (ℕ → X) (ℕ) (ℕ → X) :=
   { hShiftLeft := SuffixFrom }
 
-def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
-  fun k ↦ if k < n then xs k else x
-
 def FinSubseq (xs : ℕ → X) (lo hi : ℕ) : List X :=
   List.ofFn (fun k : Fin (hi - lo) ↦ xs (k + lo))
+
+@[notation_class]
+class GetSeg (α : Type*) (β : outParam (Type*)) where
+  getSeg : α → β
+
+postfix:1024 "⇊" => GetSeg.getSeg
+
+instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
+  { getSeg := (FinSubseq ·) }
+
+def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
+  fun k ↦ if k < n then xs k else x
 
 variable {xl : List X} {xs xs' : ℕ → X}
 
@@ -77,6 +86,11 @@ theorem appendListInf_elt_skip_list {n : ℕ} :
 theorem suffixFrom_listLength_AppendListInf :
     xs = (xl ++ xs) <<< xl.length := by
   ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
+
+theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
+    (xs <<< k) ⇊ (m - k) (n - k) = xs ⇊ m n := by
+  simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
+    (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
 theorem frequently_in_finite_set [Finite X] {s : Set X} :
     (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by

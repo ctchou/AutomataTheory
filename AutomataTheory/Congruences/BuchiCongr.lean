@@ -57,17 +57,14 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLan
   have h_pair_0' := (h_congr_p (ss 0) (ss (φ 0))).1.mp <| h_pair_0
   have h_pair_1' := fun m ↦ (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).1.mp <| h_pair_1 m
   have h_inf := pair_acc_lang_frequently_from_run h_next h_acc h_mono
-  have h_inf' : ∃ᶠ m in atTop, FinSubseq as' (φ' m) (φ' (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
+  have h_inf' : ∃ᶠ m in atTop, as' ⇊ (φ' m) (φ' (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
     apply Frequently.mono h_inf ; intro m
     exact (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).2.mp
   obtain ⟨ss0', h_ss_0, h_ss_φ0, h_next0'⟩ := h_pair_0'
-  simp [FinSubseq] at h_ss_φ0 h_next0'
-  have h_lem1 : ∀ m, FinSubseq (fun k ↦ as' (k + φ' 0)) (φ' m - φ' 0) (φ' (m + 1) - φ' 0)
-      = FinSubseq as' (φ' m) (φ' (m + 1)) := by
+  simp [instFinSubseq, FinSubseq] at h_ss_φ0 h_next0'
+  have h_lem1 : ∀ m,  (fun k ↦ as' (k + φ' 0)) ⇊ (φ' m - φ' 0) (φ' (m + 1) - φ' 0) = as' ⇊ (φ' m) (φ' (m + 1)) := by
     intro m
-    have : φ' 0 ≤ φ' m := by simp [StrictMono.le_iff_le h_mono']
-    simp [FinSubseq, add_assoc, (show φ' m - φ' 0 + φ' 0 = φ' m by omega),
-      (show φ' (m + 1) - φ' 0 - (φ' m - φ' 0) = φ' (m + 1) - φ' m by omega)]
+    exact finSubseq_of_SuffixFrom (show φ' 0 ≤ φ' m by simp [StrictMono.le_iff_le h_mono']) (φ' (m + 1))
   obtain ⟨ss1', h_ss1', h_next1', h_acc1'⟩ := pair_acc_lang_frequently_to_run
     (acc := acc) (φ := (φ' · - φ' 0)) (as := fun k ↦ as' (k + φ' 0))
     (ss' := fun k ↦ ss (φ k)) (base_zero_strict_mono h_mono') (base_zero_shift φ')
@@ -141,19 +138,15 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
   intro as
   have : Finite (M.BuchiCongr acc).QuotType := buchi_congr_finite_index
   let color (t : Finset ℕ) : (M.BuchiCongr acc).QuotType :=
-    if h : t.Nonempty then ⟦ FinSubseq as (t.min' h) (t.max' h) ⟧ else ⟦ [] ⟧
+    if h : t.Nonempty then ⟦ as ⇊ (t.min' h) (t.max' h) ⟧ else ⟦ [] ⟧
   obtain ⟨q, ns, h_ns, h_color⟩ := inf_graph_ramsey color
   obtain ⟨φ, h_mono, rfl⟩ := strict_mono_of_infinite h_ns
-  let p : (M.BuchiCongr acc).QuotType := ⟦ FinSubseq as 0 (φ 0) ⟧
-  use p, q, (FinSubseq as 0 (φ 0)), (as <<< (φ 0)) ; constructorm* _ ∧ _
+  let p : (M.BuchiCongr acc).QuotType := ⟦ as ⇊ 0 (φ 0) ⟧
+  use p, q, (as ⇊ 0 (φ 0)), (as <<< (φ 0)) ; constructorm* _ ∧ _
   · simp [Congruence.EqvCls, p]
   · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
     intro m
-    have h_lem1 : FinSubseq (as <<< (φ 0)) (φ m - φ 0) (φ (m + 1) - φ 0) = FinSubseq as (φ m) (φ (m + 1)) := by
-      have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le h_mono]
-      simp [FinSubseq, instSuffixFrom, SuffixFrom, add_assoc, (show φ m - φ 0 + φ 0 = φ m by omega),
-        (show φ (m + 1) - φ 0 - (φ m - φ 0) = φ (m + 1) - φ m by omega)]
-    simp [h_lem1]
+    simp [finSubseq_of_SuffixFrom (show φ 0 ≤ φ m by simp [StrictMono.le_iff_le h_mono]) (φ (m + 1))]
     have h_card2 : Finset.card {φ m, φ (m + 1)} = 2 := by
       apply Finset.card_pair
       have := h_mono (show m < m + 1 by omega)
@@ -172,6 +165,6 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
     have h_color := h_color {φ m, φ (m + 1)} h_card2 (by intro x ; simp ; grind)
     simp [color, h_min, h_max] at h_color
     simp [Congruence.EqvCls, h_color]
-  · simp [FinSubseq, ← appendListInf_ofFnPrefix_SuffixFrom]
+  · simp [instFinSubseq, FinSubseq, ← appendListInf_ofFnPrefix_SuffixFrom]
 
 end BuchiCongrFinite

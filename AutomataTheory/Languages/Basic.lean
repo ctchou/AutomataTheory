@@ -44,7 +44,7 @@ instance instIterStar : KStar (Set (List A)) :=
   { kstar := IterStar }
 
 def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
-  { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L }
+  { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L }
 
 @[notation_class]
 class OmegaPower (α : Type*) (β : outParam (Type*)) where
@@ -87,17 +87,17 @@ theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
 
 theorem congruence_mem_concat_omega_lang {L0 L1 : Set (List A)} {as : ℕ → A}
     (h : as ∈ L0 * L1^ω) : ∃ φ : ℕ → ℕ, StrictMono φ ∧
-      FinSubseq as 0 (φ 0) ∈ L0 ∧ ∀ m, FinSubseq as (φ m) (φ (m + 1)) ∈ L1 := by
+      as ⇊ 0 (φ 0) ∈ L0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L1 := by
   obtain ⟨al0, as1, h_al0, ⟨φ1, h_mono, h_φ1_0, h_φ1_sub⟩, rfl⟩ := h
   use (fun m ↦ φ1 (m) + al0.length)
   constructorm* _ ∧ _
   · intro m n h_mn
     have := h_mono h_mn
     grind
-  · simp [FinSubseq, instAppendListInf, AppendListInf, h_φ1_0, h_al0]
+  · simp [instFinSubseq, FinSubseq, instAppendListInf, AppendListInf, h_φ1_0, h_al0]
   · intro m
     have h1 : φ1 (m + 1) + al0.length - (φ1 m + al0.length) = φ1 (m + 1) - φ1 m := by omega
     specialize h_φ1_sub m
-    simpa [FinSubseq, ← Nat.add_assoc, appendListInf_elt_skip_list, h1]
+    simpa [instFinSubseq, FinSubseq, ← Nat.add_assoc, appendListInf_elt_skip_list, h1]
 
 end Languages

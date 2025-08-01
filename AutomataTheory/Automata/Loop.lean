@@ -260,7 +260,7 @@ theorem accepted_omega_lang_loop :
           simp ; use s' ; symm ; exact h_s'
         obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
-      · rw [FinSubseq, List.ofFn_inj] ; ext k
+      · simp [instFinSubseq, FinSubseq, List.ofFn_inj] ; ext k
         simp [instSuffixFrom, SuffixFrom]
   · rintro ⟨φ, h_mono, h_0, h_acc⟩
     choose len as' h_acc h_as' using h_acc
