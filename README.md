@@ -40,18 +40,22 @@ migrated to this stand-alone repo on 2025-04-27.
   an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular
   (see `AutomataTheory/Congruences/Basic.lean` for the definitions of "ample" and "saturates").
 
-*Update 2025-07-26:* We have proved that $\omega$-regular languages are closed
-under complementation, modulo a Ramsey theorem on infinite graphs.  Our proof
-is essentially that by Büchi [1] and follows the modern presentation in the
-first 2 sections of a survey article by Thomas [2], an outline of which can also
-be found in Wikipedia [3].  The crux of the proof uses a congruence
-relation invented by Büchi
-(see `Automaton.BuchiCongr` defined in `AutomataTheory/Congruences/BuchiCongr.lean`)
+*Update 2025-07-26:* The closure of $\omega$-regular languages under complementation
+has been proved, modulo a Ramsey theorem on infinite graphs which is to be proved later.
+The proof being formalized is essentially that of Büchi [1] and follows the modern
+presentation in the first 2 sections of a survey article by Thomas [2], an outline
+of which can also be found in Wikipedia [3].
+The crux of the proof uses a congruence relation invented by Büchi
+(see `BuchiCongr` defined in `AutomataTheory/Congruences/BuchiCongr.lean`)
 that is of finite index and has the ampleness and saturation properties
 mentioned above.
 
 *Update 2025-07-30:* The needed Ramsey theorem on infinite graphs has been proved
-and no `sorry` is left.
+and there is no `sorry` left.
+
+*Update 2025-08-01:* Significant improvements in notations have been made,
+including the more pervasive uses of the dot notation and the introductions of
+several infix and postfix operators.
 
 [1] Büchi, J.R. (1962). "On a Decision Method in Restricted Second Order Arithmetic".
     The Collected Works of J. Richard Büchi. Stanford: Stanford University Press. pp. 425–435.
