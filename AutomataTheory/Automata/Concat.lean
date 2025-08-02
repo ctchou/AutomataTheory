@@ -8,7 +8,7 @@ import AutomataTheory.Languages.Basic
 import AutomataTheory.Automata.Basic
 
 /-!
-The concatenation of automaton M0 followed by automaton M1.
+The concatenation of automaton `M0` followed by automaton `M1`.
 This construction is used to prove that the regular languages are closed
 under concatenation and the concatenation of a regular language followed
 by an ω-regular language is an ω-regular language.  This contruction works
@@ -22,6 +22,11 @@ section AutomataConcat
 
 variable {A : Type*}
 
+/-- The concatenation automaton starts by running `M0` and then
+nondeterministically decides to identify an accepting state of `M0` with
+an initial state of `M1` and start running `M1`.  Once it starts running
+`M1`, it cannot go back to `M0`.
+-/
 def Automaton.Concat (M0 : Automaton A) (acc0 : Set M0.State) (M1 : Automaton A) : Automaton A where
   State := M0.State ⊕ M1.State
   init := inl '' M0.init
@@ -42,6 +47,9 @@ private lemma not_M1_state {s : (M0.Concat acc0 M1).State}
   rw [← isRight_iff, not_isRight] at h
   simpa [← isLeft_iff]
 
+/-- A finite run of the concatenation automaton that ends in a state of `M0`
+is completely a run of `M0`.
+-/
 theorem automata_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s0, ss m = inl s0) ↔
     (∃ ss0, M0.FinRun m as ss0 ∧ ∀ k < m + 1, ss k = inl (ss0 k)) := by
@@ -80,6 +88,9 @@ theorem automata_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
       exact h_next0 k h_k
     · use (ss0 m) ; exact h_ss0 m (by omega)
 
+/-- A finite run of the concatenation automaton that ends in a state of `M1`
+consists of a run of `M0` followed by a run of `M1`.
+-/
 theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s1, ss m = inr s1) ↔
     ∃ n < m, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
@@ -174,6 +185,9 @@ theorem automata_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.C
     . have := h_ss1 m (by omega) (by omega)
       use (ss1 (m - n))
 
+/-- An infinite run of the concatenation automaton that contains a state of `M1`
+consists of a finite run of `M0` followed by an infinite run of `M1`.
+-/
 theorem automata_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) ↔
     ∃ n, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
@@ -265,6 +279,9 @@ section AcceptedLangConcat
 
 variable {A : Type*} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
 
+/-- The language of the concatenation automaton that is accepted by `M0`'s accepting states
+is the language accepted by `M0`.
+-/
 theorem accepted_lang_concat_e :
     (M0.Concat acc0 M1).AcceptedLang (inl '' acc0) = M0.AcceptedLang acc0 := by
   ext al ; constructor
@@ -288,6 +305,10 @@ theorem accepted_lang_concat_e :
       intro k h_k ; simp [ss]
     · simp [ss] ; use (ss0 m)
 
+/-- The language of the concatenation automaton that is accepted by `M1`'s accepting states
+is the language accepted by `M0` concatenated with the language accepted by `M1` minus
+the empty word.
+-/
 theorem accepted_lang_concat_ne :
     (M0.Concat acc0 M1).AcceptedLang (inr '' acc1) =
     (M0.AcceptedLang acc0) * (M1.AcceptedLang acc1 \ {[]}) := by
@@ -344,6 +365,9 @@ theorem accepted_lang_concat_ne :
       · simp [as, h_al0]
       · simp [as, h_al1]
 
+/-- The ω-language of the concatenation automaton that is accepted by `M1`'s accepting states
+is the language accepted by `M0` concatenated with the ω-language accepted by `M1`.
+-/
 theorem accepted_omega_lang_concat :
     (M0.Concat acc0 M1).AcceptedOmegaLang (inr '' acc1) =
     (M0.AcceptedLang acc0) * (M1.AcceptedOmegaLang acc1) := by

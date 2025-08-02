@@ -15,16 +15,23 @@ open Function Set Filter
 
 section AutomatonDefinition
 
-/- Some remarks about the definition of the `Automaton` class:
+/- Some remarks about the definition of the `Automaton` class are in order:
 * Note that the accepting states are not included as a part of an automaton.
   This design choice is delibeate and motivated by two facts:
   (1) There are multiple types of acceptance conditions for automata on infinite words.
   (2) Sometimes automata constructions need to treat the accepting states differently
-      depending whether the automaton works on finite or infinite words.
+      depending whether the automaton "runs" on finite or infinite words.
+* But the state type of an automaton is included as a part of an automaton.
+  This bundled design allows us to define constructions on automata more conveniently.
+* The alphabet type `A` appears as a parameter because most of the automata theory
+  being formalized concerns automata on a single fixed alphabet type.
 * An automaton is by default nondeterministic.
-  A deterministic automaton belongs to a separate class DetAutomaton.
+  There is a separate `DetAutomaton` class for deterministic automata.
 * The ε transition is not included.  It is actually possible to prove the closure of
   regular languages under concatenation and Kleene star without using the ε transition.
+* No finiteness assumption is made about the state type, for the properties of
+  almost all automata constructions can be proved without that assumptions.
+  The finite-state assumption will be made only when necessary and always explicitly.
 -/
 class Automaton (A : Type*) where
   State : Type*
@@ -37,27 +44,37 @@ section AutomataFiniteRuns
 
 variable {A : Type*}
 
+/-- A finite run of an automaton.
+-/
 def Automaton.FinRun (M : Automaton A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k < n, ss (k + 1) ∈ M.next (ss k) (as k)
 
+/-- The acceptance condition for finite runs.
+-/
 def Automaton.FinAccept (M : Automaton A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, M.FinRun n as ss ∧ ss n ∈ acc
 
+/-- The language accepted by an automaton.
+-/
 def Automaton.AcceptedLang (M : Automaton A) (acc : Set M.State) : Set (List A) :=
   { al | ∃ n as, M.FinAccept acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
 
-/- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
+/-- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
 in the definitions about finite runs above.  In the following we give alternative
 definitions using finite sequences (namely, functions of types `Fin n` → *) and show
 that they are in fact equivalent to the definitions above, except that we occasionally
-need to assume that the type `A` is inhabited.  This additional assumption is quite
-acceptable because the theory of automata would not be very interesting anyway if
-the type `A` is empty.  We prefer the definitions above because ℕ is much easier to
-work with than `Fin` types.  One way to think of the above definitions is that we
-view a finite sequence as the equivalence class of all infinite sequences that share
-that finite sequence as a prefix and the definitions refer to finite sequences via
-their infinite-sequence representatives. -/
-
+need to assume that the alphabet type `A` is inhabited.  This additional assumption is
+quite acceptable because the theory of automata would not be very interesting anyway if
+the alphabet type `A` is empty.  We prefer the definitions above because ℕ is much easier
+to work with than `Fin` types, for two reasons.  First, we don't need to map between
+`Fin` types of different sizes and between `Fin` types and ℕ.  Second, the powerful
+`omega` tactic can be used to blast away virtually all simple proof obgligations
+concerning sequence indices, which is a technique not available when working with
+`Fin` types.  One way to think of the above definitions is that we view a finite
+sequence as the equivalence class of all infinite sequences that share that finite
+sequence as a prefix and the definitions "talk about" finite sequences via their
+infinite-sequence representatives.
+-/
 def Automaton.FinRun' (M : Automaton A) (n : ℕ) (as : Fin n → A) (ss : Fin (n + 1) → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : Fin n, ss k.succ ∈ M.next (ss k.castSucc) (as k)
 
@@ -99,6 +116,10 @@ theorem automata_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n →
   · exact automata_FinRun_of_FinRun' h_run
   simpa [instAppendFinInf, AppendFinInf]
 
+/-- The following theorem shows that under the assumption that the alphabet type `A`
+is inhabited, the definitions using infinite sequences and those using finite sequences
+actually define the same notion of the accepted language of an automaton.
+-/
 theorem automata_AcceptedLang_of_FinAccept' [Inhabited A] :
     M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ al = List.ofFn as } := by
   rw [Automaton.AcceptedLang, Set.ext_iff] ; intro al ; constructor
@@ -119,13 +140,15 @@ section AutomataInfiniteRuns
 
 variable {A : Type*}
 
-/-- The Büchi acceptance condition is the main one we use.
-But the Muller, Rabin, and Streett acceptance condtions are also
-included for completeness and possible future use. -/
-
+/-- An infinite run of an automaton.
+-/
 def Automaton.InfRun (M : Automaton A) (as : ℕ → A) (ss : ℕ → M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)
 
+/-- The Büchi acceptance condition is the main one we use.
+But the Muller, Rabin, and Streett acceptance condtions are also
+included for completeness and future use.
+-/
 def Automaton.BuchiAccept (M : Automaton A) (acc : Set M.State) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
 
@@ -138,6 +161,8 @@ def Automaton.RabinAccept (M : Automaton A) (accPairs : Set (Set M.State × Set 
 def Automaton.StreettAccept (M : Automaton A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
   ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
 
+/-- The ω-language accepted by an automaton, using the Buchi acceptance condition.
+-/
 def Automaton.AcceptedOmegaLang (M : Automaton A) (acc : Set M.State) : Set (ℕ → A) :=
   { as | M.BuchiAccept acc as }
 

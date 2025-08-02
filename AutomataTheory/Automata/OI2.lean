@@ -10,7 +10,7 @@ import AutomataTheory.Sequences.Temporal
 
 /-!
 The OI2 [*] construction is used to prove the closure of ω-regular langauges
-under (finite) intersection.  The the new accepting condition uses the 1-bit
+under (finite) intersection.  The new accepting condition uses the 1-bit
 history state to ensure that the accepting states of (M 0) and those of (M 1)
 alternate with each other, so that both occur infinitely often if either occurs
 infinitely often.
@@ -28,6 +28,10 @@ variable {A : Type*} (M : Fin 2 → Automaton A) (acc : (i : Fin 2) → Set ((M 
 
 def Automaton.OI2_HistInit : Set (Fin 2) := {0}
 
+/-- The intuitive idea is that when the history state is `i`, the OI2 automaton
+is waiting to see an accepting state of `Mi`, where `i` is either 0 or 1.
+Once it has seen what it is waiting for, the OI2 automaton toggles its history state.
+-/
 def Automaton.OI2_HistNext : (Automaton.Prod M).State × Fin 2 → A → Set (Fin 2) :=
   fun s _ ↦
     if s.1 0 ∈ acc 0 ∧ s.2 = 0 then {1} else
@@ -36,6 +40,9 @@ def Automaton.OI2_HistNext : (Automaton.Prod M).State × Fin 2 → A → Set (Fi
 def Automaton.OI2 : Automaton A :=
   (Automaton.Prod M).addHist Automaton.OI2_HistInit (Automaton.OI2_HistNext M acc)
 
+/-- A state is accepting iff the OI2 automaton sees an accepting state of `Mi`
+when it is waiting to see an accepting state of `Mi`, where `i` is either 0 or 1.
+-/
 def Automaton.OI2_Acc : Set (Automaton.OI2 M acc).State :=
   { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }
 
@@ -125,6 +132,9 @@ private lemma automata_oi2_lemma2 {as : ℕ → A} {ss : ℕ → (Automaton.OI2 
     simp [Automaton.OI2_HistNext, h_acc, h_hist] at h_step
     assumption
 
+/-- The ω-language accepted by the OI2 automaton is the intersection
+of the ω-languages accepted by `M0` and `M1`.
+-/
 theorem accepted_omega_lang_inter2 :
     (Automaton.OI2 M acc).AcceptedOmegaLang (Automaton.OI2_Acc M acc) = ⋂ i : Fin 2, (M i).AcceptedOmegaLang (acc i) := by
   ext as ; simp [Automaton.AcceptedOmegaLang, Automaton.BuchiAccept]

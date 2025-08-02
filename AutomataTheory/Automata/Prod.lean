@@ -62,6 +62,9 @@ variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).Sta
 
 def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
 
+/-- The language accepted by the product automaton is the intersection of the languages
+accepted by the component automata.
+-/
 theorem accepted_lang_inter [Inhabited A] :
     (Automaton.Prod M).AcceptedLang (Automaton.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
   ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept]

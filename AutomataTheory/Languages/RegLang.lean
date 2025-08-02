@@ -26,9 +26,13 @@ open Classical
 
 variable {A : Type}
 
+/-- A language is regular iff it is accepted by a finite-state automaton.
+-/
 def RegLang (L : Set (List A)) :=
   ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
 
+/-- Regular languages are closed under union.
+-/
 theorem reg_lang_union {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
@@ -46,6 +50,8 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, accepted_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
+/-- Regular languages are closed under intersection.
+-/
 theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
@@ -63,6 +69,8 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
+/-- Regular languages are closed under complementation.
+-/
 theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang Lᶜ := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
@@ -71,7 +79,9 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   · exact Set.instFinite
   · rw [accepted_lang_compl, accepted_lang_pset, h_l]
 
-theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
+/-- Helper lemma for `reg_lang_concat` below.
+-/
+lemma reg_lang_concat_ne {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) (h_ne : [] ∉ L1) : RegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -85,7 +95,9 @@ theorem reg_lang_concat_ne {L0 L1 : Set (List A)}
     rw [h_l1] at h_l1'
     rw [h_l0, h_l1, h_l1', accepted_lang_concat_ne]
 
-theorem reg_lang_concat_e {L0 L1 : Set (List A)}
+/-- Helper lemma for `reg_lang_concat` below.
+-/
+lemma reg_lang_concat_e {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) (h_e : [] ∈ L1) : RegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -99,12 +111,16 @@ theorem reg_lang_concat_e {L0 L1 : Set (List A)}
     rw [h_l0, h_l1, h_l1', lang_ConcatFin_union_distrib_right, lang_ConcatFin_epsilon_right,
         accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
 
+/-- Regular languages are closed under concatenation.
+-/
 theorem reg_lang_concat [Inhabited A] {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 * L1) := by
   rcases Classical.em ([] ∈ L1) with h_e | h_ne
   · exact reg_lang_concat_e h0 h1 h_e
   . exact reg_lang_concat_ne h0 h1 h_ne
 
+/-- Regular languages are closed under Kleene star.
+-/
 theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang L∗ := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
@@ -113,6 +129,9 @@ theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
   · exact Finite.instSum
   · simp [h_l, accepted_lang_loop]
 
+/-- If a (right) congruence is of finite index,
+then each of its equivalence classes is regular.
+-/
 theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
     (h : Finite (c.QuotType)) (s : c.QuotType) : RegLang (c.EqvCls s) := by
   use c.toDA.toNA, {s}
@@ -133,6 +152,8 @@ def M_empty : Automaton A where
 
 def acc_empty : Set Unit := {()}
 
+/-- The language ∅ is regular.
+-/
 theorem reg_lang_empty : RegLang (∅ : Set (List A)) := by
   use M_empty, acc_empty ; constructor
   · exact Finite.of_fintype Unit
@@ -149,6 +170,8 @@ def M_epsilon : Automaton A where
 
 def acc_epsilon : Set Unit := {()}
 
+/-- The language {[]} is regular.
+-/
 theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
   use M_epsilon, acc_epsilon ; constructor
   · exact Finite.of_fintype Unit

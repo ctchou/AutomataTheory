@@ -19,6 +19,12 @@ section AutomataCongr
 
 variable {A : Type*}
 
+/-- The states of `c.toDA` are the equivalence classes of the congruence `c`.
+Its initial state is `⟦ [] ⟧` and its transition function appends the input
+letter `a` at the end of any representative in the state.
+The right congruence condition guarantees that it doesn't matter which
+representative is chosen.
+-/
 def Congruence.toDA (c : Congruence A) : DetAutomaton A where
   State := c.QuotType
   init := ⟦ [] ⟧
@@ -29,6 +35,8 @@ def Congruence.toDA (c : Congruence A) : DetAutomaton A where
 
 variable {c : Congruence A}
 
+/-- Running `c.toDA` on input `as` ends in state `⟦ as ⟧`.
+-/
 theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
     c.toDA.DetRun as n = ⟦ List.ofFn (fun k : Fin n ↦ as k) ⟧ := by
   induction' n with n h_ind
@@ -38,6 +46,9 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
   suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
   exact Eq.symm List.ofFn_succ_last
 
+/-- The language accepted by `c.toDA` with a unique accepting state `s`
+is exactly the equivalence class of `s`.
+-/
 theorem accepted_lang_congr [Inhabited A] (s : c.toDA.State) :
     c.toDA.toNA.AcceptedLang {s} = c.EqvCls s := by
   ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept] ; constructor

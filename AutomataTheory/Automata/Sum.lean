@@ -8,7 +8,7 @@ import AutomataTheory.Automata.Basic
 
 /-!
 The indexed sum of automata, which is used to prove the closure of
-regular and ω-regular langauges under union.
+both regular and ω-regular langauges under union.
 Note that the theorems in this file are true even when the alphabet,
 state, or index types are infinite.
 -/
@@ -115,6 +115,9 @@ variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).Sta
 
 def Automaton.Sum_Acc : Set (Automaton.Sum M).State := ⋃ i : I, Sigma.mk i '' acc i
 
+/-- The language accepted by the sum automaton is the union of the languages
+accepted by the component automata.
+-/
 theorem accepted_lang_union :
     (Automaton.Sum M).AcceptedLang (Automaton.Sum_Acc M acc) = ⋃ i : I, (M i).AcceptedLang (acc i) := by
   ext al ; simp [Automaton.Sum_Acc, Automaton.AcceptedLang, Automaton.FinAccept]
@@ -145,6 +148,9 @@ theorem accepted_lang_union :
         simpa
     · assumption
 
+/-- The ω-language accepted by the sum automaton is the union of the ω-languages
+accepted by the component automata.
+-/
 theorem accepted_omega_lang_union :
     (Automaton.Sum M).AcceptedOmegaLang (Automaton.Sum_Acc M acc) = ⋃ i : I, (M i).AcceptedOmegaLang (acc i) := by
   ext as ; simp [Automaton.Sum_Acc, Automaton.AcceptedOmegaLang, Automaton.BuchiAccept]

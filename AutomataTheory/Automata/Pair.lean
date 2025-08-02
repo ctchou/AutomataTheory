@@ -7,25 +7,46 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.Automata.Hist
 import AutomataTheory.Languages.RegLang
 
+/-!
+The languages corresponding to pairs of states of an automaton defined in
+this file are used to define the Buchi congruence in `Congruences.BuchiCongr`
+and to prove an important theorem characterizing ω-regular languages (see
+`omega_reg_lang_finite_union_form` below).
+-/
+
 open Function Set Filter
 
 section PairLang
 
 variable {A : Type}
 
+/-- A run of `M` that starts from `s` and ends at `s'`.
+-/
 def Automaton.PairPath (M : Automaton A) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
   ss 0 = s ∧ ss al.length = s' ∧ ∀ k, (h : k < al.length) → ss (k + 1) ∈ M.next (ss k) (al[k]'h)
 
+/-- A run of `M` that starts from `s` and ends at `s'` and (including `s` and `s'`)
+passes through an accepting state at least once.
+-/
 def Automaton.PairAccPath (M : Automaton A) (acc : Set M.State) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
   M.PairPath s s' al ss ∧ ∃ k < al.length + 1, ss k ∈ acc
 
+/-- The language induced by runs of `M` that start from `s` and end at `s'`.
+-/
 def Automaton.PairLang (M : Automaton A) (s s' : M.State) : Set (List A) :=
   { al | ∃ ss, M.PairPath s s' al ss }
 
+/-- The language induced by runs of `M` that start from `s` and end at `s'` and
+(including `s` and `s'`) pass through an accepting state at least once.
+-/
 def Automaton.PairAccLang (M : Automaton A) (acc : Set M.State) (s s' : M.State) : Set (List A) :=
   { al | ∃ ss, M.PairAccPath acc s s' al ss }
 
 variable {M : Automaton.{0, 0} A} {acc : Set M.State}
+
+/-- The following intuitive obvious results are needed to prove that
+Buchi congruence is indeed a right congruence.
+-/
 
 theorem pair_lang_fin_subseq {as : ℕ → A} {ss : ℕ → M.State} {m n : ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_m_n : m ≤ n) :
@@ -115,26 +136,10 @@ theorem pair_acc_lang_concat_1 {s s' t: M.State} {al0 al1 : List A}
     · obtain ⟨rfl⟩ := h_path1.1
       simp [h_path0.2.1, h_acc]
 
-def Automaton.SingleInit (s : M.State) : Automaton A where
-  State := M.State
-  init := {s}
-  next := M.next
-
-def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
-  fun k ↦ if h : k < al.length then al[k] else default
-
-theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ → M.State} :
-    M.PairPath s s' al ss ↔ (M.SingleInit s).FinRun al.length al.ExtendInf ss ∧ ss al.length = s' := by
-  constructor
-  · rintro ⟨rfl, rfl, h_next⟩
-    simp [Automaton.FinRun, Automaton.SingleInit, List.ExtendInf]
-    intro k h_k ; simp [h_k, h_next]
-  · rintro ⟨⟨h_init, h_next⟩, rfl⟩
-    simp [Automaton.SingleInit] at h_init h_next
-    simp [Automaton.PairPath, h_init]
-    intro k h_k ; specialize h_next k h_k
-    simp [List.ExtendInf, h_k] at h_next ; exact h_next
-
+/-- If accepting states appear infinitely often in a run and φ : ℕ → ℕ is StrictMono,
+then there exist infinitely many `m` such that the segment of the run from `φ(m)` to `φ(m + 1)`
+contains at least one accepting state.
+-/
 theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State} {φ : ℕ → ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_acc : ∃ᶠ k in Filter.atTop, ss k ∈ acc) (h_mono : StrictMono φ) :
     ∃ᶠ m in Filter.atTop, as ⇊ (φ m) (φ (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
@@ -159,6 +164,12 @@ theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State
       have : k < φ (n + 1) := by exact segment'_upper_bound h_mono h1
       omega
 
+/-- The following result is technical and used to prove the saturation property of
+the Buchi congruence.  Its main purpose is to "fill in" the states between the
+successive `ss' m` to produce a well-formed run in which the accepting states appear
+infinitely often.  Note that `ss` needs to agree with `ss'` only at positions `φ m`:
+`∀ m, ss (φ m) = ss' m`.
+-/
 theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss' : ℕ → M.State)
     (h_mono : StrictMono φ) (h_zero : φ 0 = 0)
     (h_pair : ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ M.PairLang (ss' m) (ss' (m + 1)))
@@ -224,9 +235,30 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
       simp [h2] at h_acc
       simp [segment_idem h_mono, (h_ps (m2 + 1)).1.1, h_acc]
 
-variable [h_fin : Finite M.State]
+def Automaton.SingleInit (s : M.State) : Automaton A where
+  State := M.State
+  init := {s}
+  next := M.next
 
-theorem pair_lang_regular [Inhabited A] {s s' : M.State} :
+def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
+  fun k ↦ if h : k < al.length then al[k] else default
+
+theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ → M.State} :
+    M.PairPath s s' al ss ↔ (M.SingleInit s).FinRun al.length al.ExtendInf ss ∧ ss al.length = s' := by
+  constructor
+  · rintro ⟨rfl, rfl, h_next⟩
+    simp [Automaton.FinRun, Automaton.SingleInit, List.ExtendInf]
+    intro k h_k ; simp [h_k, h_next]
+  · rintro ⟨⟨h_init, h_next⟩, rfl⟩
+    simp [Automaton.SingleInit] at h_init h_next
+    simp [Automaton.PairPath, h_init]
+    intro k h_k ; specialize h_next k h_k
+    simp [List.ExtendInf, h_k] at h_next ; exact h_next
+
+/-- If `M` is finite-state, then `M.PairLang s s'` is regular for any pair of
+states `s` and `s'`.
+-/
+theorem pair_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State} :
     RegLang (M.PairLang s s') := by
   use (M.SingleInit s), {s'} ; constructor
   · assumption
@@ -240,7 +272,12 @@ theorem pair_lang_regular [Inhabited A] {s s' : M.State} :
     simp [Automaton.FinRun, h_init]
     intro k h_k ; simp [List.ExtendInf, h_k, h_next]
 
-theorem pair_acc_lang_regular [Inhabited A] {s s' : M.State} :
+/-- If `M` is finite-state, then `M.PairAccLang acc s s'` is regular for any pair of
+states `s` and `s'`.  Note that we need to use the history automaton construction to
+prove this result, because the automaton needs to remember whether an accepting state
+has been visited.
+-/
+theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State} :
     RegLang (M.PairAccLang acc s s') := by
   let M' := (M.SingleInit s).addHist {False} (fun s a ↦ {s.2 ∨ s.1 ∈ acc})
   use M', {p | p.1 = s' ∧ (p.2 ∨ s' ∈ acc) } ; constructor
@@ -291,7 +328,11 @@ theorem pair_acc_lang_regular [Inhabited A] {s s' : M.State} :
     simp [M', Automaton.addHist, h_ind, h_contra] at h_next
     simp [h_next]
 
-theorem omega_reg_lang_finite_union_form :
+/-- The ω-regular language accepted by a finite-state automaton `M` is the union of ω-languages
+of the form `(M.PairLang s0 sa) * (M.PairLang sa sa)^ω`, where `s0` and `sa` range over initial
+and accepting states respectively.
+-/
+theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     M.AcceptedOmegaLang acc = ⋃ s0 ∈ M.init, ⋃ sa ∈ acc, (M.PairLang s0 sa) * (M.PairLang sa sa)^ω := by
   ext as ; simp ; constructor
   · rintro ⟨ss, ⟨h_init, h_next⟩, h_acc⟩

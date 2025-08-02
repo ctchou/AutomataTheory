@@ -19,27 +19,43 @@ section Sequences
 
 variable {X : Type*}
 
+/-- Append a list and an infinite sequence.
+-/
 def AppendListInf (xl : List X) (xs : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else xs (k - xl.length)
 
+/-- Use the infix notation `++` for `AppendListInf`.
+-/
 instance instAppendListInf : HAppend (List X) (ℕ → X) (ℕ → X) :=
   { hAppend := AppendListInf }
 
+/-- Append a finite map (which is equivalent to a list) and an infinite sequence.
+-/
 def AppendFinInf {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
   fun k ↦ if h : k < n then xs ⟨k, h⟩ else xs' (k - n)
 
+/-- Use the infix notation `++` for `AppendFintInf`.
+-/
 instance instAppendFinInf {n : ℕ} : HAppend (Fin n → X) (ℕ → X) (ℕ → X) :=
   { hAppend := AppendFinInf }
 
+/-- Remove the first n elements from an infinite sequence xs.
+-/
 def SuffixFrom (xs : ℕ → X) (n : ℕ) : ℕ → X :=
   fun k ↦ xs (k + n)
 
+/-- Use the infix notation `<<<` for `SuffixFrom`.
+-/
 instance instSuffixFrom : HShiftLeft (ℕ → X) (ℕ) (ℕ → X) :=
   { hShiftLeft := SuffixFrom }
 
+/-- Get the list containing the elements of `xs` from position `lo` to `hi - 1`.
+-/
 def FinSubseq (xs : ℕ → X) (lo hi : ℕ) : List X :=
   List.ofFn (fun k : Fin (hi - lo) ↦ xs (k + lo))
 
+/-- Use the postfix notation `⇊` for `FinSubseq`, like `xs ⇊ lo hi`.
+-/
 @[notation_class]
 class GetSeg (α : Type*) (β : outParam (Type*)) where
   getSeg : α → β
@@ -49,9 +65,13 @@ postfix:1024 "⇊" => GetSeg.getSeg
 instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
   { getSeg := (FinSubseq ·) }
 
+/-- Fix all elements of `xs` to `x` from position `n` onward.
+-/
 def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
+/- Some technical lemmas are proved below.
+-/
 variable {xl : List X} {xs xs' : ℕ → X}
 
 theorem ofFn_eq_ofFn {m n n' : ℕ}
@@ -92,6 +112,8 @@ theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
+/-- Note that the left-to-right direction below requires `s` being finite.
+-/
 theorem frequently_in_finite_set [Finite X] {s : Set X} :
     (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by
   constructor

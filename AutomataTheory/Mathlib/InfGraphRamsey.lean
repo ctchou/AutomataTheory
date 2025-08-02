@@ -20,6 +20,8 @@ section InfGraphRamsey
 
 open Classical
 
+/-- The infinitary pigeonhole principle.
+-/
 lemma pigeonhole_principle {X Y : Type*} [Finite Y] (f : X → Y) {s : Set X} (h_inf : s.Infinite) :
     ∃ y, ∃ t, t.Infinite ∧ t ⊆ s ∧ ∀ x ∈ t, f x = y := by
   have := h_inf.to_subtype
@@ -88,6 +90,10 @@ lemma selection_seq_prop :
   rw [← h_eq]
   exact h_ivs
 
+/-- If the 2-edges of an infinite complete graph is assigned a finite number of colors,
+then there must exist a color `c` and an infinite set `s` of vertices such that the 2-edge
+beteen any 2 vertices of `s` is assigned the color `c`.
+-/
 theorem inf_graph_ramsey :
     ∃ c : Color, ∃ s : Set Vertex, s.Infinite ∧ ∀ e : Edge, e.card = 2 → e.toSet ⊆ s → color e = c := by
   obtain ⟨vs, v, c, h_sel⟩ := selection_seq_prop color

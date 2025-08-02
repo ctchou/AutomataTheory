@@ -7,7 +7,7 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.Automata.Basic
 
 /-!
-The construction of adding history state to an automaton.
+The construction of adding a history state component to an automaton.
 -/
 
 open Function Set Filter
@@ -16,6 +16,10 @@ section AutomataHist
 
 variable {A H : Type*}
 
+/-- Note that in the next state, the history component can depend on both the original
+and the history components of the current state, but the original component is unaffected
+by the history component of the current state.
+-/
 def Automaton.addHist (M : Automaton A) (hist_init : Set H) (hist_next : M.State × H → A → Set H) : Automaton A where
   State := M.State × H
   init := { s | s.1 ∈ M.init ∧ s.2 ∈ hist_init }
@@ -23,6 +27,9 @@ def Automaton.addHist (M : Automaton A) (hist_init : Set H) (hist_next : M.State
 
 variable {M : Automaton A} {hist_init : Set H} {hist_next : M.State × H → A → Set H}
 
+/-- The original state components of a finite run of the history automaton is
+a finite run of the original automaton.
+-/
 theorem automata_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State × H}
     (h : (M.addHist hist_init hist_next).FinRun n as ss) : M.FinRun n as (Prod.fst ∘ ss) := by
   constructor
@@ -34,6 +41,9 @@ theorem automata_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.St
     simp [Automaton.addHist] at h'
     exact h'.1
 
+/-- The original state components of an infinite run of the history automaton is
+an infinite run of the original automaton.
+-/
 theorem automata_hist_inf_run_proj {as : ℕ → A} {ss : ℕ → M.State × H}
     (h : (M.addHist hist_init hist_next).InfRun as ss) : M.InfRun as (Prod.fst ∘ ss) := by
   constructor
@@ -49,6 +59,9 @@ private def MakeHist (as : ℕ → A) (ss : ℕ → M.State) (hs0 : H) (hs' : M.
   | 0 => hs0
   | k + 1 => hs' (ss k, MakeHist as ss hs0 hs' k) (as k)
 
+/-- Any finite run of the original automaton can be extended to a finite run of
+the history automaton, assuming that the history component can always "follow along".
+-/
 theorem automata_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
     (h : M.FinRun n as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).FinRun n as (fun k ↦ (ss k, hs k)) := by
@@ -62,6 +75,9 @@ theorem automata_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.
     simp [Automaton.addHist, MakeHist, hs, h.2 k h_k]
     apply h_hs'
 
+/-- Any infinite run of the original automaton can be extended to an infinite run of
+the history automaton, assuming that the history component can always "follow along".
+-/
 theorem automata_hist_inf_run_exists {as : ℕ → A} {ss : ℕ → M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
     (h : M.InfRun as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).InfRun as (fun k ↦ (ss k, hs k)) := by

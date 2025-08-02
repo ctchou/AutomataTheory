@@ -19,6 +19,11 @@ section AutomataPSet
 
 variable {A : Type*}
 
+/-- The states of `M.Pset` is the power set of the states of `M`.
+The initial state of `M.Pset` is the set of initial state of `M`.
+The next state of `M.Pset` is the set of states reachable by `M`
+by consuming the samne input letter.
+-/
 def Automaton.PSet (M : Automaton A) : DetAutomaton A where
   State := Set M.State
   init := M.init
@@ -28,14 +33,17 @@ variable {M : Automaton A}
 
 instance : Membership M.State M.PSet.State := by exact { mem := fun s ↦ s }
 
-theorem automata_pset_reach_init (as : ℕ → A) :
+lemma automata_pset_reach_init (as : ℕ → A) :
     M.PSet.DetRun as 0 = M.init := by
   simp [DetAutomaton.DetRun, Automaton.PSet]
 
-theorem automata_pset_reach_next (as : ℕ → A) (k : ℕ) :
+lemma automata_pset_reach_next (as : ℕ → A) (k : ℕ) :
     M.PSet.DetRun as (k + 1) = ⋃ s ∈ M.PSet.DetRun as k, M.next s (as k) := by
   simp [DetAutomaton.DetRun, Automaton.PSet]
 
+/-- For any input `as`, running `M.Pset` on `as` ends in the unique state
+that is exact the set of states reachable by running `M` on `as`.
+-/
 theorem automata_pset_run (as : ℕ → A) (k : ℕ) :
     M.PSet.DetRun as k = { s : M.State | ∃ ss, M.FinRun k as ss ∧ ss k = s } := by
   induction' k with k h_ind
@@ -71,6 +79,10 @@ variable {A : Type*} (M : Automaton A) (acc : Set M.State)
 
 def Automaton.PSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
 
+/-- The language accepted by `M.Pset` is the same as that accepted by `M`,
+where the accepting states of `M.Pset` are those that contains at least one
+accepting state of `M`.
+-/
 theorem accepted_lang_pset :
     M.PSet.toNA.AcceptedLang (M.PSet_Acc acc) = M.AcceptedLang acc := by
   ext al ; simp only [Automaton.AcceptedLang, Automaton.FinAccept] ; constructor

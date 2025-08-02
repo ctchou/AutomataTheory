@@ -142,7 +142,7 @@ end Segments
 section Segments'
 
 /- Segment' φ k does not assume φ 0 = 0, but returns a meaningful value
-   only when k ≥ φ 0 and returns 0 for all k < φ 0.
+only when k ≥ φ 0 and returns 0 for all k < φ 0.
 -/
 noncomputable def Segment' (φ : ℕ → ℕ) (k : ℕ) : ℕ :=
   Segment (φ · - φ 0) (k - φ 0)

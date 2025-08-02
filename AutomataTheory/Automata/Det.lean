@@ -7,8 +7,8 @@ Authors: Ching-Tsun Chou
 import AutomataTheory.Automata.Basic
 
 /-!
-The deterministic automaton class DetAutomaton is identical to the Automaton class,
-except that its initial and next states are unique.
+The deterministic automaton class `DetAutomaton` is analogous to the
+`Automaton` class, except that its initial and next states are unique.
 -/
 
 open Function Set Filter
@@ -22,21 +22,29 @@ class DetAutomaton (A : Type*) where
 
 variable {A : Type*}
 
+/-- Converting a `DetAutomaton` to an `Automaton`.
+-/
 def DetAutomaton.toNA (M : DetAutomaton A) : Automaton A where
   State := M.State
   init := {M.init}
   next := fun s a ↦ {M.next s a}
 
+/-- The unique run of a `DetAutomaton` on an input sequence from `A`.
+-/
 def DetAutomaton.DetRun (M : DetAutomaton A) (as : ℕ → A) : ℕ → M.State
   | 0 => M.init
   | k + 1 => M.next (DetRun M as k) (as k)
 
 variable {M : DetAutomaton A}
 
+/-- A `DetAutomaton` has an infinite run on any infinite input.
+-/
 theorem det_automata_inf_run_exists (as : ℕ → A) :
     M.toNA.InfRun as (M.DetRun as) := by
   constructor <;> simp [DetAutomaton.toNA, DetAutomaton.DetRun]
 
+/-- A `DetAutomaton` has a unique infinite run on any infinite input.
+-/
 theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
     (h : M.toNA.InfRun as ss) : ss = M.DetRun as := by
   ext k ; induction' k with k h_ind
@@ -48,10 +56,14 @@ theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
     simp [DetAutomaton.toNA] at h_next
     assumption
 
+/-- A `DetAutomaton` has a finite run on any finite input.
+-/
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
     M.toNA.FinRun n as (M.DetRun as) := by
   exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
+/-- A `DetAutomaton` has a unique finite run on any finite input.
+-/
 theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h : M.toNA.FinRun n as ss) : ∀ k < n + 1, ss k = M.DetRun as k := by
   rcases h with ⟨h_init, h_next⟩
@@ -69,6 +81,9 @@ section AcceptedLangCompl
 
 variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
 
+/-- For a `DetAutomaton`, complementing the language it accepts can be achieved
+by simply complementing the set of accepting states.
+-/
 theorem accepted_lang_compl [Inhabited A] :
     M.toNA.AcceptedLang accᶜ = (M.toNA.AcceptedLang acc)ᶜ := by
   ext al

@@ -18,34 +18,56 @@ section Languages
 
 variable {A : Type*}
 
+/-- Concatenation of two languages, resulting in a language.
+-/
 def ConcatFin (L0 L1 : Set (List A)) : Set (List A) :=
   { al | ∃ al0 al1, al0 ∈ L0 ∧ al1 ∈ L1 ∧ al = al0 ++ al1 }
 
+/-- Use the infix notation `*` for `ConcatFin`.
+-/
 instance : Mul (Set (List A)) :=
   { mul := ConcatFin }
 
+/-- Concatenation of a language and an ω-language, resulting in an ω-language.
+-/
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
   { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = al0 ++ as1 }
 
+/-- Use the infix notation `*` for `ConcatInf`.
+-/
 instance : HMul (Set (List A)) (Set (ℕ → A)) (Set (ℕ → A)) :=
   { hMul := ConcatInf }
 
+/-- Concatenation of `n` copies of a languages, resulting in a language.
+-/
 def IterFin (L : Set (List A)) : ℕ → Set (List A)
   | 0 => {[]}
   | n + 1 => (IterFin L n) * L
 
-instance : HPow (Set (List A)) (ℕ) (Set (List A)) :=
+/-- Use the infix notation `^` for `IterFin`.
+-/
+instance instIterFin : HPow (Set (List A)) (ℕ) (Set (List A)) :=
   { hPow := IterFin }
 
+/-- Concatenation of any finitely many copies of a languages, resulting in a language.
+A.k.a. Kleene star.
+-/
 def IterStar (L : Set (List A)) : Set (List A) :=
-  ⋃ n : ℕ, IterFin L n
+  ⋃ n : ℕ, L ^ n
 
+/-- Use the postfix notation `∗` for `IterStar`.
+-/
 instance instIterStar : KStar (Set (List A)) :=
   { kstar := IterStar }
 
+/-- Concatenation of countably infinitely many copies of a languages, resulting in an ω-language.
+A.k.a. ω-power.
+-/
 def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
   { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L }
 
+/-- Use the postfix notation ^ω` for `IterOmega`.
+-/
 @[notation_class]
 class OmegaPower (α : Type*) (β : outParam (Type*)) where
   omegaPower : α → β

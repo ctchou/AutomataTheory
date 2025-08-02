@@ -22,6 +22,11 @@ section AutomataLoop
 
 variable {A : Type*}
 
+/-- The loop automaton of `M` mimics `M`, but can nondeterministically decide
+to transition from an accepting state of `M` to an initial state of `M`.
+The special state `inl ()` marks the boundaries between successive runs of `M`
+and is the only accepting state of the loop automaton.
+-/
 def Automaton.Loop (M : Automaton A) (acc : Set M.State) : Automaton A where
   State := Unit ⊕ M.State
   init := {inl ()}
@@ -42,6 +47,9 @@ private lemma not_inl_unit {s : (M.Loop acc).State} :
     simp [h_s] at h1
   · rintro ⟨s', h_s'⟩ ; simp [h_s']
 
+/-- A finite run of the loop automaton that contains the `inl ()` marker only
+at the beginning and at the end is an accepting run of `M`.
+-/
 theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop acc).State} (h : n > 0) :
     (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k ∈ range inr) ↔
     ∃ ss', M.FinRun n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
@@ -116,6 +124,9 @@ theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop a
     · intro k h_k_n h_k_0
       simp [h_inr k h_k_n h_k_0]
 
+/-- Conversely, for any finite accepting run of `M`, there is a finite run of the
+loop automaton that contains the `inl ()` marker only at the beginning and at the end.
+-/
 theorem automata_loop_fin_run_exists {n : ℕ} {as : ℕ → A} {ss' : ℕ → M.State}
     (h_run' : M.FinRun n as ss') (h_acc' : ss' n ∈ acc) :
     ∃ ss, (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
@@ -134,6 +145,9 @@ section AcceptedLangLoop
 
 variable {A : Type*} {M : Automaton A} {acc : Set M.State}
 
+/-- The concatenation of the language accepted by the loop automaton with itself
+is a subset of itself.
+-/
 theorem accepted_lang_loop_concat :
     ((M.Loop acc).AcceptedLang {inl ()}) * ((M.Loop acc).AcceptedLang {inl ()}) ⊆
     (M.Loop acc).AcceptedLang {inl ()} := by
@@ -160,6 +174,9 @@ theorem accepted_lang_loop_concat :
   · have h_next := h_run2.2 (k - n1) (by omega)
     simp [as, ss, h_next, (show ¬ k < n1 by omega), (show ¬ k + 1 < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
+/-- The language accepted by the loop automaton is the Kleene star of
+the language accepted by `M`.
+-/
 theorem accepted_lang_loop [Inhabited A] :
     (M.Loop acc).AcceptedLang {inl ()} = (M.AcceptedLang acc)∗ := by
   ext al ; constructor
@@ -196,7 +213,7 @@ theorem accepted_lang_loop [Inhabited A] :
         simp [instSuffixFrom, SuffixFrom] ; use s' ; simp [h_s']
       obtain ⟨ss'', h_run'', h_acc'', _⟩ := (automata_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
       let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
-      use (j + 1) ; simp [IterFin]
+      use (j + 1) ; simp [instIterFin, IterFin]
       use al', al'' ; constructorm* _ ∧ _
       · exact h_j
       · use (n - m), (as <<< m) ; simp [al'', instSuffixFrom, SuffixFrom]
@@ -204,7 +221,7 @@ theorem accepted_lang_loop [Inhabited A] :
       · simp [h_al, al', al'', ofFn_of_append_ofFn_oFn (show m ≤ n by omega)]
     · rcases (show n = 0 ∨ n > 0 by omega) with h_n | h_n
       · obtain ⟨rfl⟩ := h_n ; simp at h_al
-        use 0 ; simp [h_al, IterFin]
+        use 0 ; simp [h_al, instIterFin, IterFin]
       simp [loop] at h_loop
       have h_inr : ∀ k < n, k > 0 → ss k ∈ range inr := by
         intro k h_k_n h_k_0
@@ -212,13 +229,13 @@ theorem accepted_lang_loop [Inhabited A] :
         use s' ; simp [h_s']
       simp at h_acc
       obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
-      use 1 ; simp [IterFin, lang_ConcatFin_epsilon_left]
+      use 1 ; simp [instIterFin, IterFin, lang_ConcatFin_epsilon_left]
       use n, as ; simp [h_al]
       use ss'
   · rintro ⟨L, ⟨i, rfl⟩, h_al⟩ ; simp at h_al
     revert al
     induction' i with i h_ind
-    · intro al ; simp [IterFin] ; rintro ⟨rfl⟩
+    · intro al ; simp [instIterFin, IterFin] ; rintro ⟨rfl⟩
       use 0 ; simp
       use (fun k ↦ default), (fun k ↦ inl ()) ; simp [Automaton.FinRun, Automaton.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
@@ -230,6 +247,9 @@ theorem accepted_lang_loop [Inhabited A] :
     use n2, as2 ; simp [h_al2]
     use ss2 ; simp [h_run2, h_acc2]
 
+/-- The ω-language accepted by the loop automaton is the ω-power of
+the language accepted by `M`.
+-/
 theorem accepted_omega_lang_loop :
     (M.Loop acc).AcceptedOmegaLang {inl ()} = (M.AcceptedLang acc)^ω := by
   ext as ; constructor
