@@ -21,6 +21,7 @@ open Classical
 
 variable {A : Type}
 
+/-- An ω-language is regular iff it is accepted by a finite-state automaton using the Büchi acceptance condition -/
 def OmegaRegLang (L : Set (ℕ → A)) :=
   ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
 

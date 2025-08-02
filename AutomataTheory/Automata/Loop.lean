@@ -196,7 +196,7 @@ theorem accepted_lang_loop [Inhabited A] :
         simp [instSuffixFrom, SuffixFrom] ; use s' ; simp [h_s']
       obtain ⟨ss'', h_run'', h_acc'', _⟩ := (automata_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
       let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
-      use (j + 1) ; simp [IterFin]
+      use (j + 1) ; simp [instIterFin, IterFin]
       use al', al'' ; constructorm* _ ∧ _
       · exact h_j
       · use (n - m), (as <<< m) ; simp [al'', instSuffixFrom, SuffixFrom]
@@ -204,7 +204,7 @@ theorem accepted_lang_loop [Inhabited A] :
       · simp [h_al, al', al'', ofFn_of_append_ofFn_oFn (show m ≤ n by omega)]
     · rcases (show n = 0 ∨ n > 0 by omega) with h_n | h_n
       · obtain ⟨rfl⟩ := h_n ; simp at h_al
-        use 0 ; simp [h_al, IterFin]
+        use 0 ; simp [h_al, instIterFin, IterFin]
       simp [loop] at h_loop
       have h_inr : ∀ k < n, k > 0 → ss k ∈ range inr := by
         intro k h_k_n h_k_0
@@ -212,13 +212,13 @@ theorem accepted_lang_loop [Inhabited A] :
         use s' ; simp [h_s']
       simp at h_acc
       obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
-      use 1 ; simp [IterFin, lang_ConcatFin_epsilon_left]
+      use 1 ; simp [instIterFin, IterFin, lang_ConcatFin_epsilon_left]
       use n, as ; simp [h_al]
       use ss'
   · rintro ⟨L, ⟨i, rfl⟩, h_al⟩ ; simp at h_al
     revert al
     induction' i with i h_ind
-    · intro al ; simp [IterFin] ; rintro ⟨rfl⟩
+    · intro al ; simp [instIterFin, IterFin] ; rintro ⟨rfl⟩
       use 0 ; simp
       use (fun k ↦ default), (fun k ↦ inl ()) ; simp [Automaton.FinRun, Automaton.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
