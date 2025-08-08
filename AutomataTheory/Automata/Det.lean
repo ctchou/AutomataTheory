@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import AutomataTheory.Languages.Basic
 import AutomataTheory.Automata.Basic
 
 /-!
@@ -77,7 +78,7 @@ theorem det_automata_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.S
 
 end DetAutomata
 
-section AcceptedLangCompl
+section DetAutomatonAcceptedLang
 
 variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
 
@@ -126,4 +127,32 @@ theorem accepted_lang_compl [Inhabited A] :
       simp [← h_al] ; use! ss
     contradiction
 
-end AcceptedLangCompl
+/-- The ω-language accepted by a deterministic Buchi automaton is the ω-limit
+of the language accepted by the same automaton.
+-/
+theorem det_automta_accepted_omega_lang :
+    M.toNA.AcceptedOmegaLang acc = (M.toNA.AcceptedLang acc)↗ω := by
+  ext as ; constructor
+  · rintro ⟨ss, h_run, h_inf⟩
+    obtain ⟨φ, h_mono, h_acc⟩ := frequently_iff_strict_mono.mp h_inf
+    apply frequently_iff_strict_mono.mpr
+    use φ ; simp [h_mono] ; intro m
+    use (φ m), as ; constructor <;> [skip ; rfl]
+    use ss ; simp [h_acc]
+    exact automata_InfRun_iff_FinRun.mp h_run (φ m)
+  · simp only [instOmegaLimit, OmegaLimit, frequently_iff_strict_mono, mem_setOf_eq]
+    rintro ⟨φ, h_mono, h_acc⟩
+    use (M.DetRun as) ; constructor
+    · apply det_automata_inf_run_exists
+    apply frequently_iff_strict_mono.mpr
+    use φ ; simp [h_mono] ; intro m
+    obtain ⟨n, as', ⟨ss, h_run', h_acc'⟩, h_as'⟩ := h_acc m
+    simp [instFinSubseq, FinSubseq, List.ofFn_inj'] at h_as'
+    obtain ⟨rfl, h_as'⟩ := h_as'
+    simp [funext_iff, Fin.forall_iff] at h_as'
+    have h_run : M.toNA.FinRun (φ m) as ss := automata_FinRun_modulo
+      (M := M.toNA) (n := φ m) (as := as') (as' := as) (ss := ss) (ss' := ss) (by grind) (by grind) h_run'
+    have := det_automata_fin_run_unique h_run (φ m) (by omega)
+    simp_all
+
+end DetAutomatonAcceptedLang

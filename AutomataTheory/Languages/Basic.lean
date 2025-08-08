@@ -77,6 +77,25 @@ postfix:1024 "^ω" => OmegaPower.omegaPower
 instance instIterOmega : OmegaPower (Set (List A)) (Set (ℕ → A)) :=
   { omegaPower := IterOmega }
 
+/- The ω-limit of a language L is the ω-language of infinite sequences each of which
+contains infinitely many prefixes in L.
+-/
+def OmegaLimit (L : Set (List A)) : Set (ℕ → A) :=
+  { as | ∃ᶠ m in atTop, as ⇊ 0 m ∈ L }
+
+/-- Use the postfix notation ↗ω` for `OmegaLimit`.
+-/
+@[notation_class]
+class OmegaLimitCls (α : Type*) (β : outParam (Type*)) where
+  omegaLimit : α → β
+
+postfix:1024 "↗ω" => OmegaLimitCls.omegaLimit
+
+instance instOmegaLimit : OmegaLimitCls (Set (List A)) (Set (ℕ → A)) :=
+  { omegaLimit := OmegaLimit }
+
+/- The following are some miscellaneous theorems -/
+
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     {[]} * L = L := by
   ext al ; constructor

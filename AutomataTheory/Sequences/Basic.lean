@@ -131,4 +131,17 @@ theorem frequently_in_finite_set [Finite X] {s : Set X} :
     apply Frequently.mono h_inf
     intro k h_k ; simpa [h_k]
 
+theorem frequently_iff_strict_mono {p : ℕ → Prop} :
+    (∃ᶠ n in atTop, p n) ↔ ∃ φ : ℕ → ℕ, StrictMono φ ∧ ∀ m, p (φ m) := by
+  constructor
+  · intro h
+    exact extraction_of_frequently_atTop h
+  · rintro ⟨φ, h_mono, h_p⟩
+    rw [Nat.frequently_atTop_iff_infinite]
+    have h_range : range φ ⊆ {n | p n} := by
+      rintro k ⟨m, rfl⟩
+      simp_all only [mem_setOf_eq]
+    apply Infinite.mono h_range
+    exact infinite_range_of_injective h_mono.injective
+
 end Sequences
