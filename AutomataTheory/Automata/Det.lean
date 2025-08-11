@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
-import AutomataTheory.Languages.Basic
 import AutomataTheory.Automata.Basic
+import AutomataTheory.Languages.Basic
+import AutomataTheory.Sequences.InfOcc
 
 /-!
 The deterministic automaton class `DetAutomaton` is analogous to the

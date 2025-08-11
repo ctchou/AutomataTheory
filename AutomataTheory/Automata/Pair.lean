@@ -6,6 +6,7 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.Automata.Hist
 import AutomataTheory.Languages.RegLang
+import AutomataTheory.Sequences.InfOcc
 
 /-!
 The languages corresponding to pairs of states of an automaton defined in
