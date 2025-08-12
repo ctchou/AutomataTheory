@@ -13,7 +13,7 @@ The deterministic automaton class `DetAutomaton` is analogous to the
 `Automaton` class, except that its initial and next states are unique.
 -/
 
-open Function Set Filter
+open Function Set
 
 section DetAutomata
 
@@ -157,3 +157,18 @@ theorem det_automta_accepted_omega_lang :
     simp_all
 
 end DetAutomatonAcceptedLang
+
+section DetMuller
+
+variable {A : Type*}
+
+/-- Muller acceptance condition for a deterministic automaton.
+-/
+def DetAutomaton.MullerAccept (M : DetAutomaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
+  InfOcc (M.DetRun as) ∈ accSet
+
+theorem det_muller_accept_compl (M : DetAutomaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :
+    M.MullerAccept accSetᶜ as ↔ ¬ M.MullerAccept accSet as := by
+  simp [DetAutomaton.MullerAccept]
+
+end DetMuller

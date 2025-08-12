@@ -2,6 +2,7 @@ import AutomataTheory.Automata.Basic
 import AutomataTheory.Automata.Concat
 import AutomataTheory.Automata.Congr
 import AutomataTheory.Automata.Det
+import AutomataTheory.Automata.DetProd
 import AutomataTheory.Automata.Hist
 import AutomataTheory.Automata.Loop
 import AutomataTheory.Automata.OI2
