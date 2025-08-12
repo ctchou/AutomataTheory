@@ -13,6 +13,7 @@ import AutomataTheory.Automata.Sum
 import AutomataTheory.Congruences.Basic
 import AutomataTheory.Congruences.BuchiCongr
 import AutomataTheory.Languages.Basic
+import AutomataTheory.Languages.DetMullerLang
 import AutomataTheory.Languages.OmegaRegLang
 import AutomataTheory.Languages.RegLang
 import AutomataTheory.Mathlib.Imports
