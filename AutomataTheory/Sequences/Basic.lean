@@ -13,7 +13,7 @@ It is imported directly or indirectly by all other files in AutomataTheory excep
 in AutomataTheort.Mathlib.
 -/
 
-open Function Set Filter
+open Function Set Option Filter
 
 section Sequences
 
@@ -114,5 +114,34 @@ theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
     (xs <<< k) ⇊ (m - k) (n - k) = xs ⇊ m n := by
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
+
+theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
+    (xs <<< j) (k - j) = xs k := by
+  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+
+theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
+    ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by
+  have h_fin : (range f).Finite := toFinite (range f)
+  have h_ne : (range f).Nonempty := by use (f 0) ; simp
+  obtain ⟨i, ⟨m, rfl⟩, h_min⟩ := Finite.exists_minimal h_fin h_ne
+  use (f m), m ; intro k h_k
+  have h_k_m := h h_k
+  have h_m_k := h_min (show f k ∈ range f by simp) h_k_m
+  exact Fin.le_antisymm h_k_m h_m_k
+
+theorem option_some_pigeonhole {X : Type*} [Finite X] {n : ℕ} (f : Fin n → Option X)
+    (h : {j | (f j).isSome}.ncard > Nat.card X) :
+    ∃ j1 j2, j1 ≠ j2 ∧ ∃ x, f j1 = some x ∧ f j2 = some x := by
+  have ht : (some '' (univ : Set X)).Finite := by exact toFinite (some '' univ)
+  have : (some '' (univ : Set X)).ncard = Nat.card X := by
+    rw [ncard_image_of_injective (univ : Set X) (some_injective X)] ; exact ncard_univ X
+  have hc : (some '' (univ : Set X)).ncard < {j | (f j).isSome}.ncard := by omega
+  have hf : ∀ j ∈ {j | (f j).isSome}, f j ∈ some '' (univ : Set X) := by
+    intro j ; simp ; rw [isSome_iff_exists] ; tauto
+  obtain ⟨j1, h_j1, j2, h_j2, h_ne, h_eq⟩ := exists_ne_map_eq_of_ncard_lt_of_maps_to hc hf ht
+  obtain ⟨s1, h_s1⟩ := isSome_iff_exists.mp h_j1
+  obtain ⟨s2, h_s2⟩ := isSome_iff_exists.mp h_j2
+  simp [h_s1, h_s2] at h_eq ; obtain ⟨rfl⟩ := h_eq
+  use j1, j2 ; simp [h_ne] ; use s1
 
 end Sequences

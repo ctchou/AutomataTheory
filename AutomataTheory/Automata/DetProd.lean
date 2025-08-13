@@ -44,7 +44,7 @@ theorem da_prod_finite :
 theorem da_prod_inf_occ (as : ℕ → A) (i : I) :
     (· i) '' (InfOcc ((DA.Prod M).DetRun as)) =
     InfOcc ((· i) ∘ (DA.Prod M).DetRun as) := by
-  exact inf_occ_proj
+  apply inf_occ_proj
 
 variable (accSet : (i : I) → Set (Set (M i).State))
 
