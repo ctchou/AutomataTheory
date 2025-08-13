@@ -5,24 +5,22 @@ Authors: Ching-Tsun Chou
 -/
 
 import AutomataTheory.Automata.DetProd
-
--- set_option diagnostics true
--- set_option diagnostics.threshold 10
+import AutomataTheory.Languages.RegLang
 
 /-!
 This file proves various closure properties of deterministic Muller
-(ω-)langauges.  Note that we do require that the Muller automaton
-to have a finite state type.
+(ω-)langauges.  Note that we do require that the Muller automata
+to have finite state types.
 -/
 
-open Function Set Filter
+open Function Set
 
 section DetMullerLang
 
 variable {A : Type}
 
 /-- An ω-language is deterministic Muller iff it is accepted by a
-finite-state deterministic Muller automaton
+finite-state deterministic Muller automaton.
 -/
 def DetMullerLang (L : Set (ℕ → A)) :=
   ∃ M : DetAutomaton.{0, 0} A, ∃ accSet : Set (Set M.State),
@@ -74,5 +72,17 @@ theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
   · exact det_automata_prod_finite M
   · ext as
     simp [det_muller_accept_union M accSet as, Fin.exists_fin_two] ; grind
+
+/-- The ω-limit of a regular language is a deterministic Muller language.
+-/
+theorem det_muller_lang_omega_limit {L : Set (List A)}
+    (h : RegLang L) : DetMullerLang L↗ω := by
+  obtain ⟨M, acc, h_fin, rfl⟩ := h
+  rw [← accepted_lang_pset]
+  have : Finite M.PSet.State := by exact Set.instFinite
+  obtain ⟨accSet, h_acc⟩ := det_muller_accept_omega_limit M.PSet (M.PSet_Acc acc)
+  use M.PSet, accSet ; constructor
+  · assumption
+  · simp [h_acc]
 
 end DetMullerLang

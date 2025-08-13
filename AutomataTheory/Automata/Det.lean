@@ -167,8 +167,30 @@ variable {A : Type*}
 def DetAutomaton.MullerAccept (M : DetAutomaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
   InfOcc (M.DetRun as) ∈ accSet
 
+/-- For a deterministic Muller automaton, complementing the ω-language it accepts
+can be achieved by simply complementing the set of accepting state sets.
+-/
 theorem det_muller_accept_compl (M : DetAutomaton A) (accSet : Set (Set M.State)) (as : ℕ → A) :
     M.MullerAccept accSetᶜ as ↔ ¬ M.MullerAccept accSet as := by
   simp [DetAutomaton.MullerAccept]
+
+/-- The ω-limit of the language accepted by a deterministic automaton is
+accepted by a deterministic Muller automaton.
+-/
+theorem det_muller_accept_omega_limit (M : DetAutomaton A) [Finite M.State] (acc : Set M.State) :
+    ∃ accSet, {as | M.MullerAccept accSet as} = (M.toNA.AcceptedLang acc)↗ω := by
+  use {acc' | (acc' ∩ acc).Nonempty} ; ext as
+  simp [← det_automta_accepted_omega_lang, DetAutomaton.MullerAccept] ; constructor
+  · rintro ⟨s, h_inf, h_acc⟩
+    use (M.DetRun as) ; constructor
+    · exact det_automata_inf_run_exists as
+    obtain ⟨φ, h_mono, h_s⟩ := frequently_iff_strict_mono.mp h_inf
+    apply frequently_iff_strict_mono.mpr
+    use φ ; aesop
+  · rintro ⟨ss, h_run, h_acc⟩
+    obtain ⟨rfl⟩ := det_automata_inf_run_unique h_run
+    have : Finite M.toNA.State := by (expose_names; exact inst)
+    obtain ⟨s, h_s, h_inf⟩ := frequently_in_finite_set.mp h_acc
+    use s ; aesop
 
 end DetMuller
