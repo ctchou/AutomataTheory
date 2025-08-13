@@ -11,7 +11,8 @@ This file contains some definitions and theorems about
 infinite occurrences in an infinite sequence.
 -/
 
-open Function Set Prod Filter
+open Function Set Prod Option Filter
+open Classical
 
 section InfOcc
 
@@ -54,9 +55,35 @@ theorem frequently_in_finite_set {X : Type*} [Finite X] {s : Set X} {xs : ℕ �
     apply Frequently.mono h_inf
     intro k h_k ; simpa [h_k]
 
+/-- Removing any finite prefix of `xs` does not change `InfOcc xs`.
+-/
+theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
+    InfOcc (xs <<< k) = InfOcc xs := by
+  ext x ; simp [InfOcc, frequently_atTop] ; constructor
+  · intro h_inf n ; obtain ⟨m, h_m, rfl⟩ := h_inf n
+    use (m + k) ; simp [instSuffixFrom, SuffixFrom] ; omega
+  · intro h_inf n ; obtain ⟨m, h_m, rfl⟩ := h_inf (n + k)
+    use (m - k) ; simp [instSuffixFrom, SuffixFrom, (show n ≤ m - k by omega), (show m - k + k = m by omega)]
+
+/-- Over a finite type, `xs k` is in `InfOcc xs` for all sufficiently large `k`.
+-/
+theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
+    ∀ᶠ k in atTop, xs k ∈ InfOcc xs := by
+  have h_compl : ∀ x ∈ (InfOcc xs)ᶜ, ∃ n, ∀ k ≥ n, xs k ≠ x := by simp [InfOcc]
+  choose lb h_lb using h_compl
+  let fs_compl := Finite.toFinset <| toFinite (InfOcc xs)ᶜ
+  let glb := fs_compl.sup (fun x ↦ if h : x ∈ (InfOcc xs)ᶜ then lb x h else 0)
+  have h_glb : ∀ x, (h : x ∈ (InfOcc xs)ᶜ) → lb x h ≤ glb := by
+    intro x h ; refine Finset.le_sup_of_le (b := x) (by simpa [fs_compl]) (by simp [h])
+  apply eventually_atTop.mpr
+  use glb ; intro k h_k ; by_contra h_contra
+  have := h_glb (xs k) h_contra
+  have := h_lb (xs k) h_contra k (by omega)
+  contradiction
+
 /-- Note that only the ⊇ direction needs the finiteness assumptions.
 -/
-theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [∀ i, Finite (X i)] {xs : ℕ → Π i, X i} {i : I} :
+theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [h : ∀ i, Finite (X i)] (xs : ℕ → Π i, X i) (i : I) :
     (· i) '' (InfOcc xs) = InfOcc ((· i) ∘ xs) := by
   ext x_i ; simp ; constructor
   · rintro ⟨x, h_inf, rfl⟩
@@ -69,11 +96,10 @@ theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [∀ i, Finite (X 
     obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
     aesop
 
-/-- Same as inf_acc_proj, but for pair types.
-??? This result should follow from inf_occ_proj, but there doesn't seem
-to be an easy way to do it. ???
+/-- Same as inf_acc_proj, but for pair types.  This result does follow from
+inf_occ_proj, but that proof (see below) turns out to be longer.
 -/
-theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   constructor
@@ -98,12 +124,9 @@ theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] {xs : ℕ → X1 ×
       obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
       aesop
 
-/- The following proof, due to Aaron Liu, shows that inf_occ_pair does follow from
-inf_occ_proj.  Interestingly, this conceptually simpler and more elegant argument turns
-out to be harder to formalize than the dumb replication of the old proof given above.
+/- The following two proofs are due to Aaron Liu.
+The ⊆ direction of the first proof doesn't need injectivity assumption.
 -/
-
--- ⊆ direction doesn't need injective
 theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injective) (xs : ℕ → α) :
     InfOcc (f ∘ xs) = f '' InfOcc xs := by
   apply subset_antisymm
@@ -114,7 +137,7 @@ theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injecti
     intro x hx
     simpa [InfOcc, hf.eq_iff] using hx
 
-theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   let e := (Equiv.prodCongr Equiv.ulift Equiv.ulift).symm.trans (prodEquivPiFinTwo (ULift.{max u v} X1) (ULift.{max u v} X2))
@@ -132,5 +155,30 @@ theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] {xs : 
   simpa [Set.image_image] using And.intro
     (congrArg (Set.image ULift.down.{max u v}) (@hi 0))
     (congrArg (Set.image ULift.down.{max u v}) (@hi 1))
+
+-- The following proof is due to Kyle Miller
+instance {X : Type*} [Finite X] : Finite (Option X) :=
+  have := Fintype.ofFinite X
+  Finite.of_fintype _
+
+theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
+    (h : ∀ o ∈ InfOcc os, o.isSome) :
+    {x | ∃ o ∈ InfOcc os, o = some x} = InfOcc ((getD · y) ∘ os) := by
+  ext x ; constructor
+  · rintro ⟨o, h_inf, rfl⟩
+    apply Frequently.mono h_inf
+    intro k h_k ; simp [h_k]
+  · intro h_inf ; simp
+    obtain ⟨n, h_n⟩ := eventually_atTop.mp <| inf_occ_eventually os
+    have h_n' : ∀ m ≥ n, ∃ x, os m = some x := by
+      intro m h_m
+      exact isSome_iff_exists.mp <| h (os m) <| h_n m h_m
+    simp [← inf_occ_suffix os n]
+    simp [← inf_occ_suffix ((getD · y) ∘ os) n] at h_inf
+    apply Frequently.mono h_inf
+    intro k
+    simp [instSuffixFrom, SuffixFrom]
+    obtain ⟨x', h_x'⟩ := h_n' (k + n) (by omega)
+    simp [h_x']
 
 end InfOcc
