@@ -112,4 +112,8 @@ theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
+theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
+    (xs <<< j) (k - j) = xs k := by
+  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+
 end Sequences
