@@ -11,7 +11,7 @@ This file contains some definitions and theorems about
 infinite occurrences in an infinite sequence.
 -/
 
-open Function Set Filter
+open Function Set Prod Filter
 
 section InfOcc
 
@@ -68,5 +68,34 @@ theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [∀ i, Finite (X 
     have h_inf' : ∃ᶠ k in atTop, xs k ∈ s := by exact h_inf
     obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
     aesop
+
+/-- Same as inf_acc_proj, but for pair types.
+??? This result should follow from inf_occ_proj, but there doesn't seem
+to be an easy way to do it. ???
+-/
+theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+    fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
+    snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
+  constructor
+  · ext x1 ; simp ; constructor
+    · rintro ⟨x2, h_inf⟩
+      obtain ⟨φ, h_mono, h_x⟩ := frequently_iff_strict_mono.mp h_inf
+      apply frequently_iff_strict_mono.mpr
+      aesop
+    · intro h_inf
+      let s := { x : X1 × X2 | x.1 = x1 }
+      have h_inf' : ∃ᶠ k in atTop, xs k ∈ s := by exact h_inf
+      obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
+      aesop
+  · ext x2 ; simp ; constructor
+    · rintro ⟨x1, h_inf⟩
+      obtain ⟨φ, h_mono, h_x⟩ := frequently_iff_strict_mono.mp h_inf
+      apply frequently_iff_strict_mono.mpr
+      aesop
+    · intro h_inf
+      let s := { x : X1 × X2 | x.2 = x2 }
+      have h_inf' : ∃ᶠ k in atTop, xs k ∈ s := by exact h_inf
+      obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
+      aesop
 
 end InfOcc
