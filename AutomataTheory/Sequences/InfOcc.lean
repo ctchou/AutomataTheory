@@ -98,4 +98,39 @@ theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] {xs : ℕ → X1 ×
       obtain ⟨x, h_x, h_inf''⟩ := frequently_in_finite_set.mp h_inf'
       aesop
 
+/- The following proof, due to Aaron Liu, shows that inf_occ_pair does follow from
+inf_occ_proj.  Interestingly, this conceptually simpler and more elegant argument turns
+out to be harder to formalize than the dumb replication of the old proof given above.
+-/
+
+-- ⊆ direction doesn't need injective
+theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injective) (xs : ℕ → α) :
+    InfOcc (f ∘ xs) = f '' InfOcc xs := by
+  apply subset_antisymm
+  · intro x hx
+    obtain ⟨k, -, rfl⟩ := hx.exists
+    simpa [InfOcc, hf.eq_iff] using hx
+  · rw [Set.image_subset_iff]
+    intro x hx
+    simpa [InfOcc, hf.eq_iff] using hx
+
+theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+    fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
+    snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
+  let e := (Equiv.prodCongr Equiv.ulift Equiv.ulift).symm.trans (prodEquivPiFinTwo (ULift.{max u v} X1) (ULift.{max u v} X2))
+  have fes : Prod.fst ∘ e.symm = ULift.down ∘ (· 0) := rfl
+  have ses : Prod.snd ∘ e.symm = ULift.down ∘ (· 1) := rfl
+  rw [← xs.id_comp, ← e.symm_comp_self]
+  simp_rw [← Function.comp_assoc, fes, ses, Function.comp_assoc]
+  rw [infOcc_comp_of_injective ULift.down_injective, infOcc_comp_of_injective ULift.down_injective,
+    infOcc_comp_of_injective e.symm.injective]
+  have finite (i : Fin 2) : Finite (![ULift.{max u v} X1, ULift.{max u v} X2] i) := by
+    fin_cases i
+    · exact inferInstanceAs (Finite (ULift.{max u v} X1))
+    · exact inferInstanceAs (Finite (ULift.{max u v} X2))
+  have hi := @inf_occ_proj (Fin 2) _ ![ULift.{max u v} X1, ULift.{max u v} X2] finite (e ∘ xs)
+  simpa [Set.image_image] using And.intro
+    (congrArg (Set.image ULift.down.{max u v}) (@hi 0))
+    (congrArg (Set.image ULift.down.{max u v}) (@hi 1))
+
 end InfOcc
