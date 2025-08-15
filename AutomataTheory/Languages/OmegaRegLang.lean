@@ -113,8 +113,8 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
         use (eq.invFun (⟨s0, h_s0⟩, ⟨sa, h_sa⟩))
         simp [h_mem]
       · rintro ⟨i, h_mem⟩
-        use (eq i).1 ; simp [(eq i).1.property]
-        use (eq i).2 ; simp [(eq i).2.property, h_mem]
+        use (eq i).1 ; simp
+        use (eq i).2 ; simp [h_mem]
   · rintro ⟨n, U, V, h_reg, rfl⟩
     induction' n with n h_ind
     · use { State := Unit, init := {}, next := fun _ _ ↦ {} }, {} ; constructor
