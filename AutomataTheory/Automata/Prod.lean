@@ -16,9 +16,11 @@ state, or index types are infinite.
 
 open Function Set Filter
 
+universe u v
+
 section AutomataProd
 
-variable {I A : Type*}
+variable {I : Type v} {A : Type u}
 
 def Automaton.Prod (M : I → Automaton A) : Automaton A where
   State := Π i : I, (M i).State
@@ -58,7 +60,7 @@ end AutomataProd
 
 section AcceptedLangInter
 
-variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
+variable {I A : Type u} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
 
 def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
 

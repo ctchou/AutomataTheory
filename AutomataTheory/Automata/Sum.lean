@@ -15,9 +15,11 @@ state, or index types are infinite.
 
 open Function Set Filter
 
+universe u
+
 section AutomataSum
 
-variable {I A : Type*}
+variable {I A : Type u}
 
 def Automaton.Sum (M : I → Automaton A) : Automaton A where
   State := Σ i : I, (M i).State
@@ -111,7 +113,7 @@ end AutomataSum
 
 section AcceptedLangUnion
 
-variable {I A : Type*} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
+variable {I A : Type u} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
 
 def Automaton.Sum_Acc : Set (Automaton.Sum M).State := ⋃ i : I, Sigma.mk i '' acc i
 

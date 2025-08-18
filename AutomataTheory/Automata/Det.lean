@@ -15,14 +15,16 @@ The deterministic automaton class `DetAutomaton` is analogous to the
 
 open Function Set
 
+universe u
+
 section DetAutomata
 
-class DetAutomaton (A : Type*) where
-  State : Type*
+class DetAutomaton (A : Type u) where
+  State : Type u
   init : State
   next : State → A → State
 
-variable {A : Type*}
+variable {A : Type u}
 
 /-- Converting a `DetAutomaton` to an `Automaton`.
 -/
@@ -81,7 +83,7 @@ end DetAutomata
 
 section DetAutomatonAcceptedLang
 
-variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
+variable {A : Type u} {M : DetAutomaton A} {acc : Set M.State}
 
 /-- For a `DetAutomaton`, complementing the language it accepts can be achieved
 by simply complementing the set of accepting states.
@@ -160,7 +162,7 @@ end DetAutomatonAcceptedLang
 
 section DetMuller
 
-variable {A : Type*}
+variable {A : Type u}
 
 /-- Muller acceptance condition for a deterministic automaton.
 -/

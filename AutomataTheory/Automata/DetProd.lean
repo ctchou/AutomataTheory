@@ -15,9 +15,11 @@ each automaton's state type.
 
 open Function Set Filter
 
+universe u
+
 section DetAutomataProd
 
-variable {I A : Type*}
+variable {I A : Type u}
 
 def DetAutomaton.Prod (M : I → DetAutomaton A) : DetAutomaton A where
   State := Π i : I, (M i).State

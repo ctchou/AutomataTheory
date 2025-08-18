@@ -18,9 +18,11 @@ even when the state types are infinite.
 open Function Set Filter Sum
 open Classical
 
+universe u
+
 section AutomataConcat
 
-variable {A : Type*}
+variable {A : Type u}
 
 /-- The concatenation automaton starts by running `M0` and then
 nondeterministically decides to identify an accepting state of `M0` with
@@ -277,7 +279,7 @@ end AutomataConcat
 
 section AcceptedLangConcat
 
-variable {A : Type*} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
+variable {A : Type u} {M0 M1 : Automaton A} {acc0 : Set M0.State} {acc1 : Set M1.State}
 
 /-- The language of the concatenation automaton that is accepted by `M0`'s accepting states
 is the language accepted by `M0`.

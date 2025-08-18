@@ -22,9 +22,11 @@ nondeterministic concatenation construction and a powerset construction.
 open Function Set Filter
 open Classical
 
+universe u
+
 section AutomataDetConcat
 
-variable {A : Type*}
+variable {A : Type u}
 
 /-- The concatenation automaton runs M0 in parallel with copies of M1, where
 an M1 copy is started whenever M0 is in an accepting state.  The M1 copies

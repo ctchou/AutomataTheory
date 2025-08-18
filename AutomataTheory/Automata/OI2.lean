@@ -20,11 +20,13 @@ infinitely often.
 
 open Function Set Filter
 
+universe u
+
 section AutomataOI2
 
 open Classical
 
-variable {A : Type*} (M : Fin 2 → Automaton A) (acc : (i : Fin 2) → Set ((M i).State))
+variable {A : Type u} (M : Fin 2 → Automaton A) (acc : (i : Fin 2) → Set ((M i).State))
 
 def Automaton.OI2_HistInit : Set (Fin 2) := {0}
 

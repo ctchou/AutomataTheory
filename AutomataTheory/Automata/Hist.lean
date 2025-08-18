@@ -12,9 +12,11 @@ The construction of adding a history state component to an automaton.
 
 open Function Set Filter
 
+universe u
+
 section AutomataHist
 
-variable {A H : Type*}
+variable {A H : Type u}
 
 /-- Note that in the next state, the history component can depend on both the original
 and the history components of the current state, but the original component is unaffected
