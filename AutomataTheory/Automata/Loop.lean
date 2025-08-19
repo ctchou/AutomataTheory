@@ -20,7 +20,7 @@ open scoped Computability
 
 section AutomataLoop
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- The loop automaton of `M` mimics `M`, but can nondeterministically decide
 to transition from an accepting state of `M` to an initial state of `M`.
@@ -143,7 +143,7 @@ end AutomataLoop
 
 section AcceptedLangLoop
 
-variable {A : Type*} {M : Automaton A} {acc : Set M.State}
+variable {A : Type} {M : Automaton A} {acc : Set M.State}
 
 /-- The concatenation of the language accepted by the loop automaton with itself
 is a subset of itself.

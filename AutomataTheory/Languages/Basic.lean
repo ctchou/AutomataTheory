@@ -16,7 +16,7 @@ open Function Set Filter
 
 section Languages
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- Concatenation of two languages, resulting in a language.
 -/
@@ -69,7 +69,7 @@ def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
 /-- Use the postfix notation ^ω` for `IterOmega`.
 -/
 @[notation_class]
-class OmegaPower (α : Type*) (β : outParam (Type*)) where
+class OmegaPower (α : Type) (β : outParam (Type)) where
   omegaPower : α → β
 
 postfix:1024 "^ω" => OmegaPower.omegaPower
@@ -86,7 +86,7 @@ def OmegaLimit (L : Set (List A)) : Set (ℕ → A) :=
 /-- Use the postfix notation ↗ω` for `OmegaLimit`.
 -/
 @[notation_class]
-class OmegaLimitCls (α : Type*) (β : outParam (Type*)) where
+class OmegaLimitCls (α : Type) (β : outParam (Type)) where
   omegaLimit : α → β
 
 postfix:1024 "↗ω" => OmegaLimitCls.omegaLimit

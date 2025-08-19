@@ -43,7 +43,7 @@ def Automaton.PairLang (M : Automaton A) (s s' : M.State) : Set (List A) :=
 def Automaton.PairAccLang (M : Automaton A) (acc : Set M.State) (s s' : M.State) : Set (List A) :=
   { al | ∃ ss, M.PairAccPath acc s s' al ss }
 
-variable {M : Automaton.{0, 0} A} {acc : Set M.State}
+variable {M : Automaton A} {acc : Set M.State}
 
 /-- The following intuitive obvious results are needed to prove that
 Buchi congruence is indeed a right congruence.

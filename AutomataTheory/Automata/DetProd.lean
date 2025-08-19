@@ -17,7 +17,7 @@ open Function Set Filter
 
 section DetAutomataProd
 
-variable {I A : Type*}
+variable {I A : Type}
 
 def DetAutomaton.Prod (M : I → DetAutomaton A) : DetAutomaton A where
   State := Π i : I, (M i).State

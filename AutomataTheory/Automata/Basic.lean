@@ -33,8 +33,8 @@ section AutomatonDefinition
   almost all automata constructions can be proved without that assumptions.
   The finite-state assumption will be made only when necessary and always explicitly.
 -/
-class Automaton (A : Type*) where
-  State : Type*
+class Automaton (A : Type) where
+  State : Type
   init : Set State
   next : State → A → Set State
 
@@ -42,7 +42,7 @@ end AutomatonDefinition
 
 section AutomataFiniteRuns
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- A finite run of an automaton.
 -/
@@ -138,7 +138,7 @@ end AutomataFiniteRuns
 
 section AutomataInfiniteRuns
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- An infinite run of an automaton.
 -/
@@ -170,7 +170,7 @@ end AutomataInfiniteRuns
 
 section AutomataBasicResults
 
-variable {A : Type*} {M : Automaton A}
+variable {A : Type} {M : Automaton A}
 
 theorem automata_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     (h : M.FinRun n as ss) : M.FinRun n (FixSuffix as n default) (FixSuffix ss (n + 1) (ss 0)) := by

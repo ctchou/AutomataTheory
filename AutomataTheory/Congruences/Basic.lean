@@ -21,11 +21,11 @@ section Congruences
 
 open Classical
 
-class Congruence (A : Type*) extends eq : Setoid (List A) where
+class Congruence (A : Type) extends eq : Setoid (List A) where
   right_congr : ∀ u v, eq u v → ∀ w, eq (u ++ w) (v ++ w)
 --  left_congr : ∀ u v, eq u v → ∀ w, eq (w ++ u) (w ++ v)
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- The quotient type of a congruence relation.
 -/

@@ -29,7 +29,7 @@ variable {A : Type}
 /-- A language is regular iff it is accepted by a finite-state automaton.
 -/
 def RegLang (L : Set (List A)) :=
-  ∃ M : Automaton.{0, 0} A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
+  ∃ M : Automaton A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
 
 /-- Regular languages are closed under union.
 -/

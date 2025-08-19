@@ -14,7 +14,7 @@ open Function Set Filter
 
 section AutomataHist
 
-variable {A H : Type*}
+variable {A H : Type}
 
 /-- Note that in the next state, the history component can depend on both the original
 and the history components of the current state, but the original component is unaffected

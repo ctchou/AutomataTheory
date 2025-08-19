@@ -17,12 +17,12 @@ open Function Set
 
 section DetAutomata
 
-class DetAutomaton (A : Type*) where
-  State : Type*
+class DetAutomaton (A : Type) where
+  State : Type
   init : State
   next : State → A → State
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- Converting a `DetAutomaton` to an `Automaton`.
 -/
@@ -81,7 +81,7 @@ end DetAutomata
 
 section DetAutomatonAcceptedLang
 
-variable {A : Type*} {M : DetAutomaton A} {acc : Set M.State}
+variable {A : Type} {M : DetAutomaton A} {acc : Set M.State}
 
 /-- For a `DetAutomaton`, complementing the language it accepts can be achieved
 by simply complementing the set of accepting states.
@@ -160,7 +160,7 @@ end DetAutomatonAcceptedLang
 
 section DetMuller
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- Muller acceptance condition for a deterministic automaton.
 -/

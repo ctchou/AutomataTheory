@@ -23,7 +23,7 @@ variable {A : Type}
 finite-state deterministic Muller automaton.
 -/
 def DetMullerLang (L : Set (ℕ → A)) :=
-  ∃ M : DetAutomaton.{0, 0} A, ∃ accSet : Set (Set M.State),
+  ∃ M : DetAutomaton A, ∃ accSet : Set (Set M.State),
   Finite M.State ∧ L = { as | M.MullerAccept accSet as }
 
 /-- Deterministic Muller languages are closed under complementation.

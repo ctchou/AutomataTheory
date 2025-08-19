@@ -17,7 +17,7 @@ open Function Set
 
 section AutomataCongr
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- The states of `c.toDA` are the equivalence classes of the congruence `c`.
 Its initial state is `⟦ [] ⟧` and its transition function appends the input

@@ -17,7 +17,7 @@ open Function Set Filter
 
 section AutomataPSet
 
-variable {A : Type*}
+variable {A : Type}
 
 /-- The states of `M.Pset` is the power set of the states of `M`.
 The initial state of `M.Pset` is the set of initial state of `M`.
@@ -75,7 +75,7 @@ end AutomataPSet
 
 section AcceptedLangPSet
 
-variable {A : Type*} (M : Automaton A) (acc : Set M.State)
+variable {A : Type} (M : Automaton A) (acc : Set M.State)
 
 def Automaton.PSet_Acc : Set (Set M.State) := { sset | ∃ s ∈ sset, s ∈ acc }
 
