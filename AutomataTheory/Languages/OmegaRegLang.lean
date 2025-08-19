@@ -168,7 +168,7 @@ theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (
     rcases Classical.em ((c.ConcatOmegaLang (eq i).1 (eq i).2 ∩ L).Nonempty) with h | h
     <;> simp [h] at h_as
     · use (eq i).1, (eq i).2 ; simpa [h]
-    · simp [lang_ConcatInf_empty_left] at h_as
+    · simp [empty_ConcatInf] at h_as
 
 /-- If a congruence is of finite index, is ample, and saturates an ω-language `L`,
 then the complement of `L` is ω-regular as well.

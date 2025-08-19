@@ -96,21 +96,21 @@ instance instOmegaLimit : OmegaLimitCls (Set (List A)) (Set (ℕ → A)) :=
 
 /- The following are some miscellaneous theorems -/
 
-theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
+theorem epsilon_ConcatFin {L : Set (List A)} :
     {[]} * L = L := by
   ext al ; constructor
   · rintro ⟨al1, al2, h_al1, h_al2, h_al⟩
     simp at h_al1 ; simp [h_al1] at h_al ; simpa [h_al]
   · intro h_al ; use [], al ; simp [h_al]
 
-theorem lang_ConcatFin_epsilon_right {L : Set (List A)} :
+theorem ConcatFin_epsilon {L : Set (List A)} :
     L * {[]} = L := by
   ext al ; constructor
   · rintro ⟨al1, al2, h_al1, h_al2, h_al⟩
     simp at h_al2 ; simp [h_al2] at h_al ; simpa [h_al]
   · intro h_al ; use al, [] ; simp [h_al]
 
-theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
+theorem ConcatFin_union_distrib {L0 L1 L2 : Set (List A)} :
     L0 * (L1 ∪ L2) = L0 * L1 ∪ L0 * L2 := by
   ext al ; constructor
   · rintro ⟨al0, alu, h_al0, (h_al1 | h_al2), h_al⟩
@@ -120,13 +120,13 @@ theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
     · use al0, al1 ; tauto
     · use al0, al2 ; tauto
 
-theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
+theorem empty_ConcatInf {L : Set (ℕ → A)} :
     (∅ : Set (List A)) * L = ∅ := by
   ext as ; simp
   rintro ⟨al, as, h_al, _⟩
   simp at h_al
 
-theorem congruence_mem_concat_omega_lang {L0 L1 : Set (List A)} {as : ℕ → A}
+theorem mem_ConcatInf_IterOmega {L0 L1 : Set (List A)} {as : ℕ → A}
     (h : as ∈ L0 * L1^ω) : ∃ φ : ℕ → ℕ, StrictMono φ ∧
       as ⇊ 0 (φ 0) ∈ L0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L1 := by
   obtain ⟨al0, as1, h_al0, ⟨φ1, h_mono, h_φ1_0, h_φ1_sub⟩, rfl⟩ := h

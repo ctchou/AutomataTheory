@@ -33,14 +33,11 @@ theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automato
   · rintro ⟨h_init, h_next⟩ i
     constructor
     · apply h_init
-    · intro k h_k
-      exact h_next k h_k i
+    · intro k h_k ; exact h_next k h_k i
   · intro h_all
     constructor
-    · intro i
-      exact (h_all i).1
-    · intro k h_k i
-      exact (h_all i).2 k h_k
+    · intro i ; exact (h_all i).1
+    · intro k h_k i ; exact (h_all i).2 k h_k
 
 theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
     (Automaton.Prod M).InfRun as ss ↔ ∀ i, (M i).InfRun as (fun k ↦ ss k i) := by
@@ -84,19 +81,13 @@ theorem accepted_lang_inter [Inhabited A] :
       use ss_i ; simp [h_acc_i]
       constructor
       · exact h_run_i.1
-      intro k h_k
-      have h_run_i_k := h_run_i.2 k h_k
-      rw [h_al] ; simpa [h_k]
+      intro k h_k ; rw [h_al] ; simpa [h_k] using h_run_i.2 k h_k
     use al.length, (fun k ↦ al[k]!) ; simp
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k)
     constructor
     · apply automata_prod_fin_run.mpr
-      intro i
-      have := (h_ss_i i).1
-      simp at this
-      assumption
-    · intro i
-      exact (h_ss_i i).2
+      intro i ; simpa using (h_ss_i i).1
+    · intro i ; exact (h_ss_i i).2
 
 end AcceptedLangInter

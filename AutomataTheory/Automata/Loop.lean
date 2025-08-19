@@ -229,7 +229,7 @@ theorem accepted_lang_loop [Inhabited A] :
         use s' ; simp [h_s']
       simp at h_acc
       obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
-      use 1 ; simp [instIterFin, IterFin, lang_ConcatFin_epsilon_left]
+      use 1 ; simp [instIterFin, IterFin, epsilon_ConcatFin]
       use n, as ; simp [h_al]
       use ss'
   · rintro ⟨L, ⟨i, rfl⟩, h_al⟩ ; simp at h_al

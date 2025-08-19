@@ -189,10 +189,8 @@ theorem automata_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → 
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
 theorem automata_FinRun_imp_FinRun {m n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (hmn : m < n) (hr : M.FinRun n as ss) : M.FinRun m as ss := by
-  constructor
-  · exact hr.1
-  intro k h_k ; exact hr.2 k (by omega)
+    (hmn : m < n) (hr : M.FinRun n as ss) : M.FinRun m as ss :=
+  ⟨hr.1, (hr.2 · <| ·.trans hmn)⟩
 
 theorem automata_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
     M.InfRun as ss ↔ ∀ n, M.FinRun n as ss := by

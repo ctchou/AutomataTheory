@@ -108,7 +108,7 @@ lemma reg_lang_concat_e {L0 L1 : Set (List A)}
       symm ; apply Set.diff_union_of_subset ; simp [h_e]
     have h_l1'' : [] ∉ L1 \ {[]} := by simp
     rw [h_l1] at h_l1' h_l1''
-    rw [h_l0, h_l1, h_l1', lang_ConcatFin_union_distrib_right, lang_ConcatFin_epsilon_right,
+    rw [h_l0, h_l1, h_l1', ConcatFin_union_distrib, ConcatFin_epsilon,
         accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
 
 /-- Regular languages are closed under concatenation.

@@ -57,8 +57,8 @@ Note that this result does not need to assume that the automaton is finite-state
 -/
 theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLang acc) := by
   rintro p q ⟨as, h_congr, ss, ⟨h_init, h_next⟩, h_acc⟩ as' h_congr'
-  obtain ⟨φ, h_mono, h_eqv_p, h_eqv_q⟩ := congruence_mem_concat_omega_lang h_congr
-  obtain ⟨φ', h_mono', h_eqv_p', h_eqv_q'⟩ := congruence_mem_concat_omega_lang h_congr'
+  obtain ⟨φ, h_mono, h_eqv_p, h_eqv_q⟩ := mem_ConcatInf_IterOmega h_congr
+  obtain ⟨φ', h_mono', h_eqv_p', h_eqv_q'⟩ := mem_ConcatInf_IterOmega h_congr'
   have h_congr_p := congruence_same_eqvcls_imp_eq h_eqv_p h_eqv_p'
   have h_congr_q := fun m ↦ congruence_same_eqvcls_imp_eq (h_eqv_q m) (h_eqv_q' m)
   have h_pair_0 := pair_lang_fin_subseq h_next (show 0 ≤ φ 0 by omega)
