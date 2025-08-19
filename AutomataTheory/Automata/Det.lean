@@ -29,7 +29,7 @@ variable {A : Type}
 def DetAutomaton.toNA (M : DetAutomaton A) : Automaton A where
   State := M.State
   init := {M.init}
-  next := fun s a ↦ {M.next s a}
+  next := ({M.next · ·})
 
 /-- The unique run of a `DetAutomaton` on an input sequence from `A`.
 -/
@@ -49,20 +49,16 @@ theorem det_automata_inf_run_exists (as : ℕ → A) :
 -/
 theorem det_automata_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
     (h : M.toNA.InfRun as ss) : ss = M.DetRun as := by
-  ext k ; induction' k with k h_ind
-  · have h_init := h.1
-    simp [DetAutomaton.toNA] at h_init
-    assumption
-  · rw [DetAutomaton.DetRun, ← h_ind]
-    have h_next := h.2 k
-    simp [DetAutomaton.toNA] at h_next
-    assumption
+  ext k
+  induction' k with k h_ind
+  · simpa [DetAutomaton.toNA] using h.1
+  · simpa [DetAutomaton.toNA, DetAutomaton.DetRun, h_ind] using h.2 k
 
 /-- A `DetAutomaton` has a finite run on any finite input.
 -/
 theorem det_automata_fin_run_exists (n : ℕ) (as : ℕ → A) :
-    M.toNA.FinRun n as (M.DetRun as) := by
-  exact automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
+    M.toNA.FinRun n as (M.DetRun as) :=
+  automata_InfRun_iff_FinRun.mp (det_automata_inf_run_exists as) n
 
 /-- A `DetAutomaton` has a unique finite run on any finite input.
 -/
@@ -94,8 +90,7 @@ theorem accepted_lang_compl [Inhabited A] :
     rintro ⟨n', as', ⟨ss', h_run', h_acc'⟩, h_al'⟩
     have h_len : al.length = n := by rw [h_al, List.length_ofFn (f := (fun k : Fin n ↦ as k))]
     have h_len' : al.length = n' := by rw [h_al', List.length_ofFn (f := (fun k : Fin n' ↦ as' k))]
-    have h_n_eq : n' = n := by rw [← h_len, ← h_len']
-    obtain ⟨rfl⟩ := h_n_eq
+    obtain ⟨rfl⟩ : n' = n := h_len'.symm.trans h_len
     have h_run_n := automata_FinRun_FixSuffix h_run
     have h_run_n' := automata_FinRun_FixSuffix h_run'
     have h_as_eq : FixSuffix as' n default = FixSuffix as n default := by
@@ -186,10 +181,10 @@ theorem det_muller_accept_omega_limit (M : DetAutomaton A) [Finite M.State] (acc
     · exact det_automata_inf_run_exists as
     obtain ⟨φ, h_mono, h_s⟩ := frequently_iff_strict_mono.mp h_inf
     apply frequently_iff_strict_mono.mpr
-    use φ ; aesop
+    use φ ; simp [*]
   · rintro ⟨ss, h_run, h_acc⟩
     obtain ⟨rfl⟩ := det_automata_inf_run_unique h_run
-    have : Finite M.toNA.State := by (expose_names; exact inst)
+    have : Finite M.toNA.State := by assumption
     obtain ⟨s, h_s, h_inf⟩ := frequently_in_finite_set.mp h_acc
     use s ; aesop
 

@@ -69,12 +69,7 @@ theorem accepted_lang_inter [Inhabited A] :
     (Automaton.Prod M).AcceptedLang (Automaton.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
   ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept]
   constructor
-  · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i
-    use n, as ; simp [h_al]
-    use (fun k ↦ ss k i)
-    constructor
-    · exact automata_prod_fin_run.mp h_run i
-    · exact h_acc i
+  · exact fun ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i => ⟨n, as, ⟨fun k ↦ ss k i, automata_prod_fin_run.mp h_run i, h_acc i⟩, by simp [h_al]⟩
   · intro h_all
     have h_all' : ∀ i, ∃ ss_i, (M i).FinRun al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
       intro i
@@ -89,14 +84,7 @@ theorem accepted_lang_inter [Inhabited A] :
       rw [h_al] ; simpa [h_k]
     use al.length, (fun k ↦ al[k]!) ; simp
     choose ss_i h_ss_i using h_all'
-    use (fun k i ↦ ss_i i k)
-    constructor
-    · apply automata_prod_fin_run.mpr
-      intro i
-      have := (h_ss_i i).1
-      simp at this
-      assumption
-    · intro i
-      exact (h_ss_i i).2
+    refine ⟨fun k i ↦ ss_i i k, ?_, (h_ss_i ·|>.right)⟩
+    simpa [automata_prod_fin_run] using (h_ss_i ·|>.left)
 
 end AcceptedLangInter

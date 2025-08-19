@@ -96,6 +96,7 @@ instance instOmegaLimit : OmegaLimitCls (Set (List A)) (Set (ℕ → A)) :=
 
 /- The following are some miscellaneous theorems -/
 
+-- better name: `epsilon_concatFin`
 theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     {[]} * L = L := by
   ext al ; constructor
@@ -103,6 +104,7 @@ theorem lang_ConcatFin_epsilon_left {L : Set (List A)} :
     simp at h_al1 ; simp [h_al1] at h_al ; simpa [h_al]
   · intro h_al ; use [], al ; simp [h_al]
 
+-- better name: `concatFin_epsilon`
 theorem lang_ConcatFin_epsilon_right {L : Set (List A)} :
     L * {[]} = L := by
   ext al ; constructor
@@ -120,6 +122,7 @@ theorem lang_ConcatFin_union_distrib_right {L0 L1 L2 : Set (List A)} :
     · use al0, al1 ; tauto
     · use al0, al2 ; tauto
 
+-- better name: `empty_concatFin`
 theorem lang_ConcatInf_empty_left {L : Set (ℕ → A)} :
     (∅ : Set (List A)) * L = ∅ := by
   ext as ; simp
