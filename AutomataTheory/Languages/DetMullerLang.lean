@@ -23,7 +23,7 @@ variable {A : Type}
 finite-state deterministic Muller automaton.
 -/
 def DetMullerLang (L : Set (ℕ → A)) :=
-  ∃ M : DetAutomaton A, ∃ accSet : Set (Set M.State),
+  ∃ M : Automata.DA A, ∃ accSet : Set (Set M.State),
   Finite M.State ∧ L = { as | M.MullerAccept accSet as }
 
 /-- Deterministic Muller languages are closed under complementation.
@@ -33,7 +33,7 @@ theorem det_muller_lang_compl {L : Set (ℕ → A)}
   obtain ⟨M, accSet, h_fin, rfl⟩ := h
   use M, accSetᶜ ; constructor
   · exact h_fin
-  · ext as ; simp [det_muller_accept_compl]
+  · ext as ; simp [Automata.det_muller_accept_compl]
 
 /-- Deterministic Muller languages are closed under intersection.
 -/
@@ -41,18 +41,18 @@ theorem det_muller_lang_inter {L0 L1 : Set (ℕ → A)}
     (h0 : DetMullerLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 ∩ L1) := by
   obtain ⟨M0, accSet0, h_fin0, rfl⟩ := h0
   obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
-  let M : Fin 2 → DetAutomaton A
+  let M : Fin 2 → Automata.DA A
     | 0 => M0
     | 1 => M1
   let accSet : (i : Fin 2) → Set (Set (M i).State)
     | 0 => accSet0
     | 1 => accSet1
-  use (DetAutomaton.Prod M), (DetAutomaton.MullerAcc_Inter M accSet)
+  use (Automata.DA.Prod M), (Automata.DA.MullerAcc_Inter M accSet)
   have : ∀ i, Finite (M i).State := by simp [Fin.forall_fin_two] ; grind
   constructor
-  · exact det_automata_prod_finite M
+  · exact Automata.da_prod_finite M
   · ext as
-    simp [det_muller_accept_inter M accSet as, Fin.forall_fin_two] ; grind
+    simp [Automata.det_muller_accept_inter M accSet as, Fin.forall_fin_two] ; grind
 
 /-- Deterministic Muller languages are closed under union.
 -/
@@ -60,27 +60,27 @@ theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
     (h0 : DetMullerLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 ∪ L1) := by
   obtain ⟨M0, accSet0, h_fin0, rfl⟩ := h0
   obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
-  let M : Fin 2 → DetAutomaton A
+  let M : Fin 2 → Automata.DA A
     | 0 => M0
     | 1 => M1
   let accSet : (i : Fin 2) → Set (Set (M i).State)
     | 0 => accSet0
     | 1 => accSet1
-  use (DetAutomaton.Prod M), (DetAutomaton.MullerAcc_Union M accSet)
+  use (Automata.DA.Prod M), (Automata.DA.MullerAcc_Union M accSet)
   have : ∀ i, Finite (M i).State := by simp [Fin.forall_fin_two] ; grind
   constructor
-  · exact det_automata_prod_finite M
+  · exact Automata.da_prod_finite M
   · ext as
-    simp [det_muller_accept_union M accSet as, Fin.exists_fin_two] ; grind
+    simp [Automata.det_muller_accept_union M accSet as, Fin.exists_fin_two] ; grind
 
 /-- The ω-limit of a regular language is a deterministic Muller language.
 -/
 theorem det_muller_lang_omega_limit {L : Set (List A)}
     (h : RegLang L) : DetMullerLang L↗ω := by
   obtain ⟨M, acc, h_fin, rfl⟩ := h
-  rw [← accepted_lang_pset]
+  rw [← Automata.acc_lang_pset]
   have : Finite M.PSet.State := by exact Set.instFinite
-  obtain ⟨accSet, h_acc⟩ := det_muller_accept_omega_limit M.PSet (M.PSet_Acc acc)
+  obtain ⟨accSet, h_acc⟩ := Automata.det_muller_accept_omega_limit M.PSet (M.PSet_Acc acc)
   use M.PSet, accSet ; constructor
   · assumption
   · simp [h_acc]

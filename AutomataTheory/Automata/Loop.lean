@@ -4,12 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import AutomataTheory.Automata.Basic
 import AutomataTheory.Languages.Basic
 import AutomataTheory.Sequences.Segments
-import AutomataTheory.Automata.Basic
 
 /-!
-The loop construction of an automaton is used to prove that the
+The loop construction of an NA is used to prove that the
 regular language is closed under the Kleene star and the ω-power
 of a regular language is an ω-regular language.
 -/
@@ -18,16 +18,18 @@ open Function Set Sum Filter
 open Classical
 open scoped Computability
 
+namespace Automata
+
 section AutomataLoop
 
 variable {A : Type}
 
-/-- The loop automaton of `M` mimics `M`, but can nondeterministically decide
+/-- The loop NA of `M` mimics `M`, but can nondeterministically decide
 to transition from an accepting state of `M` to an initial state of `M`.
 The special state `inl ()` marks the boundaries between successive runs of `M`
-and is the only accepting state of the loop automaton.
+and is the only accepting state of the loop NA.
 -/
-def Automaton.Loop (M : Automaton A) (acc : Set M.State) : Automaton A where
+def NA.Loop (M : NA A) (acc : Set M.State) : NA A where
   State := Unit ⊕ M.State
   init := {inl ()}
   next := fun s a ↦ match (s) with
@@ -36,7 +38,7 @@ def Automaton.Loop (M : Automaton A) (acc : Set M.State) : Automaton A where
     | inr s  => inr '' (M.next s a) ∪
                 if ∃ s' ∈ acc, s' ∈ M.next s a then {inl ()} else ∅
 
-variable {M : Automaton A} {acc : Set M.State}
+variable {M : NA A} {acc : Set M.State}
 
 private lemma not_inl_unit {s : (M.Loop acc).State} :
     s ≠ inl () ↔ ∃ s' : M.State, s = inr s' := by
@@ -47,30 +49,30 @@ private lemma not_inl_unit {s : (M.Loop acc).State} :
     simp [h_s] at h1
   · rintro ⟨s', h_s'⟩ ; simp [h_s']
 
-/-- A finite run of the loop automaton that contains the `inl ()` marker only
+/-- A finite run of the loop NA that contains the `inl ()` marker only
 at the beginning and at the end is an accepting run of `M`.
 -/
-theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop acc).State} (h : n > 0) :
+theorem na_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop acc).State} (h : n > 0) :
     (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k ∈ range inr) ↔
     ∃ ss', M.FinRun n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
   constructor
   · rintro ⟨⟨h_init, h_next⟩, h_inl_n, h_inr⟩
-    simp [Automaton.Loop] at h_init
+    simp [NA.Loop] at h_init
     rcases (show n = 1 ∨ n > 1 by omega) with h_n | h_n
     · obtain ⟨rfl⟩ := h_n
       specialize h_next 0 (by omega)
-      simp [h_init, h_inl_n, Automaton.Loop] at h_next
+      simp [h_init, h_inl_n, NA.Loop] at h_next
       obtain ⟨s0, h_s0, s1, h_acc, h_next⟩ := h_next
       use (fun k ↦ if k = 0 then s0 else if k = 1 then s1 else s0)
-      simp [h_init, h_acc, h_inl_n, Automaton.FinRun, h_s0, h_next]
+      simp [h_init, h_acc, h_inl_n, NA.FinRun, h_s0, h_next]
     · obtain ⟨s1, h_s1⟩ := h_inr 1 h_n (by omega)
       have h_next_0 := h_next 0 h
-      simp [h_init, ← h_s1, Automaton.Loop] at h_next_0
+      simp [h_init, ← h_s1, NA.Loop] at h_next_0
       obtain ⟨s0, h_s0, h_next_0⟩ := h_next_0
       obtain ⟨sn1, h_sn1⟩ := h_inr (n - 1) (by omega) (by omega)
       have h_next_n1 := h_next (n - 1) (by omega)
       have h_n1 : n - 1 + 1 = n := by omega
-      simp [h_n1, h_inl_n, ← h_sn1, Automaton.Loop] at h_next_n1
+      simp [h_n1, h_inl_n, ← h_sn1, NA.Loop] at h_next_n1
       obtain ⟨sn, h_sn, h_next_n1⟩ := h_next_n1
       have h_ss' : ∀ k, k > 0 → k < n → ∃ ss', ss k = inr ss' := by
         intro k h_k_0 h_k_n
@@ -78,7 +80,7 @@ theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop a
         use s' ; simp [h_s']
       choose ss' h_ss' using h_ss'
       use (fun k ↦ if h0 : k = 0 then s0 else if hn : k < n then ss' k (by omega) hn else if k = n then sn else s0)
-      simp [(show n ≠ 0 by omega), h_init, h_inl_n, h_sn, Automaton.FinRun, h_s0]
+      simp [(show n ≠ 0 by omega), h_init, h_inl_n, h_sn, NA.FinRun, h_s0]
       constructor
       · intro k h_k_n
         rcases (show k = 0 ∨ k = n - 1 ∨ k > 0 ∧ k < n - 1 by omega) with h_k_0 | h_k_n' | ⟨h_k_0, h_k_n'⟩
@@ -93,48 +95,48 @@ theorem automata_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop a
         · have h_ss_k := h_ss' k h_k_0 h_k_n
           have h_ss_k1 := h_ss' (k + 1) (by omega) (by omega)
           have h_next_k := h_next k h_k_n
-          simp [h_ss_k, h_ss_k1, Automaton.Loop] at h_next_k
+          simp [h_ss_k, h_ss_k1, NA.Loop] at h_next_k
           simp [(show k + 1 < n by omega), (show k ≠ 0 by omega), h_k_n, h_next_k]
       · intro k h_k_n h_k_0
         simp [h_k_n, h_k_0, (show k ≠ 0 by omega), h_ss']
   · rintro ⟨ss', ⟨h_init, h_next⟩, h_acc, h_inl_0, h_inl_n, h_inr⟩
     constructor <;> [constructor ; constructor]
-    · simp [h_inl_0, Automaton.Loop]
+    · simp [h_inl_0, NA.Loop]
     · intro k h_k_n
       rcases (show k = 0 ∨ k > 0 by omega) with h_k_0 | h_k_0
       · specialize h_next 0 h
         rcases (show n = 1 ∨ n > 1 by omega) with h_n | h_n
         · obtain ⟨rfl⟩ := h_n
-          simp [h_k_0, h_inl_0, Automaton.Loop, h_inl_n]
+          simp [h_k_0, h_inl_0, NA.Loop, h_inl_n]
           use (ss' 0) ; simp [h_init] ; use (ss' 1)
         · specialize h_inr 1 h_n (by omega)
-          simp [h_k_0, h_inl_0, Automaton.Loop, h_inr]
+          simp [h_k_0, h_inl_0, NA.Loop, h_inr]
           use (ss' 0)
       · specialize h_next k (h_k_n)
         have h_ss_k := h_inr k h_k_n h_k_0
         rcases (show k + 1 < n ∨ k = n - 1 by omega) with h_k_n' | h_k_n'
         · have h_ss_k' := h_inr (k + 1) h_k_n' (by omega)
-          simpa [h_ss_k, h_ss_k', Automaton.Loop]
+          simpa [h_ss_k, h_ss_k', NA.Loop]
         · obtain ⟨rfl⟩ := h_k_n'
           have h_n1 : n - 1 + 1 = n := by omega
           simp [h_n1] at h_next
-          simp [h_n1, h_ss_k, h_inl_n, Automaton.Loop]
+          simp [h_n1, h_ss_k, h_inl_n, NA.Loop]
           use (ss' n)
     · exact h_inl_n
     · intro k h_k_n h_k_0
       simp [h_inr k h_k_n h_k_0]
 
 /-- Conversely, for any finite accepting run of `M`, there is a finite run of the
-loop automaton that contains the `inl ()` marker only at the beginning and at the end.
+loop NA that contains the `inl ()` marker only at the beginning and at the end.
 -/
-theorem automata_loop_fin_run_exists {n : ℕ} {as : ℕ → A} {ss' : ℕ → M.State}
+theorem na_loop_fin_run_exists {n : ℕ} {as : ℕ → A} {ss' : ℕ → M.State}
     (h_run' : M.FinRun n as ss') (h_acc' : ss' n ∈ acc) :
     ∃ ss, (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
   rcases (show n = 0 ∨ n > 0 by omega) with ⟨rfl⟩ | h_n
-  · use (fun k ↦ inl ()) ; simp [Automaton.FinRun, Automaton.Loop]
+  · use (fun k ↦ inl ()) ; simp [NA.FinRun, NA.Loop]
   let ss k := if k = 0 ∨ k = n then inl () else inr (ss' k)
   suffices h : ∃ ss', M.FinRun n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) by
-    obtain ⟨h_run, h_ss_n, _⟩ := (automata_loop_fin_run h_n).mpr h
+    obtain ⟨h_run, h_ss_n, _⟩ := (na_loop_fin_run h_n).mpr h
     use ss ; simp [h_run, h_ss_n]
     intro k h_k_n h_k_0 ; simp [ss] ; omega
   use ss' ; simp [h_run', h_acc', ss] ; omega
@@ -143,12 +145,12 @@ end AutomataLoop
 
 section AcceptedLangLoop
 
-variable {A : Type} {M : Automaton A} {acc : Set M.State}
+variable {A : Type} {M : NA A} {acc : Set M.State}
 
-/-- The concatenation of the language accepted by the loop automaton with itself
+/-- The concatenation of the language accepted by the loop NA with itself
 is a subset of itself.
 -/
-theorem accepted_lang_loop_concat :
+theorem acc_lang_loop_concat :
     ((M.Loop acc).AcceptedLang {inl ()}) * ((M.Loop acc).AcceptedLang {inl ()}) ⊆
     (M.Loop acc).AcceptedLang {inl ()} := by
   rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, h_al1⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, h_al2⟩, rfl⟩
@@ -159,7 +161,7 @@ theorem accepted_lang_loop_concat :
   use ss ; symm ; constructor
   · simp at h_acc2 ; simp [ss, h_acc2]
   constructor
-  · suffices h_0 : ss 0 = inl () by simp [h_0, Automaton.Loop]
+  · suffices h_0 : ss 0 = inl () by simp [h_0, NA.Loop]
     rcases (show n1 = 0 ∨ n1 > 0 by omega) with h_n1 | h_n1 <;> simp [ss, h_n1]
     · exact h_run2.1
     · exact h_run1.1
@@ -174,10 +176,10 @@ theorem accepted_lang_loop_concat :
   · have h_next := h_run2.2 (k - n1) (by omega)
     simp [as, ss, h_next, (show ¬ k < n1 by omega), (show ¬ k + 1 < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
-/-- The language accepted by the loop automaton is the Kleene star of
+/-- The language accepted by the loop NA is the Kleene star of
 the language accepted by `M`.
 -/
-theorem accepted_lang_loop [Inhabited A] :
+theorem acc_lang_loop [Inhabited A] :
     (M.Loop acc).AcceptedLang {inl ()} = (M.AcceptedLang acc)∗ := by
   ext al ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ ; simp [instIterStar, IterStar]
@@ -192,12 +194,12 @@ theorem accepted_lang_loop [Inhabited A] :
         apply Nat.findGreatest_spec (m := k) (by omega) h_loop
       obtain ⟨h_m_0, h_m_n, h_m_inl⟩ := h_m
       let al' := List.ofFn (fun k : Fin m ↦ as k)
-      have h_run' := automata_FinRun_imp_FinRun h_m_n h_run
+      have h_run' := na_FinRun_imp_FinRun h_m_n h_run
       obtain ⟨j, h_j⟩ := h_ind m h_m_n h_run' (by simp [h_m_inl]) (al') (by simp [al'])
       have h_d : n - m > 0 := by omega
       have h_run'' : (M.Loop acc).FinRun (n - m) (as <<< m) (ss <<< m) := by
         constructor
-        · simp [Automaton.Loop, instSuffixFrom, SuffixFrom, h_m_inl]
+        · simp [NA.Loop, instSuffixFrom, SuffixFrom, h_m_inl]
         intro k h_k
         have h_next := h_run.2 (k + m) (by omega)
         simp [instSuffixFrom, SuffixFrom, (show k + 1 + m = k + m + 1 by omega), h_next]
@@ -211,7 +213,7 @@ theorem accepted_lang_loop [Inhabited A] :
         simp [loop, -add_pos_iff] at h_not_loop
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_not_loop (by omega) (by omega)
         simp [instSuffixFrom, SuffixFrom] ; use s' ; simp [h_s']
-      obtain ⟨ss'', h_run'', h_acc'', _⟩ := (automata_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
+      obtain ⟨ss'', h_run'', h_acc'', _⟩ := (na_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
       let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
       use (j + 1) ; simp [instIterFin, IterFin]
       use al', al'' ; constructorm* _ ∧ _
@@ -228,7 +230,7 @@ theorem accepted_lang_loop [Inhabited A] :
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_loop k h_k_0 h_k_n
         use s' ; simp [h_s']
       simp at h_acc
-      obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
+      obtain ⟨ss', h_run', h_acc', _⟩ := (na_loop_fin_run h_n).mp ⟨h_run, h_acc, h_inr⟩
       use 1 ; simp [instIterFin, IterFin, epsilon_ConcatFin]
       use n, as ; simp [h_al]
       use ss'
@@ -237,20 +239,20 @@ theorem accepted_lang_loop [Inhabited A] :
     induction' i with i h_ind
     · intro al ; simp [instIterFin, IterFin] ; rintro ⟨rfl⟩
       use 0 ; simp
-      use (fun k ↦ default), (fun k ↦ inl ()) ; simp [Automaton.FinRun, Automaton.Loop]
+      use (fun k ↦ default), (fun k ↦ inl ()) ; simp [NA.FinRun, NA.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
     specialize h_ind al1 h_al1
     suffices _ : al2 ∈ (M.Loop acc).AcceptedLang {inl ()} by
-      apply accepted_lang_loop_concat ; use al1, al2
+      apply acc_lang_loop_concat ; use al1, al2
     obtain ⟨n2, as2, ⟨ss2', h_run2, h_acc2⟩, h_al2⟩ := h_al2
-    obtain ⟨ss2, h_run2, h_acc2, _⟩ := automata_loop_fin_run_exists h_run2 h_acc2
+    obtain ⟨ss2, h_run2, h_acc2, _⟩ := na_loop_fin_run_exists h_run2 h_acc2
     use n2, as2 ; simp [h_al2]
     use ss2 ; simp [h_run2, h_acc2]
 
-/-- The ω-language accepted by the loop automaton is the ω-power of
+/-- The ω-language accepted by the loop NA is the ω-power of
 the language accepted by `M`.
 -/
-theorem accepted_omega_lang_loop :
+theorem acc_omega_lang_loop :
     (M.Loop acc).AcceptedOmegaLang {inl ()} = (M.AcceptedLang acc)^ω := by
   ext as ; constructor
   · rintro ⟨ss, h_run, h_acc⟩ ; simp at h_acc
@@ -259,7 +261,7 @@ theorem accepted_omega_lang_loop :
     have h_mono : StrictMono φ := by exact Nat.nth_strictMono h_inf
     use φ ; simp [h_mono] ; constructor
     · have h_init := h_run.1
-      simp [Automaton.Loop] at h_init
+      simp [NA.Loop] at h_init
       apply Nat.nth_zero_of_zero h_init
     · intro m
       use (φ (m + 1) - φ m), (as <<< (φ m)) ; constructor
@@ -267,7 +269,7 @@ theorem accepted_omega_lang_loop :
         let ss1 := ss <<< (φ m)
         have h_run1 : (M.Loop acc).FinRun (φ (m + 1) - φ m) (as <<< (φ m)) ss1 := by
           constructor
-          · simp [ss1, instSuffixFrom, SuffixFrom, Automaton.Loop]
+          · simp [ss1, instSuffixFrom, SuffixFrom, NA.Loop]
             apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
           intro k h_k
           simp [ss1, instSuffixFrom, SuffixFrom, (show k + 1 + φ m = k + φ m + 1 by omega), h_run.2 (k + φ m)]
@@ -278,7 +280,7 @@ theorem accepted_omega_lang_loop :
           intro k h_k1 h_k0
           obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nth_succ_gap h_inf m k h_k1 h_k0
           simp ; use s' ; symm ; exact h_s'
-        obtain ⟨ss', h_run', h_acc', _⟩ := (automata_loop_fin_run h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
+        obtain ⟨ss', h_run', h_acc', _⟩ := (na_loop_fin_run h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
       · simp [instFinSubseq, FinSubseq, List.ofFn_inj] ; ext k
         simp [instSuffixFrom, SuffixFrom]
@@ -289,7 +291,7 @@ theorem accepted_omega_lang_loop :
     let ss k := if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
-      simp [ss, h_0', Automaton.Loop]
+      simp [ss, h_0', NA.Loop]
     · intro k
       have h_seg_k : φ (seg k) ≤ k := by exact segment_lower_bound h_mono h_0 k
       have h_seg_k1 : k < φ (seg k + 1) := by exact segment_upper_bound h_mono h_0 k
@@ -302,12 +304,12 @@ theorem accepted_omega_lang_loop :
         simp [instSuffixFrom, SuffixFrom, (show k - φ (seg k) + φ (seg k) = k by omega),
           (show k - φ (seg k) + 1 + φ (seg k) = k + 1 by omega)] at h_run_k
         exact h_run_k
-      apply (automata_loop_fin_run h_mono_k).mpr
+      apply (na_loop_fin_run h_mono_k).mpr
       use (ss' (seg k))
       obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
       simp [h_len_k, instSuffixFrom, SuffixFrom]
       constructorm* _ ∧ _
-      · apply automata_FinRun_modulo (n := len (seg k)) (as := as' (seg k)) (ss := ss' (seg k)) (hr := h_run (seg k))
+      · apply na_FinRun_modulo (n := len (seg k)) (as := as' (seg k)) (ss := ss' (seg k)) (hr := h_run (seg k))
         · intro j h_j ; simp [SuffixFrom, h_as'_k j h_j]
         · simp
       · exact h_acc (seg k)

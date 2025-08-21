@@ -25,7 +25,7 @@ letter `a` at the end of any representative in the state.
 The right congruence condition guarantees that it doesn't matter which
 representative is chosen.
 -/
-def Congruence.toDA (c : Congruence A) : DetAutomaton A where
+def Congruence.toDA (c : Congruence A) : Automata.DA A where
   State := c.QuotType
   init := ⟦ [] ⟧
   next := fun s a ↦ Quotient.lift (fun u ↦ ⟦ u ++ [a] ⟧) ( by
@@ -40,8 +40,8 @@ variable {c : Congruence A}
 theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
     c.toDA.DetRun as n = ⟦ List.ofFn (fun k : Fin n ↦ as k) ⟧ := by
   induction' n with n h_ind
-  · simp [DetAutomaton.DetRun, Congruence.toDA]
-  simp only [DetAutomaton.DetRun, h_ind]
+  · simp [Automata.DA.DetRun, Congruence.toDA]
+  simp only [Automata.DA.DetRun, h_ind]
   simp only [Congruence.toDA, Quotient.lift_mk]
   suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
   exact Eq.symm List.ofFn_succ_last
@@ -49,11 +49,11 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
 /-- The language accepted by `c.toDA` with a unique accepting state `s`
 is exactly the equivalence class of `s`.
 -/
-theorem accepted_lang_congr [Inhabited A] (s : c.toDA.State) :
+theorem acc_lang_congr [Inhabited A] (s : c.toDA.State) :
     c.toDA.toNA.AcceptedLang {s} = c.EqvCls s := by
-  ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept] ; constructor
+  ext al ; simp [Automata.NA.AcceptedLang, Automata.NA.FinAccept] ; constructor
   · rintro ⟨n, as, ⟨ss, h_run, rfl⟩, rfl⟩
-    have h_ss_n := det_automata_fin_run_unique h_run n (by omega)
+    have h_ss_n := Automata.da_fin_run_unique h_run n (by omega)
     simp [h_ss_n, automaton_congr_run, Congruence.EqvCls]
   · rintro ⟨rfl⟩
     let as := fun k ↦ if h : k < al.length then al[k] else default
@@ -61,7 +61,7 @@ theorem accepted_lang_congr [Inhabited A] (s : c.toDA.State) :
     constructor <;> [skip ; simp [as]]
     use (c.toDA.DetRun as)
     constructor
-    · exact det_automata_fin_run_exists al.length as
+    · exact Automata.da_fin_run_exists al.length as
     · simp [automaton_congr_run, as]
 
 end AutomataCongr

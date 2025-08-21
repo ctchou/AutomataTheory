@@ -13,7 +13,7 @@ import AutomataTheory.Automata.Congr
 
 /-!
 This file proves various closure properties of regular langauges.
-Note that we do require that the automaton accepting a regular language
+Note that we do require that the Automata.NA accepting a regular language
 to have a finite state type.
 -/
 
@@ -26,10 +26,10 @@ open Classical
 
 variable {A : Type}
 
-/-- A language is regular iff it is accepted by a finite-state automaton.
+/-- A language is regular iff it is accepted by a finite-state Automata.NA.
 -/
 def RegLang (L : Set (List A)) :=
-  ∃ M : Automaton A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
+  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
 
 /-- Regular languages are closed under union.
 -/
@@ -37,18 +37,18 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automaton A
+  let M_u : (i : Fin 2) → Automata.NA A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (Automaton.Sum M_u), (Automaton.Sum_Acc M_u acc_u)
+  use (Automata.NA.Sum M_u), (Automata.NA.Sum_Acc M_u acc_u)
   constructor
   · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Finite.instSigma
   · ext as
-    simp [h_l0, h_l1, accepted_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
+    simp [h_l0, h_l1, Automata.acc_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
 /-- Regular languages are closed under intersection.
 -/
@@ -56,18 +56,18 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     (h0 : RegLang L0) (h1 : RegLang L1) : RegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automaton A
+  let M_u : (i : Fin 2) → Automata.NA A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (Automaton.Prod M_u), (Automaton.Prod_Acc M_u acc_u)
+  use (Automata.NA.Prod M_u), (Automata.NA.Prod_Acc M_u acc_u)
   constructor
   · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Pi.finite
   · ext as
-    simp [h_l0, h_l1, accepted_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
+    simp [h_l0, h_l1, Automata.acc_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
 /-- Regular languages are closed under complementation.
 -/
@@ -77,7 +77,7 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   use M.PSet.toNA, (M.PSet_Acc acc)ᶜ
   constructor
   · exact Set.instFinite
-  · rw [accepted_lang_compl, accepted_lang_pset, h_l]
+  · rw [Automata.acc_lang_compl, Automata.acc_lang_pset, h_l]
 
 /-- Helper lemma for `reg_lang_concat` below.
 -/
@@ -93,7 +93,7 @@ lemma reg_lang_concat_ne {L0 L1 : Set (List A)}
       intro h1 h2 ; simp [h2] at h1
       contradiction
     rw [h_l1] at h_l1'
-    rw [h_l0, h_l1, h_l1', accepted_lang_concat_ne]
+    rw [h_l0, h_l1, h_l1', Automata.acc_lang_concat_ne]
 
 /-- Helper lemma for `reg_lang_concat` below.
 -/
@@ -109,7 +109,7 @@ lemma reg_lang_concat_e {L0 L1 : Set (List A)}
     have h_l1'' : [] ∉ L1 \ {[]} := by simp
     rw [h_l1] at h_l1' h_l1''
     rw [h_l0, h_l1, h_l1', ConcatFin_union_distrib, ConcatFin_epsilon,
-        accepted_lang_acc_union, accepted_lang_concat_e, accepted_lang_concat_ne, union_comm]
+        Automata.acc_lang_acc_union, Automata.acc_lang_concat_e, Automata.acc_lang_concat_ne, union_comm]
 
 /-- Regular languages are closed under concatenation.
 -/
@@ -127,7 +127,7 @@ theorem reg_lang_iter [Inhabited A] {L : Set (List A)}
   use (M.Loop acc), {inl ()}
   constructor
   · exact Finite.instSum
-  · simp [h_l, accepted_lang_loop]
+  · simp [h_l, Automata.acc_lang_loop]
 
 /-- If a (right) congruence is of finite index,
 then each of its equivalence classes is regular.
@@ -137,7 +137,7 @@ theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
   use c.toDA.toNA, {s}
   constructor
   · exact h
-  · symm ; exact accepted_lang_congr s
+  · symm ; exact acc_lang_congr s
 
 end RegLang
 
@@ -145,7 +145,7 @@ section BasicRegLang
 
 variable {A : Type}
 
-def M_empty : Automaton A where
+def M_empty : Automata.NA A where
   State := Unit
   init := {}
   next := fun _ _ ↦ {}
@@ -163,7 +163,7 @@ theorem reg_lang_empty : RegLang (∅ : Set (List A)) := by
   · rintro ⟨n, as, ⟨ss, ⟨h_init, _⟩ ,_⟩, _⟩
     simp [M_empty] at h_init
 
-def M_epsilon : Automaton A where
+def M_epsilon : Automata.NA A where
   State := Unit
   init := {()}
   next := fun _ _ ↦ {}
@@ -179,7 +179,7 @@ theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
   · simp ; intro h_al
     use 0, (fun k ↦ default) ; simp [h_al]
     use (fun k ↦ ())
-    simp [Automaton.FinRun, M_epsilon, acc_epsilon]
+    simp [Automata.NA.FinRun, M_epsilon, acc_epsilon]
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
     suffices h_n : n = 0 by
       simp [h_n] at h_al ; simp [h_al]

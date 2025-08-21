@@ -8,23 +8,25 @@ import AutomataTheory.Automata.Pair
 import AutomataTheory.Mathlib.InfGraphRamsey
 
 /-!
-The theory of an automaton-based congruence used by J.R. Büchi to
+The theory of an NA-based congruence used by J.R. Büchi to
 prove the closure of ω-regular langauges under complementation.
 -/
 
 open Function Set Filter
+
+namespace Automata
 
 section BuchiCongrBasic
 
 variable {A : Type}
 
 /-- BuchiCongr says that two finite words `u` and `v` are congruent iff for every pair
-of states `s` and `s'` of the automaton `M`, both of the following conditions hold:
+of states `s` and `s'` of the NA `M`, both of the following conditions hold:
 (1) `u` can move `M` from `s` to `s'` iff `v` can move `M` from `s` to `s'`;
 (2) `u` can move `M` from `s` to `s'` and passes an acceptingg states
 iff `v` can move `M` from `s` to `s'` and passes an acceptingg states.
  -/
-def Automaton.BuchiCongr (M : Automaton A) (acc : Set M.State) : Congruence A where
+def NA.BuchiCongr (M : NA A) (acc : Set M.State) : Congruence A where
   eq.r u v := ∀ s s' : M.State,
     (u ∈ M.PairLang s s' ↔ v ∈ M.PairLang s s') ∧ (u ∈ M.PairAccLang acc s s' ↔ v ∈ M.PairAccLang acc s s')
   eq.iseqv.refl := by simp
@@ -50,10 +52,10 @@ def Automaton.BuchiCongr (M : Automaton A) (acc : Set M.State) : Congruence A wh
       · have h_u := (h s t).1.mpr h_v
         exact pair_acc_lang_concat_1 h_u h_w
 
-variable {M : Automaton A} {acc : Set M.State}
+variable {M : NA A} {acc : Set M.State}
 
-/-- The BuchiCongr of an automaton saturates the ω-language accepted by the automaton.
-Note that this result does not need to assume that the automaton is finite-state.
+/-- The BuchiCongr of an NA saturates the ω-language accepted by the NA.
+Note that this result does not need to assume that the NA is finite-state.
 -/
 theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLang acc) := by
   rintro p q ⟨as, h_congr, ss, ⟨h_init, h_next⟩, h_acc⟩ as' h_congr'
@@ -115,13 +117,13 @@ variable {A : Type}
 /-- BuchiCongrParam parameterizes the equivalence classes of BuchiCongr using the
 type `M.State → M.State → Prop × Prop`, which finite if `M` is finite-state.
  -/
-noncomputable def Automaton.BuchiCongrParam (M : Automaton A) (acc : Set M.State)
+noncomputable def NA.BuchiCongrParam (M : NA A) (acc : Set M.State)
     (π : M.State → M.State → Prop × Prop) : (M.BuchiCongr acc).QuotType :=
   if h : ∃ u, ∀ s s', ((π s s').1 ↔ u ∈ M.PairLang s s') ∧ ((π s s').2 ↔ u ∈ M.PairAccLang acc s s')
   then ⟦ choose h ⟧
   else ⟦ [] ⟧
 
-variable {M : Automaton A} {acc : Set M.State}
+variable {M : NA A} {acc : Set M.State}
 
 /-- BuchiCongrParam is a surjective map.
 -/
@@ -131,7 +133,7 @@ theorem buchi_congr_param_surjective : Surjective (M.BuchiCongrParam acc) := by
   have h : ∃ u, ∀ s s', ((π s s').1 ↔ u ∈ M.PairLang s s') ∧ ((π s s').2 ↔ u ∈ M.PairAccLang acc s s') := by
     use q.out ; intro s s' ; simp [π]
   use π
-  simp [Automaton.BuchiCongrParam, h]
+  simp [NA.BuchiCongrParam, h]
   rw [← Quotient.out_eq q]
   apply Quotient.sound
   intro s s'
@@ -139,7 +141,7 @@ theorem buchi_congr_param_surjective : Surjective (M.BuchiCongrParam acc) := by
   simp [π] at h1
   simp [h1]
 
-/-- The BuchiCongr of an automaton is of finite index if the automaton is finite-state.
+/-- The BuchiCongr of an NA is of finite index if the NA is finite-state.
 -/
 theorem buchi_congr_finite_index [Finite M.State] : Finite (M.BuchiCongr acc).QuotType := by
   exact Finite.of_surjective (M.BuchiCongrParam acc) buchi_congr_param_surjective
@@ -150,7 +152,7 @@ lemma strict_mono_of_infinite {ns : Set ℕ} (h : ns.Infinite) :
   · exact Nat.nth_strictMono h
   · exact Nat.range_nth_of_infinite h
 
-/-- The BuchiCongr of an automaton is ample if the automaton is finite-state.
+/-- The BuchiCongr of an NA is ample if the NA is finite-state.
 For simplicity, this result is proved using a Ramsey theorem on infinite graphs.
 -/
 theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by

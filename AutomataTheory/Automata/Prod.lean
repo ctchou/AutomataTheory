@@ -16,19 +16,21 @@ state, or index types are infinite.
 
 open Function Set Filter
 
+namespace Automata
+
 section AutomataProd
 
 variable {I A : Type}
 
-def Automaton.Prod (M : I → Automaton A) : Automaton A where
+def NA.Prod (M : I → NA A) : NA A where
   State := Π i : I, (M i).State
   init := { s | ∀ i : I, (s i) ∈ (M i).init }
   next := fun s a ↦ { s' | ∀ i : I, (s' i) ∈ (M i).next (s i) a }
 
-variable {M : I → Automaton A}
+variable {M : I → NA A}
 
-theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
-    (Automaton.Prod M).FinRun n as ss ↔ ∀ i, (M i).FinRun n as (fun k ↦ ss k i) := by
+theorem na_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (NA.Prod M).State} :
+    (NA.Prod M).FinRun n as ss ↔ ∀ i, (M i).FinRun n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
@@ -39,8 +41,8 @@ theorem automata_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (Automato
     · intro i ; exact (h_all i).1
     · intro k h_k i ; exact (h_all i).2 k h_k
 
-theorem automata_prod_inf_run {as : ℕ → A} {ss : ℕ → (Automaton.Prod M).State} :
-    (Automaton.Prod M).InfRun as ss ↔ ∀ i, (M i).InfRun as (fun k ↦ ss k i) := by
+theorem na_prod_inf_run {as : ℕ → A} {ss : ℕ → (NA.Prod M).State} :
+    (NA.Prod M).InfRun as ss ↔ ∀ i, (M i).InfRun as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
     constructor
@@ -55,22 +57,22 @@ end AutomataProd
 
 section AcceptedLangInter
 
-variable {I A : Type} (M : I → Automaton A) (acc : (i : I) → Set ((M i).State))
+variable {I A : Type} (M : I → NA A) (acc : (i : I) → Set ((M i).State))
 
-def Automaton.Prod_Acc : Set (Automaton.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
+def NA.Prod_Acc : Set (NA.Prod M).State := { s | ∀ i, (s i) ∈ (acc i) }
 
-/-- The language accepted by the product automaton is the intersection of the languages
+/-- The language accepted by the product NA is the intersection of the languages
 accepted by the component automata.
 -/
-theorem accepted_lang_inter [Inhabited A] :
-    (Automaton.Prod M).AcceptedLang (Automaton.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
-  ext al ; simp [Automaton.AcceptedLang, Automaton.FinAccept]
+theorem acc_lang_inter [Inhabited A] :
+    (NA.Prod M).AcceptedLang (NA.Prod_Acc M acc) = ⋂ i : I, (M i).AcceptedLang (acc i) := by
+  ext al ; simp [NA.AcceptedLang, NA.FinAccept]
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩ i
     use n, as ; simp [h_al]
     use (fun k ↦ ss k i)
     constructor
-    · exact automata_prod_fin_run.mp h_run i
+    · exact na_prod_fin_run.mp h_run i
     · exact h_acc i
   · intro h_all
     have h_all' : ∀ i, ∃ ss_i, (M i).FinRun al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
@@ -86,7 +88,7 @@ theorem accepted_lang_inter [Inhabited A] :
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k)
     constructor
-    · apply automata_prod_fin_run.mpr
+    · apply na_prod_fin_run.mpr
       intro i ; simpa using (h_ss_i i).1
     · intro i ; exact (h_ss_i i).2
 

@@ -70,6 +70,9 @@ instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
 def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
+def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
+  fun k ↦ if h : k < al.length then al[k] else default
+
 /- Some technical lemmas are proved below.
 -/
 variable {xl : List X} {xs xs' : ℕ → X}

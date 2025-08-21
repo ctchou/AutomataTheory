@@ -9,7 +9,7 @@ import AutomataTheory.Congruences.BuchiCongr
 
 /-!
 This file proves various closure properties of ω-regular langauges.
-Note that we do require that the automaton accepting an ω-regular language
+Note that we do require that the Automata.NA accepting an ω-regular language
 to have a finite state type.
 -/
 
@@ -21,11 +21,11 @@ open Classical
 
 variable {A : Type}
 
-/-- An ω-language is regular iff it is accepted by a finite-state automaton using
+/-- An ω-language is regular iff it is accepted by a finite-state Automata.NA using
 the Büchi acceptance condition.
 -/
 def OmegaRegLang (L : Set (ℕ → A)) :=
-  ∃ M : Automaton A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
+  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
 
 /-- ω-regular languages are closed under union.
 -/
@@ -33,18 +33,18 @@ theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automaton A
+  let M_u : (i : Fin 2) → Automata.NA A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (Automaton.Sum M_u), (Automaton.Sum_Acc M_u acc_u)
+  use (Automata.NA.Sum M_u), (Automata.NA.Sum_Acc M_u acc_u)
   constructor
   · have h_fin : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     exact Finite.instSigma
   · ext as
-    simp [h_l0, h_l1, accepted_omega_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
+    simp [h_l0, h_l1, Automata.acc_omega_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
 /-- ω-regular languages are closed under intersection.
 -/
@@ -52,20 +52,20 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
-  let M_u : (i : Fin 2) → Automaton A
+  let M_u : (i : Fin 2) → Automata.NA A
     | 0 => M0
     | 1 => M1
   let acc_u : (i : Fin 2) → Set (M_u i).State
     | 0 => acc0
     | 1 => acc1
-  use (Automaton.OI2 M_u acc_u), (Automaton.OI2_Acc M_u acc_u)
+  use (Automata.NA.OI2 M_u acc_u), (Automata.NA.OI2_Acc M_u acc_u)
   constructor
-  · simp [Automaton.OI2, Automaton.addHist, Automaton.Prod]
+  · simp [Automata.NA.OI2, Automata.NA.addHist, Automata.NA.Prod]
     have h_fin1 : ∀ i, Finite (M_u i).State := by simp [Fin.forall_fin_two, M_u, h_fin0, h_fin1]
     have h_fin2 : Finite ((i : Fin 2) → (M_u i).State) := by exact Pi.finite
     exact Finite.instProd
   · ext as
-    simp [h_l0, h_l1, accepted_omega_lang_inter2 M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
+    simp [h_l0, h_l1, Automata.acc_omega_lang_inter2 M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
 /-- The concatenation of a regular language and an ω-regular language is ω-regular.
 -/
@@ -76,7 +76,7 @@ theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
   use (M0.Concat acc0 M1), (inr '' acc1)
   constructor
   · exact Finite.instSum
-  · simp [h_l0, h_l1, accepted_omega_lang_concat]
+  · simp [h_l0, h_l1, Automata.acc_omega_lang_concat]
 
 /-- The ω-power of a regular language is ω-regular.
 -/
@@ -86,7 +86,7 @@ theorem omega_reg_lang_iter {L : Set (List A)}
   use (M.Loop acc), {inl ()}
   constructor
   · exact Finite.instSum
-  · simp [h_l, accepted_omega_lang_loop]
+  · simp [h_l, Automata.acc_omega_lang_loop]
 
 /-- An ω-language is ω-regular if and only if it is the finite union of sets
 of the form `U * V^ω`, where all `U`s and `V`s are regular languages.
@@ -97,8 +97,8 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
       (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, (U i) * (V i)^ω := by
   constructor
   · rintro ⟨M, acc, h_fin, rfl⟩
-    rw [omega_reg_lang_finite_union_form]
-    have eq_init : Fin (Nat.card ↑M.init) ≃ ↑M.init := by exact (Finite.equivFin ↑Automaton.init).symm
+    rw [Automata.omega_reg_lang_finite_union_form]
+    have eq_init : Fin (Nat.card ↑M.init) ≃ ↑M.init := by exact (Finite.equivFin ↑Automata.NA.init).symm
     have eq_acc : Fin (Nat.card ↑acc) ≃ ↑acc := by exact (Finite.equivFin ↑acc).symm
     have eq_prod := Equiv.prodCongr eq_init eq_acc
     have eq_fin_prod := (finProdFinEquiv (m := Nat.card ↑M.init) (n := Nat.card ↑acc)).symm
@@ -107,7 +107,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     use (fun i ↦ M.PairLang (eq i).1 (eq i).2)
     use (fun i ↦ M.PairLang (eq i).2 (eq i).2)
     constructor
-    · intro i ; constructor <;> exact pair_lang_regular
+    · intro i ; constructor <;> exact Automata.pair_lang_regular
     · ext as ; simp ; constructor
       · rintro ⟨s0, h_s0, sa, h_sa, h_mem⟩
         use (eq.invFun (⟨s0, h_s0⟩, ⟨sa, h_sa⟩))
@@ -121,7 +121,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
       · exact Finite.of_fintype Unit
       ext as ; simp ; by_contra h_contra
       obtain ⟨ss, h_run, _⟩ := h_contra
-      simp [Automaton.InfRun] at h_run
+      simp [Automata.NA.InfRun] at h_run
     let U' := (fun i : Fin n ↦ U i.castSucc)
     let V' := (fun i : Fin n ↦ V i.castSucc)
     specialize h_ind U' V' (by intro i ; simp [U', V', h_reg i.castSucc])
@@ -184,6 +184,6 @@ theorem omega_reg_lang_compl [Inhabited A] {L : Set (ℕ → A)}
     (h : OmegaRegLang L) : OmegaRegLang Lᶜ := by
   obtain ⟨M, acc, h_fin, rfl⟩ := h
   exact omega_reg_lang_fin_idx_congr_compl (c := M.BuchiCongr acc)
-    buchi_congr_finite_index buchi_congr_ample buchi_congr_saturates
+    Automata.buchi_congr_finite_index Automata.buchi_congr_ample Automata.buchi_congr_saturates
 
 end OmegaRegLang

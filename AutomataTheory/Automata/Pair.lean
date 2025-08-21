@@ -9,7 +9,7 @@ import AutomataTheory.Languages.RegLang
 import AutomataTheory.Sequences.InfOcc
 
 /-!
-The languages corresponding to pairs of states of an automaton defined in
+The languages corresponding to pairs of states of an NA defined in
 this file are used to define the Buchi congruence in `Congruences.BuchiCongr`
 and to prove an important theorem characterizing ω-regular languages (see
 `omega_reg_lang_finite_union_form` below).
@@ -17,33 +17,35 @@ and to prove an important theorem characterizing ω-regular languages (see
 
 open Function Set Filter
 
+namespace Automata
+
 section PairLang
 
 variable {A : Type}
 
 /-- A run of `M` that starts from `s` and ends at `s'`.
 -/
-def Automaton.PairPath (M : Automaton A) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
+def NA.PairPath (M : NA A) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
   ss 0 = s ∧ ss al.length = s' ∧ ∀ k, (h : k < al.length) → ss (k + 1) ∈ M.next (ss k) (al[k]'h)
 
 /-- A run of `M` that starts from `s` and ends at `s'` and (including `s` and `s'`)
 passes through an accepting state at least once.
 -/
-def Automaton.PairAccPath (M : Automaton A) (acc : Set M.State) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
+def NA.PairAccPath (M : NA A) (acc : Set M.State) (s s' : M.State) (al : List A) (ss : ℕ → M.State) :=
   M.PairPath s s' al ss ∧ ∃ k < al.length + 1, ss k ∈ acc
 
 /-- The language induced by runs of `M` that start from `s` and end at `s'`.
 -/
-def Automaton.PairLang (M : Automaton A) (s s' : M.State) : Set (List A) :=
+def NA.PairLang (M : NA A) (s s' : M.State) : Set (List A) :=
   { al | ∃ ss, M.PairPath s s' al ss }
 
 /-- The language induced by runs of `M` that start from `s` and end at `s'` and
 (including `s` and `s'`) pass through an accepting state at least once.
 -/
-def Automaton.PairAccLang (M : Automaton A) (acc : Set M.State) (s s' : M.State) : Set (List A) :=
+def NA.PairAccLang (M : NA A) (acc : Set M.State) (s s' : M.State) : Set (List A) :=
   { al | ∃ ss, M.PairAccPath acc s s' al ss }
 
-variable {M : Automaton A} {acc : Set M.State}
+variable {M : NA A} {acc : Set M.State}
 
 /-- The following intuitive obvious results are needed to prove that
 Buchi congruence is indeed a right congruence.
@@ -53,7 +55,7 @@ theorem pair_lang_fin_subseq {as : ℕ → A} {ss : ℕ → M.State} {m n : ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_m_n : m ≤ n) :
     as ⇊ m n ∈ M.PairLang (ss m) (ss n) := by
   use (fun k ↦ ss (k + m))
-  simp [Automaton.PairPath, instFinSubseq, FinSubseq, (show n - m + m = n by omega)]
+  simp [NA.PairPath, instFinSubseq, FinSubseq, (show n - m + m = n by omega)]
   intro k h_k ; grind
 
 theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.State}
@@ -61,9 +63,9 @@ theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : ℕ → M.Stat
     M.PairPath s (ss al0.length) al0 ss ∧ M.PairPath (ss al0.length) s' al1 (ss <<< al0.length) := by
   obtain ⟨rfl, rfl, h_next⟩ := h
   constructor
-  · simp [Automaton.PairPath]
+  · simp [NA.PairPath]
     grind
-  · simp [Automaton.PairPath, instSuffixFrom, SuffixFrom, Nat.add_comm]
+  · simp [NA.PairPath, instSuffixFrom, SuffixFrom, Nat.add_comm]
     intro k h_k ; specialize h_next (al0.length + k) (by simpa)
     grind
 
@@ -84,11 +86,11 @@ theorem pair_acc_lang_split {s s' : M.State} {al0 al1 : List A}
   use (ss al0.length)
   rcases Classical.em (n < al0.length + 1) with h_n' | h_n'
   · left ; constructor
-    · use ss ; simp [Automaton.PairAccPath, h_path0] ; use n
+    · use ss ; simp [NA.PairAccPath, h_path0] ; use n
     · use (ss <<< al0.length)
   · right ; constructor
     · use ss
-    · use (ss <<< al0.length) ; simp [Automaton.PairAccPath, h_path1]
+    · use (ss <<< al0.length) ; simp [NA.PairAccPath, h_path1]
       use (n - al0.length) ; simp [instSuffixFrom, SuffixFrom]
       grind
 
@@ -97,7 +99,7 @@ theorem pair_path_concat {s s' t: M.State} {al0 al1 : List A} {ss0 ss1 : ℕ →
     M.PairPath s s' (al0 ++ al1) (fun k ↦ if k < al0.length + 1 then ss0 k else ss1 (k - al0.length)) := by
   obtain ⟨rfl, rfl, h_next0⟩ := h0
   obtain ⟨h_s1, rfl, h_next1⟩ := h1
-  simp [Automaton.PairPath] ; constructor
+  simp [NA.PairPath] ; constructor
   · grind
   intro k h_k
   rcases (show k < al0.length ∨ k = al0.length ∨ k > al0.length by omega) with h_k' | h_k' | h_k'
@@ -153,7 +155,7 @@ theorem pair_acc_lang_frequently_from_run {as : ℕ → A} {ss : ℕ → M.State
   · exact segment'_lower_val h_mono h_k
   · use (fun k ↦ ss (k + φ n)) ; constructor
     · have : φ n < φ (n + 1) := h_mono (show n < n + 1 by omega)
-      simp [Automaton.PairPath, instFinSubseq, FinSubseq, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
+      simp [NA.PairPath, instFinSubseq, FinSubseq, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
       intro j h_j
       have := h_next (j + φ n)
       simpa [(show j + 1 + φ n = j + φ n + 1 by omega)]
@@ -236,23 +238,20 @@ theorem pair_acc_lang_frequently_to_run {φ : ℕ → ℕ} {as : ℕ → A} (ss'
       simp [h2] at h_acc
       simp [segment_idem h_mono, (h_ps (m2 + 1)).1.1, h_acc]
 
-def Automaton.SingleInit (s : M.State) : Automaton A where
+def NA.SingleInit (s : M.State) : NA A where
   State := M.State
   init := {s}
   next := M.next
-
-def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
-  fun k ↦ if h : k < al.length then al[k] else default
 
 theorem pair_path_fin_run [Inhabited A] {s s' : M.State} {al : List A} {ss : ℕ → M.State} :
     M.PairPath s s' al ss ↔ (M.SingleInit s).FinRun al.length al.ExtendInf ss ∧ ss al.length = s' := by
   constructor
   · rintro ⟨rfl, rfl, h_next⟩
-    simp [Automaton.FinRun, Automaton.SingleInit, List.ExtendInf]
+    simp [NA.FinRun, NA.SingleInit, List.ExtendInf]
     intro k h_k ; simp [h_k, h_next]
   · rintro ⟨⟨h_init, h_next⟩, rfl⟩
-    simp [Automaton.SingleInit] at h_init h_next
-    simp [Automaton.PairPath, h_init]
+    simp [NA.SingleInit] at h_init h_next
+    simp [NA.PairPath, h_init]
     intro k h_k ; specialize h_next k h_k
     simp [List.ExtendInf, h_k] at h_next ; exact h_next
 
@@ -270,19 +269,19 @@ theorem pair_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State
     use ss ; exact pair_path_fin_run.mp h_path
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, rfl⟩, rfl⟩
     use ss ; apply pair_path_fin_run.mpr
-    simp [Automaton.FinRun, h_init]
+    simp [NA.FinRun, h_init]
     intro k h_k ; simp [List.ExtendInf, h_k, h_next]
 
 /-- If `M` is finite-state, then `M.PairAccLang acc s s'` is regular for any pair of
-states `s` and `s'`.  Note that we need to use the history automaton construction to
-prove this result, because the automaton needs to remember whether an accepting state
+states `s` and `s'`.  Note that we need to use the history NA construction to
+prove this result, because the NA needs to remember whether an accepting state
 has been visited.
 -/
 theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State} :
     RegLang (M.PairAccLang acc s s') := by
   let M' := (M.SingleInit s).addHist {False} (fun s a ↦ {s.2 ∨ s.1 ∈ acc})
   use M', {p | p.1 = s' ∧ (p.2 ∨ s' ∈ acc) } ; constructor
-  · simp [M', Automaton.SingleInit] ; exact Finite.instProd
+  · simp [M', NA.SingleInit] ; exact Finite.instProd
   ext al ; constructor
   · rintro ⟨ss, h_path, k0, h_k0, h_k0_acc⟩
     use al.length, al.ExtendInf
@@ -290,7 +289,7 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
     obtain ⟨h_run, rfl⟩ := pair_path_fin_run.mp h_path
     have h_ne_init : Set.Nonempty {False} := by simp
     have h_ne_next : ∀ (s : (M.SingleInit s).State × Prop) (a : A), Set.Nonempty {s.2 ∨ s.1 ∈ acc} := by simp
-    obtain ⟨hist, h_run'⟩ := automata_hist_fin_run_exists h_ne_init h_ne_next h_run
+    obtain ⟨hist, h_run'⟩ := na_hist_fin_run_exists h_ne_init h_ne_next h_run
     use (fun k ↦ (ss k, hist k)) ; simp [M', h_run']
     obtain (rfl | h_k0) := show k0 = al.length ∨ k0 < al.length by omega
     · simp [h_k0_acc]
@@ -299,19 +298,19 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
     obtain ⟨j, rfl⟩ := show ∃ j, k = k0 + j + 1 by use (k - k0 - 1) ; omega
     clear h_k ; induction' j with j h_ind
     · have h_next := h_run'.2 k0 h_k0
-      simp [Automaton.addHist, h_k0_acc] at h_next
+      simp [NA.addHist, h_k0_acc] at h_next
       simp [h_next]
     intro h_j
     specialize h_ind (by omega)
     have h_next := h_run'.2 (k0 + j + 1) (by omega)
-    simp [Automaton.addHist, h_ind] at h_next
+    simp [NA.addHist, h_ind] at h_next
     simp [h_next, (show k0 + (j + 1) + 1 = k0 + j + 1 + 1 by omega)]
   · rintro ⟨n, as, ⟨ss', h_run', rfl, h_acc⟩, rfl⟩
-    have h_run := automata_hist_fin_run_proj h_run'
+    have h_run := na_hist_fin_run_proj h_run'
     use (Prod.fst ∘ ss')
     constructor
     · apply pair_path_fin_run.mpr ; simp
-      apply automata_FinRun_modulo (hr := h_run)
+      apply na_FinRun_modulo (hr := h_run)
       · intro k h_k ; simp [List.ExtendInf, h_k]
       · simp
     simp
@@ -321,15 +320,15 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
     suffices h : ∀ k < n + 1, ¬ (ss' k).2 by simp [h n (by omega)] at h_acc
     intro k h_k ; induction' k with k h_ind
     · have h_init := h_run'.1
-      simp [M', Automaton.addHist] at h_init
+      simp [M', NA.addHist] at h_init
       simp [h_init]
     specialize h_ind (by omega)
     specialize h_contra k (by omega)
     have h_next := h_run'.2 k (by omega)
-    simp [M', Automaton.addHist, h_ind, h_contra] at h_next
+    simp [M', NA.addHist, h_ind, h_contra] at h_next
     simp [h_next]
 
-/-- The ω-regular language accepted by a finite-state automaton `M` is the union of ω-languages
+/-- The ω-regular language accepted by a finite-state NA `M` is the union of ω-languages
 of the form `(M.PairLang s0 sa) * (M.PairLang sa sa)^ω`, where `s0` and `sa` range over initial
 and accepting states respectively.
 -/
@@ -346,7 +345,7 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     have h_mono : StrictMono nth_sa := by exact Nat.nth_strictMono h_inf
     use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (as <<< (nth_sa 0))
     simp [← appendListInf_ofFnPrefix_SuffixFrom] ; constructor
-    · use ss ; simp [Automaton.PairPath, h_nth_sa, h_next]
+    · use ss ; simp [NA.PairPath, h_nth_sa, h_next]
     use (fun n ↦ nth_sa n - nth_sa 0) ; simp [instFinSubseq, FinSubseq] ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn
@@ -359,7 +358,7 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     have h_nth_nn1 := h_mono (show n < n + 1 by omega)
     have h1 : nth_sa (n + 1) - nth_sa 0 - (nth_sa n - nth_sa 0) = nth_sa (n + 1) - nth_sa n := by omega
     have h2 : nth_sa (n + 1) - nth_sa n + nth_sa n = nth_sa (n + 1) := by omega
-    simp [Automaton.PairPath, instSuffixFrom, SuffixFrom, h_nth_sa, h1, h2]
+    simp [NA.PairPath, instSuffixFrom, SuffixFrom, h_nth_sa, h1, h2]
     intro k h_k
     specialize h_next (k + nth_sa n)
     have h3 : k + 1 + nth_sa n = k + nth_sa n + 1 := by omega
