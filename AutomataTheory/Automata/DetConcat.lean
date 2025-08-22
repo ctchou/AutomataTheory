@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import Mathlib
+
 import AutomataTheory.Automata.Det
 import AutomataTheory.Languages.Basic
 
@@ -15,7 +17,7 @@ Choueka, Yaacov, "Theories of automata on ω-tapes: a simplified approach",
 J. Comput. System Sci. 8 (1974) 117-141.
 -/
 
-open Function Set Filter
+open Function Set Prod Option Filter
 open Classical
 
 namespace Automata
@@ -49,7 +51,7 @@ noncomputable def DA.Concat : DA A where
       else none
     )
 
-theorem det_automata_concat_next_2 (s : (M1.Concat acc1 M2).State) (a : A) (i : Fin (Nat.card M2.State + 2)) :
+theorem da_concat_next_2 (s : (M1.Concat acc1 M2).State) (a : A) (i : Fin (Nat.card M2.State + 2)) :
     ((M1.Concat acc1 M2).next s a).2 i =
     match (s.2 i) with
     | some s2 =>
@@ -65,7 +67,7 @@ theorem det_automata_concat_next_2 (s : (M1.Concat acc1 M2).State) (a : A) (i : 
 /-- The first component of the state of `M1.Concat acc1 M2` is the same
 as M1 running alone.
 -/
-theorem det_automata_concat_inf_run_1 (as : ℕ → A) (k : ℕ) :
+theorem da_concat_inf_run_1 (as : ℕ → A) (k : ℕ) :
     ((M1.Concat acc1 M2).DetRun as k).1 = M1.DetRun as k := by
   induction' k with k h_ind <;> simp [DA.DetRun]
   · rfl
@@ -74,14 +76,14 @@ theorem det_automata_concat_inf_run_1 (as : ℕ → A) (k : ℕ) :
 /-- The second component of the state of `M1.Concat acc1 M2` is a set
 of `M2` copies which have been started by M1 reaching an accepting state.
 -/
-theorem det_automata_concat_inf_run_2 (as : ℕ → A) (k : ℕ) (i : Fin (Nat.card M2.State + 2)) :
+theorem da_concat_inf_run_2 (as : ℕ → A) (k : ℕ) (i : Fin (Nat.card M2.State + 2)) :
     ∀ s2 : M2.State, ((M1.Concat acc1 M2).DetRun as k).2 i = some s2 →
     ∃ j < k, M1.DetRun as j ∈ acc1 ∧ M2.DetRun (as <<< j) (k - j) = s2 := by
   induction' k with k h_ind <;> intro s2 h
   · contradiction
-  have h_next := det_automata_concat_next_2 M1 acc1 M2 ((M1.Concat acc1 M2).DetRun as k) (as k) i
-  rcases Option.eq_none_or_eq_some <| ((M1.Concat acc1 M2).DetRun as k).2 i with h_k | ⟨s2', h_k⟩
-  · simp [DA.DetRun, h_next, h_k, det_automata_concat_inf_run_1] at h
+  have h_next := da_concat_next_2 M1 acc1 M2 ((M1.Concat acc1 M2).DetRun as k) (as k) i
+  rcases eq_none_or_eq_some <| ((M1.Concat acc1 M2).DetRun as k).2 i with h_k | ⟨s2', h_k⟩
+  · simp [DA.DetRun, h_next, h_k, da_concat_inf_run_1] at h
     use k ; simp [h.1.1, ← h.2, DA.DetRun, instSuffixFrom, SuffixFrom]
   · obtain ⟨j, h_j, h_acc, h_run⟩ := h_ind s2' h_k
     simp [DA.DetRun, h_next, h_k] at h
@@ -94,9 +96,66 @@ variable (accSet2 : Set (Set M2.State))
 def DA.MullerAcc_Concat : Set (Set (M1.Concat acc1 M2).State) :=
   { acc | ∃ i, {s2 | ∃ s ∈ acc, s.2 i = some s2} ∈ accSet2 ∧ (∀ s ∈ acc, (s.2 i).isSome) }
 
-theorem det_automata_concat_muller_accept (as : ℕ → A)
+variable [Finite M1.State] [Finite M2.State]
+
+theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
+    InfOcc (xs <<< k) = InfOcc xs := by
+  sorry
+
+theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
+    ∀ᶠ k in atTop, xs k ∈ InfOcc xs := by
+  sorry
+
+instance instFiniteOption {X : Type*} [Finite X] : Finite (Option X) := by
+  apply Finite.of_finite_univ
+  apply finite_option.mpr
+  exact toFinite {x | some x ∈ univ}
+
+theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
+    (h : ∀ o ∈ InfOcc os, o.isSome) :
+    {x | ∃ o ∈ InfOcc os, o = some x} = InfOcc ((Option.getD · y) ∘ os) := by
+  ext x ; constructor
+  · rintro ⟨o, h_inf, rfl⟩
+    apply Frequently.mono h_inf
+    intro k h_k ; simp [h_k]
+  · intro h_inf ; simp
+    obtain ⟨n, h_n⟩ := eventually_atTop.mp <| inf_occ_eventually os
+    have h_n' : ∀ m ≥ n, ∃ x, os m = some x := by
+      intro m h_m
+      exact isSome_iff_exists.mp <| h (os m) <| h_n m h_m
+    simp [← inf_occ_suffix os n]
+    simp [← inf_occ_suffix ((Option.getD · y) ∘ os) n] at h_inf
+    apply Frequently.mono h_inf
+    intro k
+    simp [instSuffixFrom, SuffixFrom]
+    obtain ⟨x', h_x'⟩ := h_n' (k + n) (by omega)
+    simp [h_x']
+
+theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fin (Nat.card M2.State + 2))
+    (h : ∀ s ∈ InfOcc ss, (s.2 i).isSome = true) :
+    {s2 | ∃ s ∈ InfOcc ss, s.2 i = some s2} = InfOcc (fun k ↦ ((ss k).2 i).getD M2.init) := by
+  have h_fin1 : Finite (Fin (Nat.card M2.State + 2) → Option M2.State) := sorry
+  have h_fin2 : ∀ i : Fin (Nat.card M2.State + 2), Finite (Option M2.State) := sorry
+  calc
+    _ = {s2 | ∃ s ∈ InfOcc (snd ∘ ss), s i = some s2} := by
+      congr! with s2
+      simp only [← (inf_occ_pair ss).2, mem_image]
+      constructor
+      · rintro ⟨s, h_s, h_i⟩ ; use s.2 ; aesop
+      · rintro ⟨s2', ⟨s, h_s, rfl⟩, h_i⟩ ; aesop
+    _ = {s2 | ∃ s ∈ InfOcc ((· i) ∘ snd ∘ ss), s = some s2} := by
+      congr! with s2
+      simp [← inf_occ_proj (h := h_fin2) (snd ∘ ss) i]
+    _ = _ := by sorry
+
+theorem da_concat_muller_accept (as : ℕ → A)
     (h : (M1.Concat acc1 M2).MullerAccept (DA.MullerAcc_Concat M1 acc1 M2 accSet2) as) :
     ∃ k, M1.toNA.FinAccept acc1 k as ∧ M2.MullerAccept accSet2 (as <<< k) := by
+  obtain ⟨i, h_acc, h_some⟩ := h
+  have : {s2 | ∃ s ∈ InfOcc ((M1.Concat acc1 M2).DetRun as), s.2 i = some s2} =
+      InfOcc (fun k ↦ if h : (((M1.Concat acc1 M2).DetRun as k).2 i).isSome then (((M1.Concat acc1 M2).DetRun as k).2 i).get h else M2.init) := by
+    sorry
+
   sorry
 
 end AutomataDetConcat

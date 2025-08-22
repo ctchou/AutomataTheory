@@ -56,7 +56,7 @@ theorem frequently_in_finite_set {X : Type*} [Finite X] {s : Set X} {xs : ℕ �
 
 /-- Note that only the ⊇ direction needs the finiteness assumptions.
 -/
-theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [∀ i, Finite (X i)] {xs : ℕ → Π i, X i} {i : I} :
+theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [h : ∀ i, Finite (X i)] (xs : ℕ → Π i, X i) (i : I) :
     (· i) '' (InfOcc xs) = InfOcc ((· i) ∘ xs) := by
   ext x_i ; simp ; constructor
   · rintro ⟨x, h_inf, rfl⟩
@@ -73,7 +73,7 @@ theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [∀ i, Finite (X 
 ??? This result should follow from inf_occ_proj, but there doesn't seem
 to be an easy way to do it. ???
 -/
-theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   constructor
@@ -114,7 +114,7 @@ theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injecti
     intro x hx
     simpa [InfOcc, hf.eq_iff] using hx
 
-theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] {xs : ℕ → X1 × X2} :
+theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   let e := (Equiv.prodCongr Equiv.ulift Equiv.ulift).symm.trans (prodEquivPiFinTwo (ULift.{max u v} X1) (ULift.{max u v} X2))
