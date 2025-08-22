@@ -134,8 +134,6 @@ theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
 theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fin (Nat.card M2.State + 2))
     (h : ∀ s ∈ InfOcc ss, (s.2 i).isSome = true) :
     {s2 | ∃ s ∈ InfOcc ss, s.2 i = some s2} = InfOcc (fun k ↦ ((ss k).2 i).getD M2.init) := by
-  have h_fin1 : Finite (Fin (Nat.card M2.State + 2) → Option M2.State) := sorry
-  have h_fin2 : ∀ i : Fin (Nat.card M2.State + 2), Finite (Option M2.State) := sorry
   calc
     _ = {s2 | ∃ s ∈ InfOcc (snd ∘ ss), s i = some s2} := by
       congr! with s2
@@ -145,7 +143,7 @@ theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fi
       · rintro ⟨s2', ⟨s, h_s, rfl⟩, h_i⟩ ; aesop
     _ = {s2 | ∃ s ∈ InfOcc ((· i) ∘ snd ∘ ss), s = some s2} := by
       congr! with s2
-      simp [← inf_occ_proj (h := h_fin2) (snd ∘ ss) i]
+      simp [← inf_occ_proj (snd ∘ ss) i]
     _ = _ := by sorry
 
 theorem da_concat_muller_accept (as : ℕ → A)
