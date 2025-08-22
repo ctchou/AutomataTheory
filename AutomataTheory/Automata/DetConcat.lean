@@ -106,7 +106,7 @@ theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
     ∀ᶠ k in atTop, xs k ∈ InfOcc xs := by
   sorry
 
-instance instFiniteOption {X : Type*} [Finite X] : Finite (Option X) := by
+instance {X : Type*} [Finite X] : Finite (Option X) := by
   apply Finite.of_finite_univ
   apply finite_option.mpr
   exact toFinite {x | some x ∈ univ}
@@ -131,6 +131,8 @@ theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
     obtain ⟨x', h_x'⟩ := h_n' (k + n) (by omega)
     simp [h_x']
 
+--theorem inf_occ_map {X Y : Type*} (f : X → Y) :
+
 theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fin (Nat.card M2.State + 2))
     (h : ∀ s ∈ InfOcc ss, (s.2 i).isSome = true) :
     {s2 | ∃ s ∈ InfOcc ss, s.2 i = some s2} = InfOcc (fun k ↦ ((ss k).2 i).getD M2.init) := by
@@ -144,7 +146,10 @@ theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fi
     _ = {s2 | ∃ s ∈ InfOcc ((· i) ∘ snd ∘ ss), s = some s2} := by
       congr! with s2
       simp [← inf_occ_proj (snd ∘ ss) i]
-    _ = _ := by sorry
+    _ = _ := by
+      apply inf_occ_opt ((fun x ↦ x i) ∘ snd ∘ ss) M2.init
+      intro s2' h_s2'
+      sorry
 
 theorem da_concat_muller_accept (as : ℕ → A)
     (h : (M1.Concat acc1 M2).MullerAccept (DA.MullerAcc_Concat M1 acc1 M2 accSet2) as) :
