@@ -91,12 +91,33 @@ theorem da_concat_inf_run_2 (as : ℕ → A) (k : ℕ) (i : Fin (Nat.card M2.Sta
       (show j < k + 1 by omega), (show k + 1 - j = k - j + 1 by omega)]
     congr ; simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
 
+theorem da_concat_inf_run_2' (as : ℕ → A) (n : ℕ) (i : Fin (Nat.card M2.State + 2))
+    (h : ∀ k ≥ n, (((M1.Concat acc1 M2).DetRun as k).2 i).isSome) :
+    ∃ m < n, M1.DetRun as m ∈ acc1 ∧ M2.DetRun (as <<< m) <<< 1 =
+      (getD · M2.init) ∘ (· i) ∘ snd ∘ (((M1.Concat acc1 M2).DetRun as) <<< (m + 1)) := by
+  induction' n with n h_ind
+  · specialize h 0 (by omega)
+    contradiction
+  have h_next := da_concat_next_2 M1 acc1 M2 ((M1.Concat acc1 M2).DetRun as n) (as n) i
+  rcases eq_none_or_eq_some <| ((M1.Concat acc1 M2).DetRun as n).2 i with h_n | ⟨s2, h_n⟩
+  · obtain ⟨s2, h_s2⟩ := isSome_iff_exists.mp <| h (n + 1) (by omega)
+    simp [DA.DetRun, h_next, h_n, da_concat_inf_run_1] at h_s2
+    use n ; simp [h_s2.1]
+    ext k ; simp [instSuffixFrom, SuffixFrom, DA.DetRun]
+    sorry
+  · sorry
+
 variable (accSet2 : Set (Set M2.State))
 
 def DA.MullerAcc_Concat : Set (Set (M1.Concat acc1 M2).State) :=
   { acc | ∃ i, {s2 | ∃ s ∈ acc, s.2 i = some s2} ∈ accSet2 ∧ (∀ s ∈ acc, (s.2 i).isSome) }
 
 variable [Finite M1.State] [Finite M2.State]
+
+-- The following proof is due to Kyle Miller
+instance {X : Type*} [Finite X] : Finite (Option X) :=
+  have := Fintype.ofFinite X
+  Finite.of_fintype _
 
 theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
     InfOcc (xs <<< k) = InfOcc xs := by
@@ -106,14 +127,9 @@ theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
     ∀ᶠ k in atTop, xs k ∈ InfOcc xs := by
   sorry
 
-instance {X : Type*} [Finite X] : Finite (Option X) := by
-  apply Finite.of_finite_univ
-  apply finite_option.mpr
-  exact toFinite {x | some x ∈ univ}
-
 theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
     (h : ∀ o ∈ InfOcc os, o.isSome) :
-    {x | ∃ o ∈ InfOcc os, o = some x} = InfOcc ((Option.getD · y) ∘ os) := by
+    {x | ∃ o ∈ InfOcc os, o = some x} = InfOcc ((getD · y) ∘ os) := by
   ext x ; constructor
   · rintro ⟨o, h_inf, rfl⟩
     apply Frequently.mono h_inf
@@ -124,14 +140,16 @@ theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
       intro m h_m
       exact isSome_iff_exists.mp <| h (os m) <| h_n m h_m
     simp [← inf_occ_suffix os n]
-    simp [← inf_occ_suffix ((Option.getD · y) ∘ os) n] at h_inf
+    simp [← inf_occ_suffix ((getD · y) ∘ os) n] at h_inf
     apply Frequently.mono h_inf
     intro k
     simp [instSuffixFrom, SuffixFrom]
     obtain ⟨x', h_x'⟩ := h_n' (k + n) (by omega)
     simp [h_x']
 
---theorem inf_occ_map {X Y : Type*} (f : X → Y) :
+theorem inf_occ_map {X Y : Type*} (f : X → Y) (xs : ℕ → X) (p : Y → Prop)
+    (h : ∀ x ∈ InfOcc xs, p (f x)) (y : InfOcc (f ∘ xs)) : p y := by
+  sorry
 
 theorem da_concat_inf_occ_lemma (ss : ℕ → (M1.Concat acc1 M2).State) (i : Fin (Nat.card M2.State + 2))
     (h : ∀ s ∈ InfOcc ss, (s.2 i).isSome = true) :
