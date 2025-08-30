@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ching-Tsun Chou
 -/
 
+import AutomataTheory.Automata.DetConcat
 import AutomataTheory.Automata.DetProd
 import AutomataTheory.Languages.RegLang
 
@@ -84,5 +85,23 @@ theorem det_muller_lang_omega_limit {L : Set (List A)}
   use M.PSet, accSet ; constructor
   · assumption
   · simp [h_acc]
+
+/-- The concatenation of a regular language and a deterministic Muller language
+is a deterministic Muller language.
+-/
+theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
+    (h0 : RegLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 * L1) := by
+  obtain ⟨M0, acc0, h_fin0, rfl⟩ := h0
+  obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
+  let M0' := M0.PSet
+  let acc0' := M0.PSet_Acc acc0
+  use (M0'.Concat acc0' M1), (Automata.DA.MullerAcc_Concat M0' acc0' M1 accSet1)
+  constructor
+  · have : Finite (M0'.State) := by exact Set.instFinite
+    apply Finite.instProd
+  · ext as ; constructor
+    · rintro ⟨al0, as1, ⟨n, as0, h_as0, rfl⟩, h_as1, h_as⟩
+      sorry
+    · sorry
 
 end DetMullerLang
