@@ -69,15 +69,23 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, Automata.acc_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
 
+/-- A regular language is always accepted by a deterministic finite automaton.
+-/
+theorem reg_lang_det_accept {L : Set (List A)} (h : RegLang L) :
+    ∃ M : Automata.DA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.toNA.AcceptedLang acc := by
+  obtain ⟨M, acc, h_fin, rfl⟩ := h
+  use M.PSet, (M.PSet_Acc acc) ; constructor
+  · exact Set.instFinite
+  · symm ; exact Automata.acc_lang_pset M acc
+
 /-- Regular languages are closed under complementation.
 -/
 theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
     (h : RegLang L) : RegLang Lᶜ := by
-  obtain ⟨M, acc, h_fin, h_l⟩ := h
-  use M.PSet.toNA, (M.PSet_Acc acc)ᶜ
-  constructor
-  · exact Set.instFinite
-  · rw [Automata.acc_lang_compl, Automata.acc_lang_pset, h_l]
+  obtain ⟨M, acc, h_fin, h_l⟩ := reg_lang_det_accept h
+  use M.toNA, accᶜ ; constructor
+  · exact h_fin
+  · simp [Automata.acc_lang_compl, h_l]
 
 /-- Helper lemma for `reg_lang_concat` below.
 -/
