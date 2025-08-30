@@ -43,8 +43,8 @@ migrated to this stand-alone repo on 2025-04-27.
 *Update 2025-07-26:* The closure of $\omega$-regular languages under complementation
 has been proved, modulo a Ramsey theorem on infinite graphs which is to be proved later.
 The proof being formalized is essentially that of Büchi [1] and follows the modern
-presentation in the first 2 sections of a survey article by Thomas [2], an outline
-of which can also be found in Wikipedia [3].
+presentation in the first 2 sections of a survey article by Thomas [3], an outline
+of which can also be found in Wikipedia [4].
 The crux of the proof uses a congruence relation invented by Büchi
 (see `BuchiCongr` defined in `AutomataTheory/Congruences/BuchiCongr.lean`)
 that is of finite index and has the ampleness and saturation properties
@@ -57,13 +57,33 @@ and there is no `sorry` left.
 including the more pervasive uses of the dot notation and the introductions of
 several infix and postfix operators.
 
+*Update 2025-08-30:* Some results about deterministic automata have been proved:
+
+* A deterministic Büchi automaton accepts precisely the $\omega$-limit of the
+  language (on finite words) that it accepts.
+
+* The $\omega$-languages accepted by deterministic Muller automata, referred
+  to as deterministic Muller languages, are closed under intersection, union,
+  and complementation.
+
+* The $\omega$-limit of a regular language is a deterministic Muller language.
+
+* The concatenation of a regular language and a deterministic Muller language is
+  a deterministic Muller language.
+
+The main reference for the above results is a paper by Choueka [2].  In particular,
+the last result is proved using Choueka's "flag construction", which is rather subtle.
+
 [1] Büchi, J.R. (1962). "On a Decision Method in Restricted Second Order Arithmetic".
     The Collected Works of J. Richard Büchi. Stanford: Stanford University Press. pp. 425–435.
 
-[2] Thomas, Wolfgang (1990). "Automata on infinite objects". In Van Leeuwen (ed.).
+[2] Choueka, Yaacov (1974), "Theories of automata on ω-tapes: A simplified approach",
+    J. Computer and System Sciences, Vol. 8, pp. 117-141.
+
+[3] Thomas, Wolfgang (1990). "Automata on infinite objects". In Van Leeuwen (ed.).
     Handbook of Theoretical Computer Science. Elsevier. pp. 133–164.
 
-[3] https://en.wikipedia.org/wiki/Büchi_automaton#Complementation
+[4] https://en.wikipedia.org/wiki/Büchi_automaton#Complementation
 
 --------------------------------
 
