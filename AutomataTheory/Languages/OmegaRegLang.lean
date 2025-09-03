@@ -80,13 +80,22 @@ theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
 
 /-- The ω-power of a regular language is ω-regular.
 -/
-theorem omega_reg_lang_iter {L : Set (List A)}
+theorem omega_reg_lang_omega_iter {L : Set (List A)}
     (h : RegLang L) : OmegaRegLang L^ω := by
   obtain ⟨M, acc, h_fin, h_l⟩ := h
   use (M.Loop acc), {inl ()}
   constructor
   · exact Finite.instSum
   · simp [h_l, Automata.acc_omega_lang_loop]
+
+/-- The ω-limit of a regular language is ω-regular.
+-/
+theorem omega_reg_lang_omega_limit {L : Set (List A)}
+    (h : RegLang L) : OmegaRegLang L↗ω := by
+  obtain ⟨M, acc, h_fin, rfl⟩ := reg_lang_det_accept h
+  use M.toNA, acc ; constructor
+  · exact h_fin
+  · symm ; exact Automata.da_acc_omega_lang
 
 /-- An ω-language is ω-regular if and only if it is the finite union of sets
 of the form `U * V^ω`, where all `U`s and `V`s are regular languages.
@@ -139,7 +148,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
     apply omega_reg_lang_union h_ind
     apply omega_reg_lang_concat
     · exact (h_reg (Fin.last n)).1
-    · apply omega_reg_lang_iter
+    · apply omega_reg_lang_omega_iter
       exact (h_reg (Fin.last n)).2
 
 /-- If a congruence is of finite index, is ample, and saturates an ω-language `L`,
