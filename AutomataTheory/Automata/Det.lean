@@ -13,7 +13,7 @@ The deterministic automaton class `Automata.DA` is analogous to the
 `Automata.NA` class, except that its initial and next states are unique.
 -/
 
-open Function Set
+open Function Set Filter
 
 namespace Automata
 
@@ -189,5 +189,32 @@ theorem det_muller_accept_omega_limit (M : DA A) [Finite M.State] (acc : Set M.S
     have : Finite M.toNA.State := by assumption
     obtain ⟨s, h_s, h_inf⟩ := frequently_in_finite_set.mp h_acc
     use s ; aesop
+
+/-- The ω-language accepted by a deterministic Muller automaton is a boolean
+combination of the ω-limits of accepted languages.  Note that this result does
+not need to assume that the automaton is finite-state.
+-/
+theorem det_muller_accept_boolean_form (M : DA A) (accSet : Set (Set M.State)) :
+    {as | M.MullerAccept accSet as} =
+    ⋃ acc ∈ accSet, (⋂ s ∈ acc, (M.toNA.AcceptedLang {s})↗ω) ∩ (⋂ s ∈ accᶜ, ((M.toNA.AcceptedLang {s})↗ω)ᶜ) := by
+  ext as ; simp [DA.MullerAccept, mem_setOf_eq, ← da_acc_omega_lang] ; constructor
+  · intro h_acc ; use InfOcc (M.DetRun as); simp [h_acc] ; constructor <;> intro s h_s
+    · use (M.DetRun as) ; constructor
+      · exact da_inf_run_exists as
+      · exact h_s
+    · rintro ⟨ss, h_run, h_inf⟩
+      obtain ⟨rfl⟩ := da_inf_run_unique h_run
+      contradiction
+  · rintro ⟨acc, h_inf, h_acc, h_fin⟩
+    suffices h : acc = InfOcc (M.DetRun as) by simp [← h, h_acc]
+    ext s ; constructor <;> intro h_s
+    · obtain ⟨ss, h_run, h_inf'⟩ := h_inf s h_s
+      obtain ⟨rfl⟩ := da_inf_run_unique h_run
+      exact h_inf'
+    · by_contra h_contra
+      have h_as := h_fin s h_contra
+      simp only [NA.AcceptedOmegaLang, NA.BuchiAccept, mem_singleton_iff, mem_setOf_eq, not_exists, not_and] at h_as
+      have := h_as (M.DetRun as) (da_inf_run_exists as)
+      contradiction
 
 end DetMullerAccept
