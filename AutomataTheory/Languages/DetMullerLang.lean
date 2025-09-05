@@ -6,7 +6,7 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.Automata.DetConcat
 import AutomataTheory.Automata.DetProd
-import AutomataTheory.Languages.RegLang
+import AutomataTheory.Languages.OmegaRegLang
 
 /-!
 This file proves various closure properties of deterministic Muller
@@ -109,5 +109,20 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
       obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
       use (List.ofFn (fun k : Fin n ↦ as k)), (as <<< n)
       simp [h_acc1, ← appendListInf_ofFnPrefix_SuffixFrom] ; use n, as
+
+/-- Every deterministic Muller language is an ω-regular language.
+-/
+theorem det_muller_lang_imp_omega_reg_lang [Inhabited A] {L : Set (ℕ → A)}
+    (h : DetMullerLang L) : OmegaRegLang L := by
+  obtain ⟨M, accSet, h_fin, rfl⟩ := h
+  rw [Automata.det_muller_accept_boolean_form]
+  have h_reg : ∀ s, RegLang (M.toNA.AcceptedLang {s}) := by
+    intro s ; use M.toNA, {s} ; simp [Automata.DA.toNA, h_fin]
+  apply omega_reg_lang_biUnion ; intro acc h_acc
+  apply omega_reg_lang_inter <;> apply omega_reg_lang_biInter <;> intro s h_s
+  · apply omega_reg_lang_omega_limit
+    simp [h_reg]
+  · apply omega_reg_lang_compl ; apply omega_reg_lang_omega_limit
+    simp [h_reg]
 
 end DetMullerLang
