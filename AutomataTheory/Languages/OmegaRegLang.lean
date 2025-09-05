@@ -27,6 +27,27 @@ the Büchi acceptance condition.
 def OmegaRegLang (L : Set (ℕ → A)) :=
   ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
 
+/-- The language `∅` is ω-regular.
+-/
+theorem omega_reg_lang_empty :
+    OmegaRegLang (∅ : Set (ℕ → A)) := by
+  let M := Automata.NA.mk (A := A) Unit ∅ (fun _ _ ↦ ∅)
+  use M, ∅ ; constructor
+  · exact Finite.of_fintype Unit
+  ext as ; simp [Automata.NA.AcceptedOmegaLang, Automata.NA.BuchiAccept]
+
+/-- The language `univ` is ω-regular.
+-/
+theorem omega_reg_lang_univ :
+    OmegaRegLang (univ : Set (ℕ → A)) := by
+  let M := Automata.NA.mk (A := A) Unit {()} (fun _ _ ↦ {()})
+  use M, {()} ; constructor
+  · exact Finite.of_fintype Unit
+  ext as ; simp [Automata.NA.AcceptedOmegaLang, Automata.NA.BuchiAccept]
+  use (fun _ ↦ ()) ; constructor
+  · simp [Automata.NA.InfRun, M]
+  · simp [atTop_neBot]
+
 /-- ω-regular languages are closed under union.
 -/
 theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
@@ -45,6 +66,17 @@ theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
     exact Finite.instSigma
   · ext as
     simp [h_l0, h_l1, Automata.acc_omega_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
+
+/-- ω-regular languages are closed under finite bounded indexed union.
+-/
+theorem omega_reg_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+    (h : ∀ i ∈ s, OmegaRegLang (L i)) : OmegaRegLang (⋃ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [omega_reg_lang_empty]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply omega_reg_lang_union <;> grind
 
 /-- ω-regular languages are closed under intersection.
 -/
@@ -66,6 +98,17 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
     exact Finite.instProd
   · ext as
     simp [h_l0, h_l1, Automata.acc_omega_lang_inter2 M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
+
+/-- ω-regular languages are closed under finite bounded indexed intersection.
+-/
+theorem omega_reg_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+    (h : ∀ i ∈ s, OmegaRegLang (L i)) : OmegaRegLang (⋂ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [omega_reg_lang_univ]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply omega_reg_lang_inter <;> grind
 
 /-- The concatenation of a regular language and an ω-regular language is ω-regular.
 -/
