@@ -27,6 +27,27 @@ def DetMullerLang (L : Set (ℕ → A)) :=
   ∃ M : Automata.DA A, ∃ accSet : Set (Set M.State),
   Finite M.State ∧ L = { as | M.MullerAccept accSet as }
 
+/-- The language `∅` is a deterministic Muller language.
+-/
+theorem det_muller_lang_empty :
+    DetMullerLang (∅ : Set (ℕ → A)) := by
+  let M := Automata.DA.mk (A := A) Unit () (fun _ _ ↦ ())
+  use M, ∅ ; constructor
+  · exact Finite.of_fintype Unit
+  ext as ; simp [Automata.DA.MullerAccept]
+
+/-- The language `univ` is a deterministic Muller language.
+-/
+theorem det_muller_lang_univ :
+    DetMullerLang (univ : Set (ℕ → A)) := by
+  let M := Automata.DA.mk (A := A) Unit () (fun _ _ ↦ ())
+  use M, {{()}} ; constructor
+  · exact Finite.of_fintype Unit
+  ext as ; simp [Automata.DA.MullerAccept]
+  have h : M.DetRun as = fun _ ↦ () := by
+    ext k ; induction' k <;> simp [Automata.DA.DetRun, M]
+  ext s ; simp [h, InfOcc]
+
 /-- Deterministic Muller languages are closed under complementation.
 -/
 theorem det_muller_lang_compl {L : Set (ℕ → A)}
@@ -55,6 +76,17 @@ theorem det_muller_lang_inter {L0 L1 : Set (ℕ → A)}
   · ext as
     simp [Automata.det_muller_accept_inter M accSet as, Fin.forall_fin_two] ; grind
 
+/-- Deterministic Muller languages are closed under finite bounded indexed intersection.
+-/
+theorem det_muller_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+    (h : ∀ i ∈ s, DetMullerLang (L i)) : DetMullerLang (⋂ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [det_muller_lang_univ]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply det_muller_lang_inter <;> grind
+
 /-- Deterministic Muller languages are closed under union.
 -/
 theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
@@ -73,6 +105,17 @@ theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
   · exact Automata.da_prod_finite M
   · ext as
     simp [Automata.det_muller_accept_union M accSet as, Fin.exists_fin_two] ; grind
+
+/-- Deterministic Muller languages are closed under finite bounded indexed union.
+-/
+theorem det_muller_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+    (h : ∀ i ∈ s, DetMullerLang (L i)) : DetMullerLang (⋃ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [det_muller_lang_empty]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply det_muller_lang_union <;> grind
 
 /-- The ω-limit of a regular language is a deterministic Muller language.
 -/
