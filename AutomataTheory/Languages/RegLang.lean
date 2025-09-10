@@ -31,6 +31,43 @@ variable {A : Type}
 def RegLang (L : Set (List A)) :=
   ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
 
+/-- The language `∅` is regular.
+-/
+theorem reg_lang_empty :
+    RegLang (∅ : Set (List A)) := by
+  let M := Automata.NA.mk (A := A) Unit ∅ (fun _ _ ↦ ∅)
+  use M, ∅ ; constructor
+  · exact Finite.of_fintype Unit
+  ext al ; simp
+  rintro ⟨n, as, ⟨ss, _, h_acc⟩, rfl⟩ ; simp at h_acc
+
+/-- The language `{[]}` is regular.
+-/
+theorem reg_lang_epsilon [Inhabited A] :
+    RegLang ({[]} : Set (List A)) := by
+  let M := Automata.NA.mk (A := A) Unit {()} (fun _ _ ↦ {})
+  use M, {()} ; constructor
+  · exact Finite.of_fintype Unit
+  ext al ; simp ; constructor
+  · rintro ⟨rfl⟩
+    use 0, (fun k ↦ default) ; simp
+    use (fun k ↦ ()) ; simp [M, Automata.NA.FinRun]
+  · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
+    suffices h_n : n = 0 by simp [h_n] at h_al ; simp [h_al]
+    by_contra ; specialize h_next 0 (by omega) ; simp [M] at h_next
+
+/-- The language `univ` is regular.
+-/
+theorem reg_lang_univ [Inhabited A] :
+    RegLang (univ : Set (List A)) := by
+  let M := Automata.NA.mk (A := A) Unit {()} (fun _ _ ↦ {()})
+  use M, {()} ; constructor
+  · exact Finite.of_fintype Unit
+  ext al ; simp
+  use al.length, (fun k ↦ if h : k < al.length then al[k]'h else default) ; simp
+  use (fun _ ↦ ())
+  simp [M, Automata.NA.FinRun]
+
 /-- Regular languages are closed under union.
 -/
 theorem reg_lang_union {L0 L1 : Set (List A)}
@@ -50,6 +87,17 @@ theorem reg_lang_union {L0 L1 : Set (List A)}
   · ext as
     simp [h_l0, h_l1, Automata.acc_lang_union M_u acc_u, Fin.exists_fin_two, M_u, acc_u]
 
+/-- Regular languages are closed under finite bounded indexed union.
+-/
+theorem reg_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (List A)}
+    (h : ∀ i ∈ s, RegLang (L i)) : RegLang (⋃ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [reg_lang_empty]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply reg_lang_union <;> grind
+
 /-- Regular languages are closed under intersection.
 -/
 theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
@@ -68,6 +116,17 @@ theorem reg_lang_inter [Inhabited A] {L0 L1 : Set (List A)}
     exact Pi.finite
   · ext as
     simp [h_l0, h_l1, Automata.acc_lang_inter M_u acc_u, Fin.forall_fin_two, M_u, acc_u]
+
+/-- Regular languages are closed under finite bounded indexed intersection.
+-/
+theorem reg_lang_biInter [Inhabited A] {I : Type} [Finite I] {s : Set I} {L : I → Set (List A)}
+    (h : ∀ i ∈ s, RegLang (L i)) : RegLang (⋂ i ∈ s, L i) := by
+  generalize h_n : s.ncard = n
+  induction' n with n h_ind generalizing s
+  . obtain ⟨rfl⟩ := (ncard_eq_zero (s := s)).mp h_n
+    simp [reg_lang_univ]
+  obtain ⟨i, t, h_i, rfl, rfl⟩ := (ncard_eq_succ (s := s)).mp h_n
+  simp ; apply reg_lang_inter <;> grind
 
 /-- A regular language is always accepted by a deterministic finite automaton.
 -/
@@ -148,51 +207,3 @@ theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
   · symm ; exact acc_lang_congr s
 
 end RegLang
-
-section BasicRegLang
-
-variable {A : Type}
-
-def M_empty : Automata.NA A where
-  State := Unit
-  init := {}
-  next := fun _ _ ↦ {}
-
-def acc_empty : Set Unit := {()}
-
-/-- The language ∅ is regular.
--/
-theorem reg_lang_empty : RegLang (∅ : Set (List A)) := by
-  use M_empty, acc_empty ; constructor
-  · exact Finite.of_fintype Unit
-  ext al ; constructor
-  · intro h
-    simp_all only [mem_empty_iff_false]
-  · rintro ⟨n, as, ⟨ss, ⟨h_init, _⟩ ,_⟩, _⟩
-    simp [M_empty] at h_init
-
-def M_epsilon : Automata.NA A where
-  State := Unit
-  init := {()}
-  next := fun _ _ ↦ {}
-
-def acc_epsilon : Set Unit := {()}
-
-/-- The language {[]} is regular.
--/
-theorem reg_lang_epsilon [Inhabited A] : RegLang ({[]} : Set (List A)) := by
-  use M_epsilon, acc_epsilon ; constructor
-  · exact Finite.of_fintype Unit
-  ext al ; constructor
-  · simp ; intro h_al
-    use 0, (fun k ↦ default) ; simp [h_al]
-    use (fun k ↦ ())
-    simp [Automata.NA.FinRun, M_epsilon, acc_epsilon]
-  · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
-    suffices h_n : n = 0 by
-      simp [h_n] at h_al ; simp [h_al]
-    by_contra h_contra
-    have h_step := h_next 0 (by omega)
-    simp [M_epsilon] at h_step
-
-end BasicRegLang
