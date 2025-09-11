@@ -84,7 +84,7 @@ variable {A : Type} {M : DA A} {acc : Set M.State}
 /-- For a `DA`, complementing the language it accepts can be achieved
 by simply complementing the set of accepting states.
 -/
-theorem acc_lang_compl [Inhabited A] :
+theorem da_acc_lang_compl [Inhabited A] :
     M.toNA.AcceptedLang accᶜ = (M.toNA.AcceptedLang acc)ᶜ := by
   ext al
   constructor
