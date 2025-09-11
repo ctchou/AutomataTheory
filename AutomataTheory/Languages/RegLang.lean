@@ -144,7 +144,7 @@ theorem reg_lang_compl [Inhabited A] {L : Set (List A)}
   obtain ⟨M, acc, h_fin, h_l⟩ := reg_lang_det_accept h
   use M.toNA, accᶜ ; constructor
   · exact h_fin
-  · simp [Automata.acc_lang_compl, h_l]
+  · simp [Automata.da_acc_lang_compl, h_l]
 
 /-- Helper lemma for `reg_lang_concat` below.
 -/
