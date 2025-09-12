@@ -402,7 +402,7 @@ theorem acc_omega_lang_concat :
           exact h_next0 k (by omega)
       · use ss1
         have h_len : n = al0.length := by simp [h_al0, List.length_ofFn]
-        simpa [ss, h_as, h_len, ← suffixFrom_listLength_AppendListInf]
+        simpa [ss, h_as, h_len, suffixFrom_listLength_AppendListInf]
     · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
         simp only [eventually_atTop]
         use (n + 1) ; intro k h_k ; simp [ss] ; omega

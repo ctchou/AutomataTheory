@@ -146,7 +146,7 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
         intro k h_k ; simp [h_al0, instAppendListInf, AppendListInf, h_k, h_run0.2 k h_k]
       have h_acc1 : M1.MullerAccept accSet1 (as <<< n) := by
         have h_len0 : n = al0.length := by simp [h_al0]
-        simp [h_as, h_len0, ← suffixFrom_listLength_AppendListInf] ; exact h_as1
+        simp [h_as, h_len0, suffixFrom_listLength_AppendListInf] ; exact h_as1
       exact Automata.da_concat_to_muller_accept M0 acc0 M1 accSet1 as n h_acc0 h_acc1
     · intro h_acc
       obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc

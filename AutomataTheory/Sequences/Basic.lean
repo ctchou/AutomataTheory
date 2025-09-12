@@ -75,7 +75,17 @@ def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
 
 /- Some technical lemmas are proved below.
 -/
-variable {xl : List X} {xs xs' : ℕ → X}
+variable {xl xl' : List X} {xs xs' : ℕ → X}
+
+theorem nil_AppendListInf :
+    ([] : List X) ++ xs = xs := by
+  ext k ; simp [instAppendListInf, AppendListInf]
+
+theorem AppendListInf_assoc :
+    (xl ++ xl') ++ xs = xl ++ (xl' ++ xs) := by
+  ext k ; simp [instAppendListInf, AppendListInf]
+  rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < xl.length + xl'.length) ∨ ¬ k < xl.length + xl'.length by omega)
+    <;> grind
 
 theorem ofFn_eq_ofFn {m n n' : ℕ}
     (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
@@ -107,17 +117,46 @@ theorem appendListInf_elt_skip_list {n : ℕ} :
   simp [instAppendListInf, AppendListInf]
 
 theorem suffixFrom_listLength_AppendListInf :
-    xs = (xl ++ xs) <<< xl.length := by
+    (xl ++ xs) <<< xl.length = xs := by
   ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
+
+theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
+    (xs <<< j) (k - j) = xs k := by
+  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
 
 theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
     (xs <<< k) ⇊ (m - k) (n - k) = xs ⇊ m n := by
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
-theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
-    (xs <<< j) (k - j) = xs k := by
-  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+theorem length_FinSubseq {xs : ℕ → X} {m n : ℕ} :
+    (xs ⇊ m n).length = n - m := by
+  simp [instFinSubseq, FinSubseq]
+
+theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
+    (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
+  ext k x
+  rcases (show k < j - i ∨ ¬ k < j - i by omega) with h_k | h_k <;>
+    simp [instFinSubseq, FinSubseq, h_k]
+  · simp [(show i + k < n - m by omega), (show k < m + j - (m + i) by omega), (show i + k + m = k + (m + i) by omega)]
+  · simp [(show ¬ k < m + j - (m + i) by omega)]
+
+theorem extract_FinSubseq2 {xs : ℕ → X} {n i j : ℕ} (h : j ≤ n) :
+    (xs ⇊ 0 n).extract i j = xs ⇊ i j := by
+  simp [extract_FinSubseq2' (show j ≤ n - 0 by omega)]
+
+theorem extract_FinSubseq1 {xs : ℕ → X} {n i : ℕ} :
+    (xs ⇊ 0 n).extract i = xs ⇊ i n := by
+  simp [extract_FinSubseq2 (show n ≤ n by omega), length_FinSubseq]
+
+theorem finSubseq_append_finSubseq (xs : ℕ → X) {k m n : ℕ} (h_km : k ≤ m) (h_mn : m ≤ n) :
+    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
+  ext i x ; simp [instFinSubseq, FinSubseq, List.getElem?_append] ; grind
+
+theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
+    xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
+  rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
+  congr ; simp [instFinSubseq, FinSubseq]
 
 theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
     ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by
