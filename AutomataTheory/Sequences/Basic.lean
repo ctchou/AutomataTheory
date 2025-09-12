@@ -110,14 +110,23 @@ theorem suffixFrom_listLength_AppendListInf :
     xs = (xl ++ xs) <<< xl.length := by
   ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
 
+theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
+    (xs <<< j) (k - j) = xs k := by
+  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+
 theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
     (xs <<< k) ⇊ (m - k) (n - k) = xs ⇊ m n := by
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
-theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
-    (xs <<< j) (k - j) = xs k := by
-  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+theorem finSubseq_append_finSubseq (xs : ℕ → X) {k m n : ℕ} (h_km : k ≤ m) (h_mn : m ≤ n) :
+    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
+  ext i x ; simp [instFinSubseq, FinSubseq, List.getElem?_append] ; grind
+
+theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
+    xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
+  rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
+  congr ; simp [instFinSubseq, FinSubseq]
 
 theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
     ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by
