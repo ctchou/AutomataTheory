@@ -21,15 +21,6 @@ section ToBeMoved
 
 variable {X : Type*}
 
-theorem finSubseq_append_finSubseq (xs : ℕ → X) {k m n : ℕ} (h_km : k ≤ m) (h_mn : m ≤ n) :
-    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
-  ext i x ; simp [instFinSubseq, FinSubseq, getElem?_append] ; grind
-
-theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
-    xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
-  rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
-  congr ; simp [instFinSubseq, FinSubseq]
-
 variable {A : Type}
 
 def DA.RunFromOn (M : DA A) (s : M.State) (al : List A) : M.State :=
@@ -75,12 +66,16 @@ section ChouekaLemma
 
 variable {A : Type}
 
-def ChouekaLang (M : DA A) (acc : Set M.State) : Set (List A) :=
+def DA.ChouekaLang (M : DA A) (acc : Set M.State) : Set (List A) :=
   { x | ∃ y z, y ≠ [] ∧ z ≠ [] ∧ x = y ++ z ∧
     M.RunOn y ∈ acc ∧ M.RunOn z = M.RunOn x ∧
     ∀ z', z' <+: z → z' ≠ [] → z' ≠ z → M.RunOn z' ≠ M.RunOn (y ++ z') }
 
 variable {V : Set (List A)} (h_v : RegLang V)
   {M : DA A} [Finite M.State] {acc : Set M.State} (h_m : V∗ = M.toNA.AcceptedLang acc)
+
+theorem choueka_lang_omega_limit_subset_omega_power :
+    (M.ChouekaLang acc)↗ω ⊆ V^ω := by
+  sorry
 
 end ChouekaLemma
