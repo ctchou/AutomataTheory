@@ -73,12 +73,14 @@ end ToBeMoved
 
 section ChouekaLemma
 
-variable {A : Type} {V : Set (List A)} (h_v : RegLang V)
-  {M : DA A} [Finite M.State] {acc : Set M.State} (h_m : V∗ = M.toNA.AcceptedLang acc)
+variable {A : Type}
 
-def ChouekaLang : Set (List A) :=
-  { x | ∃ y z, y ≠ [] ∧ z ≠ [] ∧ x = y ++ z ∧ y ∈ V∗ ∧
-    M.RunOn z = M.RunOn x ∧
+def ChouekaLang (M : DA A) (acc : Set M.State) : Set (List A) :=
+  { x | ∃ y z, y ≠ [] ∧ z ≠ [] ∧ x = y ++ z ∧
+    M.RunOn y ∈ acc ∧ M.RunOn z = M.RunOn x ∧
     ∀ z', z' <+: z → z' ≠ [] → z' ≠ z → M.RunOn z' ≠ M.RunOn (y ++ z') }
+
+variable {V : Set (List A)} (h_v : RegLang V)
+  {M : DA A} [Finite M.State] {acc : Set M.State} (h_m : V∗ = M.toNA.AcceptedLang acc)
 
 end ChouekaLemma
