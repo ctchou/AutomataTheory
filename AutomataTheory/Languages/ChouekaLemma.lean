@@ -12,14 +12,12 @@ import AutomataTheory.Languages.OmegaRegLang
 This file proves the main lemma in Choueka's paper (see README for the reference).
 -/
 
-open Function Set List
+open Function Set List Filter
 open scoped Computability
 
 namespace Automata
 
 section ToBeMoved
-
-variable {X : Type*}
 
 variable {A : Type}
 
@@ -59,6 +57,20 @@ theorem da_acc_lang_iff_run_acc [Inhabited A] (M : DA A) (acc : Set M.State) (al
     constructor
     · exact da_fin_run_exists (M := M) al.length al.ExtendInf
     · simp [← da_run_on_to_det_run, h_acc]
+
+theorem alternating_subseq_exists {φ φ' : ℕ → ℕ}
+    (hm : StrictMono φ) (hi : Injective φ') (hr : ∀ n, φ' n < φ n) :
+    ∃ σ : ℕ → ℕ, StrictMono σ ∧ ∀ n, (φ ∘ σ) n < (φ' ∘ σ) (n + 1) := by
+  have h_step : ∀ n, ∃ m > n, φ n < φ' m := by
+    intro n
+    have h_inf : {m | m > n}.Infinite := by
+      apply infinite_of_forall_exists_gt ; intro k
+      use (k + n + 1) ; simp ; omega
+    sorry
+  choose f h_f h_φ using h_step
+  use (fun k ↦ f^[k] 0) ; constructor
+  · apply strictMono_nat_of_lt_succ ; simp [iterate_succ_apply', h_f]
+  · simp [iterate_succ_apply', h_φ]
 
 end ToBeMoved
 
