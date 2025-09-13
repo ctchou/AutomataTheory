@@ -74,22 +74,47 @@ theorem greater_subseq_lemma {φ φ' : ℕ → ℕ} (hi : Injective φ') :
   · apply strictMono_nat_of_lt_succ ; simp [iterate_succ_apply', h_f]
   · simp [iterate_succ_apply', h_φ]
 
+variable {X : Type*}
+
+theorem length_FinSubseq {xs : ℕ → X} {m n : ℕ} :
+    (xs ⇊ m n).length = n - m := by
+  simp [instFinSubseq, FinSubseq]
+
 end ToBeMoved
 
 section ChouekaLemma
 
 variable {A : Type}
 
-def DA.ChouekaLang (M : DA A) (acc : Set M.State) : Set (List A) :=
+def DA.ChouekaLang' (M : DA A) (acc : Set M.State) : Set (List A) :=
   { x | ∃ y z, y ≠ [] ∧ z ≠ [] ∧ x = y ++ z ∧
     M.RunOn y ∈ acc ∧ M.RunOn z = M.RunOn x ∧
     ∀ z', z' <+: z → z' ≠ [] → z' ≠ z → M.RunOn z' ≠ M.RunOn (y ++ z') }
+
+def DA.ChouekaLang (M : DA A) (acc : Set M.State) : Set (List A) :=
+  { al | ∃ m, 0 < m ∧ m < al.length ∧
+    M.RunOn (al.extract 0 m) ∈ acc ∧ M.RunOn (al.extract m al.length) = M.RunOn al ∧
+    ∀ k, m < k → k < al.length → M.RunOn (al.extract m k) ≠ M.RunOn (al.extract 0 k) }
 
 variable {V : Set (List A)} (h_v : RegLang V)
   {M : DA A} [Finite M.State] {acc : Set M.State} (h_m : V∗ = M.toNA.AcceptedLang acc)
 
 theorem choueka_lang_omega_limit_subset_omega_power :
     (M.ChouekaLang acc)↗ω ⊆ V^ω := by
+  intro as ; simp [instOmegaLimit, OmegaLimit, frequently_iff_strict_mono]
+  intro φ h_mono h_prefix
+  have : ∀ n, ∃ m, 0 < m ∧ m < φ n ∧
+      M.RunOn (as⇊ 0 m) ∈ acc ∧ M.RunOn (as⇊ m (φ n)) = M.RunOn (as⇊ 0 (φ n)) ∧
+      ∀ k, m < k → k < φ n → M.RunOn (as⇊ m k) ≠ M.RunOn (as⇊ 0 m) := by
+    intro n
+    obtain ⟨y, z, h_y0, h_z0, h_yz, h_acc, h_run, h_run'⟩ := h_prefix n
+    let m := y.length
+    have : y.length + z.length = φ n := by
+      simp [← length_append, ← h_yz, length_FinSubseq]
+    simp [← finSubseq_append_finSubseq as (show 0 ≤ y.length by omega) (show y.length ≤ (φ n) by omega)] at h_yz
+    obtain ⟨_, _⟩ := append_inj h_yz (by simp [length_FinSubseq])
+    --use y.length
+    sorry
   sorry
 
 end ChouekaLemma
