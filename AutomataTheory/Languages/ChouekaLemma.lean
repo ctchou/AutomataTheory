@@ -58,15 +58,17 @@ theorem da_acc_lang_iff_run_acc [Inhabited A] (M : DA A) (acc : Set M.State) (al
     · exact da_fin_run_exists (M := M) al.length al.ExtendInf
     · simp [← da_run_on_to_det_run, h_acc]
 
-theorem alternating_subseq_exists {φ φ' : ℕ → ℕ}
-    (hm : StrictMono φ) (hi : Injective φ') (hr : ∀ n, φ' n < φ n) :
+theorem greater_subseq_lemma {φ φ' : ℕ → ℕ} (hi : Injective φ') :
     ∃ σ : ℕ → ℕ, StrictMono σ ∧ ∀ n, (φ ∘ σ) n < (φ' ∘ σ) (n + 1) := by
   have h_step : ∀ n, ∃ m > n, φ n < φ' m := by
     intro n
     have h_inf : {m | m > n}.Infinite := by
       apply infinite_of_forall_exists_gt ; intro k
       use (k + n + 1) ; simp ; omega
-    sorry
+    have h_inf' := Infinite.image (injOn_of_injective hi) h_inf
+    have h_fin : {m | m ≤ φ n}.Finite := by exact finite_le_nat (φ n)
+    obtain ⟨k, ⟨m, h_m, rfl⟩, h_m'⟩ := Infinite.exists_notMem_finite h_inf' h_fin
+    simp at h_m h_m' ; use m
   choose f h_f h_φ using h_step
   use (fun k ↦ f^[k] 0) ; constructor
   · apply strictMono_nat_of_lt_succ ; simp [iterate_succ_apply', h_f]
