@@ -104,8 +104,8 @@ theorem choueka_lang_omega_limit_subset_omega_power :
   intro as ; simp [instOmegaLimit, OmegaLimit, frequently_iff_strict_mono]
   intro φ h_mono h_prefix
   have : ∀ n, ∃ m, 0 < m ∧ m < φ n ∧
-      M.RunOn (as⇊ 0 m) ∈ acc ∧ M.RunOn (as⇊ m (φ n)) = M.RunOn (as⇊ 0 (φ n)) ∧
-      ∀ k, m < k → k < φ n → M.RunOn (as⇊ m k) ≠ M.RunOn (as⇊ 0 m) := by
+      M.RunOn (as ⇊ 0 m) ∈ acc ∧ M.RunOn (as ⇊ m (φ n)) = M.RunOn (as ⇊ 0 (φ n)) ∧
+      ∀ k, m < k → k < φ n → M.RunOn (as ⇊ m k) ≠ M.RunOn (as ⇊ 0 k) := by
     intro n
     obtain ⟨y, z, h_y0, h_z0, h_yz, h_acc, h_run, h_run'⟩ := h_prefix n
     let m := y.length
