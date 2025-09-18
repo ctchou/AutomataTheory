@@ -8,6 +8,7 @@ import Mathlib.Algebra.Order.Ring.Nat
 import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Set.Finite.Basic
 import Mathlib.Data.Set.Lattice
+import Mathlib.Tactic
 
 /-!
 This file proves a Ramsey theorem on infinite graphs.

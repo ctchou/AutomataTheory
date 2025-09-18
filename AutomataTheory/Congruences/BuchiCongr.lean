@@ -173,16 +173,9 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
       have := h_mono (show m < m + 1 by omega)
       omega
     have h_ne2 : Finset.Nonempty {φ m, φ (m + 1)} := by apply Finset.card_pos.mp ; omega
-    have h_min : Finset.min' {φ m, φ (m + 1)} h_ne2 = φ m := by
-      have := h_mono (show m < m + 1 by omega)
-      have := Finset.min'_le {φ m, φ (m + 1)} (φ m) (by simp)
-      have := Finset.min'_mem {φ m, φ (m + 1)} h_ne2
-      simp at this ; omega
-    have h_max : Finset.max' {φ m, φ (m + 1)} h_ne2 = φ (m + 1) := by
-      have := h_mono (show m < m + 1 by omega)
-      have := Finset.le_max' {φ m, φ (m + 1)} (φ (m + 1)) (by simp)
-      have := Finset.max'_mem {φ m, φ (m + 1)} h_ne2
-      simp at this ; omega
+    have := h_mono (show m < m + 1 by omega)
+    have h_min : Finset.min' {φ m, φ (m + 1)} h_ne2 = φ m := by simp ; omega
+    have h_max : Finset.max' {φ m, φ (m + 1)} h_ne2 = φ (m + 1) := by simp ; omega
     have h_color := h_color {φ m, φ (m + 1)} h_card2 (by intro x ; simp ; grind)
     simp [color, h_min, h_max] at h_color
     simp [Congruence.EqvCls, h_color]
