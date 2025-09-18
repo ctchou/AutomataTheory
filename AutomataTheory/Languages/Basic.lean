@@ -157,6 +157,12 @@ theorem subset_IterStar_epsilon (L : Set (List A)) :
     {[]} ⊆ L∗ := by
   exact subset_IterStar_IterFin L 0
 
+theorem subset_IterStar_self (L : Set (List A)) :
+    L ⊆ L∗ := by
+  have := subset_IterStar_IterFin L 1
+  simp [instIterFin, IterFin, epsilon_ConcatFin] at this
+  exact this
+
 theorem IterFin_seg_exists {L : Set (List A)} {m : ℕ} {al : List A} (h : al ∈ L ^ m) :
     ∃ n ≤ m, ∃ φ : ℕ → ℕ, StrictMonoOn φ {k | k < n + 1} ∧ φ 0 = 0 ∧ φ n = al.length ∧
       ∀ k < n, al.extract (φ k) (φ (k + 1)) ∈ L := by
