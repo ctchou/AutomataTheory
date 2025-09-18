@@ -145,7 +145,7 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
 
 lemma ramsey_lemma {C : Type*} {cs : Set C} {φ : ℕ → ℕ} {col : ℕ → ℕ → C}
     (h_fin : cs.Finite) (h_mono : StrictMono φ) (h_col : ∀ i j, i < j → col (φ i) (φ j) ∈ cs) :
-    ∃ c ∈ cs, ∃ φ' : ℕ → ℕ, StrictMono φ' ∧ ∀ i j, i < j → col (φ' i) (φ' i) = c := by
+    ∃ c ∈ cs, ∃ ξ : ℕ → ℕ, StrictMono ξ ∧ ∀ i j, i < j → col (φ (ξ i)) (φ (ξ i)) = c := by
   sorry
 
 theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
@@ -153,19 +153,28 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     {V : Set (List A)} (h_lang : M.toNA.AcceptedLang acc = V∗) :
     V^ω ⊆ V∗ * (M.ChouekaLang acc)↗ω := by
   rintro as ⟨φ, h_φ_mono, h_φ_0, h_φ_V⟩
-  have h_φ_acc : ∀ m, M.RunOn (as⇊ (φ m) (φ (m + 1))) ∈ acc := by
-    intro m ; simp [← da_acc_lang_iff_run_acc, h_lang]
-    apply subset_IterStar_self
-    exact h_φ_V m
-  let Vertex := {n // n ∈ range φ}
-  let Color := { s // s ∈ acc}
-  let color (e : Finset Vertex) : Color :=
-    if h : e.Nonempty then M.RunOn (as ⇊ (φ (e.min' h)) (φ (e.max' h))) else M.init
-  obtain ⟨s, ns, h_ns, h_color⟩ := inf_graph_ramsey color
-  obtain ⟨σ, h_mono', rfl⟩ := strict_mono_of_infinite h_ns
-  use (as ⇊ 0 (φ (σ 0))), as <<< (φ (σ 0))
-  simp [appendListInf_FinSubseq_SuffixFrom]
-
+  have h_kstar : ∀ i j, i ≤ j → (as⇊ (φ i) (φ (j))) ∈ V∗ := by
+    intro i j h_ij ; simp [instIterStar, IterStar]
+    use (j - i) ; generalize h_n : j - i = n
+    induction' n with n h_ind generalizing i j <;> simp [instIterFin, IterFin]
+    · simp [empty_FinSubseq, (show i = j by omega)]
+    use (as ⇊ (φ i) (φ (j - 1))), (as ⇊ (φ (j - 1)) (φ j)) ; constructorm* _ ∧ _
+    · exact h_ind i (j - 1) (by omega) (by omega)
+    · specialize h_φ_V (j - 1)
+      simp [(show j - 1 + 1 = j by omega)] at h_φ_V
+      exact h_φ_V
+    · symm ; apply append_FinSubseq_FinSubseq <;>
+        apply StrictMono.monotone h_φ_mono <;> omega
+  let color (i j : ℕ) : M.State := M.RunOn (as ⇊ i j)
+  have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by
+    intro i j h_ij ; simp [color, ← da_acc_lang_iff_run_acc, h_lang]
+    apply h_kstar ; omega
+  obtain ⟨s, h_acc, ξ, h_ξ_mono, h_ξ_color⟩ := ramsey_lemma (acc.toFinite) h_φ_mono h_color
+  use (as ⇊ 0 (φ (ξ 0))), (as <<< (φ (ξ 0)))
+  simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
+  · specialize h_kstar 0 (ξ 0) (by omega)
+    simp [h_φ_0] at h_kstar
+    exact h_kstar
   sorry
 
 end ChouekaLemma
