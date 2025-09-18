@@ -140,14 +140,26 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
     simp [← da_run_from_on_append, h5]
     exact h_acc (σ n)
 
-#check inf_graph_ramsey
+-- ∀ {Color : Type u_1} {Vertex : Type u_2} [Finite Color] (color : Edge → Color) [Infinite Vertex],
+--   ∃ c s, s.Infinite ∧ ∀ (e : Edge), Finset.card e = 2 → ↑e ⊆ s → color e = c
 
-theorem choueka_lang_omega_power_subset_omega_limit
+lemma ramsey_lemma {C : Type*} {cs : Set C} {φ : ℕ → ℕ} {col : ℕ → ℕ → C}
+    (h_fin : cs.Finite) (h_mono : StrictMono φ) (h_col : ∀ i j, i < j → col (φ i) (φ j) ∈ cs) :
+    ∃ c ∈ cs, ∃ φ' : ℕ → ℕ, StrictMono φ' ∧ ∀ i j, i < j → col (φ' i) (φ' i) = c := by
+  sorry
+
+theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     {M : DA A} [Finite M.State] {acc : Set M.State}
     {V : Set (List A)} (h_lang : M.toNA.AcceptedLang acc = V∗) :
     V^ω ⊆ V∗ * (M.ChouekaLang acc)↗ω := by
-  rintro as ⟨φ, h_mono, h_init, h_rest⟩
-  let color (e : Finset ℕ) : M.State :=
+  rintro as ⟨φ, h_φ_mono, h_φ_0, h_φ_V⟩
+  have h_φ_acc : ∀ m, M.RunOn (as⇊ (φ m) (φ (m + 1))) ∈ acc := by
+    intro m ; simp [← da_acc_lang_iff_run_acc, h_lang]
+    apply subset_IterStar_self
+    exact h_φ_V m
+  let Vertex := {n // n ∈ range φ}
+  let Color := { s // s ∈ acc}
+  let color (e : Finset Vertex) : Color :=
     if h : e.Nonempty then M.RunOn (as ⇊ (φ (e.min' h)) (φ (e.max' h))) else M.init
   obtain ⟨s, ns, h_ns, h_color⟩ := inf_graph_ramsey color
   obtain ⟨σ, h_mono', rfl⟩ := strict_mono_of_infinite h_ns
