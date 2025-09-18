@@ -129,6 +129,10 @@ theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
+theorem suffixFrom_FinSubseq0 {k n : ℕ} :
+    (xs <<< k) ⇊ 0 n = xs ⇊ k (k + n) := by
+  simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom]
+
 theorem length_FinSubseq {xs : ℕ → X} {m n : ℕ} :
     (xs ⇊ m n).length = n - m := by
   simp [instFinSubseq, FinSubseq]
