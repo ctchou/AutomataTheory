@@ -13,7 +13,7 @@ It is imported directly or indirectly by all other files in AutomataTheory excep
 in AutomataTheort.Mathlib.
 -/
 
-open Function Set Option Filter
+open Function Set List Option Filter
 
 section Sequences
 
@@ -129,9 +129,25 @@ theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
   simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
     (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
 
+theorem suffixFrom_FinSubseq0 {k n : ℕ} :
+    (xs <<< k) ⇊ 0 n = xs ⇊ k (k + n) := by
+  simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom]
+
 theorem length_FinSubseq {xs : ℕ → X} {m n : ℕ} :
     (xs ⇊ m n).length = n - m := by
   simp [instFinSubseq, FinSubseq]
+
+theorem empty_FinSubseq {n : ℕ} :
+    xs ⇊ n n = [] := by
+  simp [instFinSubseq, FinSubseq]
+
+theorem append_FinSubseq_FinSubseq {k m n : ℕ} (h1 : k ≤ m) (h2 : m ≤ n) :
+    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
+  ext i x
+  rcases (show i < m - k ∨ ¬ i < (m - k) by omega) with h_i | h_i <;>
+    simp [h_i, getElem?_append, length_FinSubseq] <;> simp [instFinSubseq, FinSubseq]
+  · omega
+  · simp [(show i - (m - k) + m = i + k by omega)] ; omega
 
 theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
     (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
