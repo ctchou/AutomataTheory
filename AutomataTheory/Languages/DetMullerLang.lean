@@ -150,8 +150,9 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
       exact Automata.da_concat_to_muller_accept M0 acc0 M1 accSet1 as n h_acc0 h_acc1
     · intro h_acc
       obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
-      use (List.ofFn (fun k : Fin n ↦ as k)), (as <<< n)
-      simp [h_acc1, ← appendListInf_ofFnPrefix_SuffixFrom] ; use n, as
+      use (as ⇊ 0 n), (as <<< n)
+      simp [h_acc1, appendListInf_FinSubseq_SuffixFrom]
+      use n, as ; simp [h_acc0] ; rfl
 
 /-- Every deterministic Muller language is an ω-regular language.
 -/

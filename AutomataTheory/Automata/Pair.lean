@@ -343,9 +343,9 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     let nth_sa := Nat.nth (fun k ↦ ss k = sa)
     have h_nth_sa : ∀ n, ss (nth_sa n) = sa := by exact Nat.nth_mem_of_infinite h_inf
     have h_mono : StrictMono nth_sa := by exact Nat.nth_strictMono h_inf
-    use (List.ofFn (fun k : Fin (nth_sa 0) ↦ as k)), (as <<< (nth_sa 0))
-    simp [← appendListInf_ofFnPrefix_SuffixFrom] ; constructor
-    · use ss ; simp [NA.PairPath, h_nth_sa, h_next]
+    use (as ⇊ 0 (nth_sa 0)), (as <<< (nth_sa 0))
+    simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
+    · use ss ; simp [NA.PairPath, h_nth_sa, instFinSubseq, FinSubseq, h_next]
     use (fun n ↦ nth_sa n - nth_sa 0) ; simp [instFinSubseq, FinSubseq] ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn

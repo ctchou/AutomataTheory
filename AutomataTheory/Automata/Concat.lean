@@ -378,9 +378,10 @@ theorem acc_omega_lang_concat :
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc
     have h_s1_ex : ∃ n s1, ss n = inr s1 := by use n, s1 ; simp [h_s1]
     obtain ⟨n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_inf_run.mp ⟨h_run, h_s1_ex⟩
-    use (List.ofFn (fun k : Fin n ↦ as k)), (as <<< n)
-    constructor <;> [skip ; constructor]
-    · use n, as ; simp ; use ss0
+    use (as ⇊ 0 n), (as <<< n) ; simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
+    · use n, as ; constructor
+      · use ss0
+      · rfl
     · use ss1 ; simp [h_run1]
       have h_ss1_ev : ∀ᶠ k in atTop, ss k = inr (ss1 (k - n)) := by
         simp only [eventually_atTop] ; use (n + 1)
@@ -389,7 +390,6 @@ theorem acc_omega_lang_concat :
       intro k ; obtain ⟨j, h_j, ⟨t1, h_t1_acc, h_t1⟩, h_j_ss1⟩ := h_ss1_acc (n + k)
       use (j - n) ; rw [← h_t1, inr.inj_iff] at h_j_ss1
       simpa [(by omega : k ≤ j - n), ← h_j_ss1]
-    · exact appendListInf_ofFnPrefix_SuffixFrom
   · rintro ⟨al0, as1, ⟨n, as0, ⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, h_al0⟩, ⟨ss1, h_run1, h_acc1⟩, h_as⟩
     let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
     use ss  ; constructor

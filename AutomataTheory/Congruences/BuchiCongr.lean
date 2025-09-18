@@ -186,6 +186,6 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
     have h_color := h_color {φ m, φ (m + 1)} h_card2 (by intro x ; simp ; grind)
     simp [color, h_min, h_max] at h_color
     simp [Congruence.EqvCls, h_color]
-  · simp [instFinSubseq, FinSubseq, ← appendListInf_ofFnPrefix_SuffixFrom]
+  · simp [appendListInf_FinSubseq_SuffixFrom]
 
 end BuchiCongrFinite
