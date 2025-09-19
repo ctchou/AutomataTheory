@@ -15,6 +15,8 @@ This file proves the main lemma in Choueka's paper (see README for the reference
 open Function Set List Filter
 open scoped Computability
 
+open Classical
+
 namespace Automata
 
 section ToBeMoved
@@ -145,7 +147,7 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
 
 lemma ramsey_lemma {C : Type*} {cs : Set C} {φ : ℕ → ℕ} {col : ℕ → ℕ → C}
     (h_fin : cs.Finite) (h_mono : StrictMono φ) (h_col : ∀ i j, i < j → col (φ i) (φ j) ∈ cs) :
-    ∃ c ∈ cs, ∃ ξ : ℕ → ℕ, StrictMono ξ ∧ ∀ i j, i < j → col (φ (ξ i)) (φ (ξ i)) = c := by
+    ∃ c ∈ cs, ∃ σ : ℕ → ℕ, StrictMono σ ∧ ∀ i j, i < j → col (φ (σ i)) (φ (σ j)) = c := by
   sorry
 
 theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
@@ -169,12 +171,34 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by
     intro i j h_ij ; simp [color, ← da_acc_lang_iff_run_acc, h_lang]
     apply h_kstar ; omega
-  obtain ⟨s, h_acc, ξ, h_ξ_mono, h_ξ_color⟩ := ramsey_lemma (acc.toFinite) h_φ_mono h_color
-  use (as ⇊ 0 (φ (ξ 0))), (as <<< (φ (ξ 0)))
+  obtain ⟨s, h_acc, σ, h_σ_mono, h_σ_color⟩ := ramsey_lemma (acc.toFinite) h_φ_mono h_color
+  simp [color] at h_σ_color
+  use (as ⇊ 0 (φ (σ 0))), (as <<< (φ (σ 0)))
   simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
-  · specialize h_kstar 0 (ξ 0) (by omega)
+  · specialize h_kstar 0 (σ 0) (by omega)
     simp [h_φ_0] at h_kstar
     exact h_kstar
+  apply frequently_iff_strict_mono.mpr
+  simp [suffixFrom_FinSubseq0]
+  let p k j := φ (σ k) < j ∧ j ≤ φ (σ (k + 1)) ∧ M.RunOn (as ⇊ (φ (σ k)) j) = M.RunOn (as ⇊ (φ (σ 0)) j)
+  have h_p_ex : ∀ k, ∃ j, p k j := by
+    intro k ; use (φ (σ (k + 1)))
+    simp [p, h_φ_mono <| h_σ_mono (show k < k + 1 by omega)]
+    have := h_σ_color k (k + 1) (by omega)
+    have := h_σ_color 0 (k + 1) (by omega)
+    simp_all
+  let ξ k := Nat.find (h_p_ex k)
+  have h_ξ_spec : ∀ k, p k (ξ k) := by intro k ; exact Nat.find_spec (h_p_ex k)
+  have h_ξ_min : ∀ k j, j < ξ k → ¬ p k j := by intro k j h_j ; exact Nat.find_min (h_p_ex k) h_j
+  use (fun k ↦ ξ (k + 1) - φ (σ 0)) ; constructor
+  · sorry
+  intro k ; use (φ (σ (k + 1)) - φ (σ 0))
+  simp [-extract_eq_drop_take, length_FinSubseq]
   sorry
+
+  -- have h_ξ : ∀ k, φ (σ k) < ξ k ∧ ξ k ≤ φ (σ (k + 1)) ∧
+  --     M.RunOn (as ⇊ (φ (σ k)) (ξ k)) = M.RunOn (as ⇊ (φ (σ 0)) (ξ k)) ∧
+  --     ∀ i, φ (σ k) < i ∧ i ≤ φ (σ (k + 1)) → ¬ M.RunOn (as ⇊ (φ (σ k)) i) = M.RunOn (as ⇊ (φ (σ 0)) i) := by
+  --   sorry
 
 end ChouekaLemma
