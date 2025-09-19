@@ -193,12 +193,20 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   use (fun k ↦ ξ (k + 1) - φ (σ 0)) ; constructor
   · sorry
   intro k ; use (φ (σ (k + 1)) - φ (σ 0))
-  simp [-extract_eq_drop_take, length_FinSubseq]
-  sorry
-
-  -- have h_ξ : ∀ k, φ (σ k) < ξ k ∧ ξ k ≤ φ (σ (k + 1)) ∧
-  --     M.RunOn (as ⇊ (φ (σ k)) (ξ k)) = M.RunOn (as ⇊ (φ (σ 0)) (ξ k)) ∧
-  --     ∀ i, φ (σ k) < i ∧ i ≤ φ (σ (k + 1)) → ¬ M.RunOn (as ⇊ (φ (σ k)) i) = M.RunOn (as ⇊ (φ (σ 0)) i) := by
-  --   sorry
+  have h_k1_0 := h_φ_mono <| h_σ_mono (show 0 < k + 1 by omega)
+  obtain ⟨h_k1_ξ, h_k1_ξ', h_k1_run⟩ := h_ξ_spec (k + 1)
+  have h1 : φ (σ (k + 1)) - φ (σ 0) < ξ (k + 1) - φ (σ 0) := by omega
+  have h2 : φ (σ 0) + (ξ (k + 1) - φ (σ 0)) = ξ (k + 1) := by omega
+  have h3 : φ (σ 0) + (φ (σ (k + 1)) - φ (σ 0)) = φ (σ (k + 1)) := by omega
+  simp [-extract_eq_drop_take, length_FinSubseq, h_k1_0, h1]
+  rw [h2]
+  simp [-extract_eq_drop_take, extract_FinSubseq2' (le_of_lt h1), extract_FinSubseq2']
+  rw [h2, h3]
+  simp [-extract_eq_drop_take, h_k1_run, h_σ_color 0 (k + 1) (by omega), h_acc]
+  intro j h_j1 h_j2
+  have h_j_min := h_ξ_min (k + 1) (φ (σ 0) + j) (by omega)
+  simp [p] at h_j_min
+  specialize h_j_min (by omega) (by omega)
+  simp [-extract_eq_drop_take, extract_FinSubseq2' (le_of_lt h_j2), h3, h_j_min]
 
 end ChouekaLemma
