@@ -191,7 +191,12 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   have h_ξ_spec : ∀ k, p k (ξ k) := by intro k ; exact Nat.find_spec (h_p_ex k)
   have h_ξ_min : ∀ k j, j < ξ k → ¬ p k j := by intro k j h_j ; exact Nat.find_min (h_p_ex k) h_j
   use (fun k ↦ ξ (k + 1) - φ (σ 0)) ; constructor
-  · sorry
+  · intro j k h_jk ; simp
+    obtain ⟨_, _, _⟩ := h_ξ_spec (j + 1)
+    obtain ⟨_, _, _⟩ := h_ξ_spec (k + 1)
+    have := h_φ_mono <| h_σ_mono (show 0 < j + 1 by omega)
+    have := StrictMono.monotone h_φ_mono <| StrictMono.monotone h_σ_mono (show j + 1 + 1 ≤ k + 1 by omega)
+    omega
   intro k ; use (φ (σ (k + 1)) - φ (σ 0))
   have h_k1_0 := h_φ_mono <| h_σ_mono (show 0 < k + 1 by omega)
   obtain ⟨h_k1_ξ, h_k1_ξ', h_k1_run⟩ := h_ξ_spec (k + 1)
