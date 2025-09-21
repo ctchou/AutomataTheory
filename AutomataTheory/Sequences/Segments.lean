@@ -27,6 +27,16 @@ noncomputable def Segment (φ : ℕ → ℕ) (k : ℕ) : ℕ :=
 
 variable {φ : ℕ → ℕ}
 
+theorem strict_mono_infinite (hm : StrictMono φ) :
+    (range φ).Infinite := by
+  exact infinite_range_of_injective hm.injective
+
+theorem infinite_strict_mono {ns : Set ℕ} (h : ns.Infinite) :
+    ∃ φ : ℕ → ℕ, StrictMono φ ∧ range φ = ns := by
+  use Nat.nth (· ∈ ns) ; constructor
+  · exact Nat.nth_strictMono h
+  · exact Nat.range_nth_of_infinite h
+
 lemma nth_succ_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
     ∀ k < Nat.nth p (n + 1) - Nat.nth p n, k > 0 → ¬ p (k + Nat.nth p n) := by
   intro k h_k1 h_k0 h_p_k
@@ -35,10 +45,6 @@ lemma nth_succ_gap {p : ℕ → Prop} (hf : (setOf p).Infinite) (n : ℕ) :
   have h_n_m : n < m := by apply (Nat.nth_lt_nth hf).mp ; omega
   have h_m_n : m < n + 1 := by apply (Nat.nth_lt_nth hf).mp ; omega
   omega
-
-theorem strict_mono_infinite (hm : StrictMono φ) :
-    (range φ).Infinite := by
-  exact infinite_range_of_injective hm.injective
 
 -- The following proof is due to Kyle Miller.
 theorem nth_of_strict_mono (hm : StrictMono φ) (n : ℕ) :
