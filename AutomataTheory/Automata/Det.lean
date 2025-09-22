@@ -40,6 +40,16 @@ def DA.DetRun (M : DA A) (as : ℕ → A) : ℕ → M.State
   | 0 => M.init
   | k + 1 => M.next (DetRun M as k) (as k)
 
+/-- The state of `M` after inputting `al` starting from state `s`.
+-/
+def DA.RunFromOn (M : DA A) (s : M.State) (al : List A) : M.State :=
+  al.foldl M.next s
+
+/-- The state of `M` after inputting `al` starting from the initial state.
+-/
+def DA.RunOn (M : DA A) : List A → M.State :=
+  M.RunFromOn M.init
+
 variable {M : DA A}
 
 /-- A `DA` has an infinite run on any infinite input.
@@ -74,6 +84,47 @@ theorem da_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
     simp [DA.toNA] at h_next'
     have h_ss_k := h_ind (by omega)
     simpa [DA.DetRun, ← h_ss_k]
+
+/-- Running on `al1 ++ al2` starting from `s` is the same as running
+on `al1` starting from `s` and then running on `al2` from the reached state.
+-/
+theorem da_run_from_on_append (M : DA A) (s : M.State) (al1 al2 : List A) :
+    M.RunFromOn s (al1 ++ al2) = M.RunFromOn (M.RunFromOn s al1) al2 := by
+  simp only [DA.RunFromOn, List.foldl_append]
+
+/-- Relatung `DA.RunOn` and `DA.DetRun`.
+-/
+theorem da_run_on_of_det_run (M : DA A) (as : ℕ → A) (n : ℕ) :
+    M.RunOn (as ⇊ 0 n) = M.DetRun as n := by
+  induction' n with n h_ind
+  · simp [DA.DetRun, DA.RunOn, DA.RunFromOn, instFinSubseq, FinSubseq]
+  have h1 := finSubseq_succ_right as (show 0 ≤ n by omega)
+  rw [DA.RunOn, DA.DetRun, ← h_ind, h1, da_run_from_on_append] ; rfl
+
+/-- A technical result for extending a finite run to an infinite run.
+-/
+theorem da_run_on_to_det_run [Inhabited A] (M : DA A) (al : List A) :
+    M.RunOn al = M.DetRun al.ExtendInf al.length := by
+  rw [← da_run_on_of_det_run M al.ExtendInf al.length]
+  congr ; ext i a ; simp [instFinSubseq, FinSubseq, List.ExtendInf]
+
+/-- A finite word `al` is accepted by `M` if and only if `M` reaches an
+accepting state after running on `al` starting from the initial state.
+-/
+theorem da_acc_lang_iff_run_acc [Inhabited A] (M : DA A) (acc : Set M.State) (al : List A) :
+    al ∈ M.toNA.AcceptedLang acc ↔ M.RunOn al ∈ acc := by
+  constructor
+  · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, rfl⟩
+    have h0 := da_fin_run_unique h_run n (by omega)
+    have h1 := da_run_on_of_det_run M as n
+    simp [instFinSubseq, FinSubseq] at h1
+    simp [h1, ← h0, h_acc]
+  · intro h_acc
+    use al.length, al.ExtendInf ; simp [List.ExtendInf]
+    use (M.DetRun al.ExtendInf)
+    constructor
+    · exact da_fin_run_exists (M := M) al.length al.ExtendInf
+    · simp [← da_run_on_to_det_run, h_acc]
 
 end DetAutomataBasic
 
