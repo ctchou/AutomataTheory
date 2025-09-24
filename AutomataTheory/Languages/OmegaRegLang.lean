@@ -6,6 +6,7 @@ Authors: Ching-Tsun Chou
 
 import AutomataTheory.Automata.OI2
 import AutomataTheory.Congruences.BuchiCongr
+import AutomataTheory.Languages.ChouekaLemma
 
 /-!
 This file proves various closure properties of ω-regular langauges.
@@ -14,6 +15,7 @@ to have a finite state type.
 -/
 
 open Function Set Filter Sum
+open scoped Computability
 
 section OmegaRegLang
 
@@ -237,5 +239,16 @@ theorem omega_reg_lang_compl [Inhabited A] {L : Set (ℕ → A)}
   obtain ⟨M, acc, h_fin, rfl⟩ := h
   exact omega_reg_lang_fin_idx_congr_compl (c := M.BuchiCongr acc)
     Automata.buchi_congr_finite_index Automata.buchi_congr_ample Automata.buchi_congr_saturates
+
+/-- The Choueka lemma, which converts an ω-power to the concatenation of a
+Kleene star followed by an ω-limit, the latter of which is a natural fit for
+deterministic Muller automata.
+-/
+theorem choueka_lemma [Inhabited A] {L : Set (List A)}
+    (h : RegLang L) : ∃ L' : Set (List A), RegLang L' ∧ L^ω = L∗  * L'↗ω := by
+  obtain ⟨M, acc, h_fin, h_lang⟩ := reg_lang_det_accept <| reg_lang_iter h
+  use (M.ChouekaLang acc) ; constructor
+  · apply Automata.choueka_lang_regular
+  · apply Automata.choueka_lang_omega_power_eq_omega_limit h_lang.symm
 
 end OmegaRegLang
