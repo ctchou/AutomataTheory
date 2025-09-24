@@ -12,8 +12,8 @@ of languages and $\omega$-languages.
 Although our ultimate aim is to formalize the theory of finite
 automata and the languages and $\omega$-languages they accept,
 finiteness assumptions are made only when necessary.
-The main formalized results can be found in `AutomataTheory/Languages/RegLang.lean`
-and `AutomataTheory/Languages/OmegaRegLang.lean`.
+The main results can be found in `AutomataTheory/Languages/RegLang.lean`,
+`AutomataTheory/Languages/OmegaRegLang.lean`, and `AutomataTheory/Languages/DetMullerLang.lean`.
 
 This project was started on 2025-04-03 in a different repo and
 migrated to this stand-alone repo on 2025-04-27.
@@ -74,6 +74,14 @@ several infix and postfix operators.
 The main reference for the above results is a paper by Choueka [2].  In particular,
 the last result is proved using Choueka's "flag construction", which is rather subtle.
 
+*Update 2025-09-24:* McNaughton's theorem [5] is proved.  It states that
+an $\omega$-language is $\omega$-regular if and only if it is deterministic Muller.
+The proof follows Choueka [2] and depends on a key lemma (see `AutomataTheory/Languages/DetMullerLang.lean`)
+asserting that for any regular language $V$, there exists another regular language $U$
+such that $V^\omega = V^\ast \cdot U\nearrow^\omega$, where $U\nearrow^\omega$ is
+the $\omega$-limit of $U$.  As part of this effort, more closure properties of
+regular languages are also proved.
+
 [1] Büchi, J.R. (1962). "On a Decision Method in Restricted Second Order Arithmetic".
     The Collected Works of J. Richard Büchi. Stanford: Stanford University Press. pp. 425–435.
 
@@ -84,6 +92,8 @@ the last result is proved using Choueka's "flag construction", which is rather s
     Handbook of Theoretical Computer Science. Elsevier. pp. 133–164.
 
 [4] https://en.wikipedia.org/wiki/Büchi_automaton#Complementation
+
+[5] https://en.wikipedia.org/wiki/McNaughton%27s_theorem
 
 --------------------------------
 
