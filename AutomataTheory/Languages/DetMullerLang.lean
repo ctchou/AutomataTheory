@@ -15,6 +15,7 @@ to have finite state types.
 -/
 
 open Function Set
+open scoped Computability
 
 section DetMullerLang
 
@@ -168,5 +169,28 @@ theorem det_muller_lang_imp_omega_reg_lang [Inhabited A] {L : Set (ℕ → A)}
     simp [h_reg]
   · apply omega_reg_lang_compl ; apply omega_reg_lang_omega_limit
     simp [h_reg]
+
+/-- Every deterministic Muller language is an ω-regular language.
+-/
+theorem omega_reg_lang_imp_det_muller_lang [Inhabited A] {L : Set (ℕ → A)}
+    (h : OmegaRegLang L) : DetMullerLang L := by
+  obtain ⟨n, U, V, h_reg, rfl⟩ := omega_reg_lang_iff_finite_union_form.mp h
+  rw [← biUnion_univ] ; apply det_muller_lang_biUnion
+  intro i _ ; apply det_muller_lang_concat
+  · exact (h_reg i).1
+  · have h_v := (h_reg i).2
+    obtain ⟨W, h_w, h_omega⟩ := choueka_lemma h_v
+    rw [h_omega] ; apply det_muller_lang_concat
+    · exact reg_lang_iter h_v
+    · exact det_muller_lang_omega_limit h_w
+
+/-- McNaughton's theorem: An ω-language is ω-regular
+if and only if it is deterministic Muller.
+-/
+theorem omega_reg_lang_iff_det_muller_lang [Inhabited A] {L : Set (ℕ → A)} :
+    OmegaRegLang L ↔ DetMullerLang L := by
+  constructor
+  · intro h ; exact omega_reg_lang_imp_det_muller_lang h
+  · intro h ; exact det_muller_lang_imp_omega_reg_lang h
 
 end DetMullerLang
