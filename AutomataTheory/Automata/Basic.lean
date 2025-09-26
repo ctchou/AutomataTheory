@@ -59,7 +59,7 @@ def NA.FinAccept (M : NA A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
 /-- The language accepted by an automaton.
 -/
 def NA.AcceptedLang (M : NA A) (acc : Set M.State) : Set (List A) :=
-  { al | ∃ n as, M.FinAccept acc n as ∧ al = List.ofFn (fun k : Fin n ↦ as k) }
+  { al | ∃ n as, M.FinAccept acc n as ∧ as ⇊ 0 n = al }
 
 /-- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
 in the definitions about finite runs above.  In the following we give alternative
@@ -123,7 +123,7 @@ is inhabited, the definitions using infinite sequences and those using finite se
 actually define the same notion of the accepted language of an automaton.
 -/
 theorem na_AcceptedLang_of_FinAccept' [Inhabited A] :
-    M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ al = List.ofFn as } := by
+    M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ List.ofFn as = al } := by
   rw [NA.AcceptedLang, Set.ext_iff] ; intro al ; constructor
   · rintro ⟨n, as, h_acc, h_al⟩
     use n, (fun k : Fin n ↦ as k)
@@ -134,7 +134,7 @@ theorem na_AcceptedLang_of_FinAccept' [Inhabited A] :
     use n, (as ++ (const ℕ (default : A)))
     constructor
     · exact na_FinAccept_of_FinAccept' h_acc
-    · simpa [instAppendFinInf, AppendFinInf]
+    · simpa [instFinSubseq, FinSubseq, instAppendFinInf, AppendFinInf]
 
 end AutomataFiniteRuns
 

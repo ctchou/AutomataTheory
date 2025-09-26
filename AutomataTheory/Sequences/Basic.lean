@@ -70,8 +70,8 @@ instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
 def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
-def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
-  fun k ↦ if h : k < al.length then al[k] else default
+def List.ExtendInf [Inhabited X] (xl : List X) : ℕ → X :=
+  fun k ↦ if h : k < xl.length then xl[k] else default
 
 /- Some technical lemmas are proved below.
 -/
@@ -173,6 +173,10 @@ theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
     xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
   rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
   congr ; simp [instFinSubseq, FinSubseq]
+
+theorem finSubseq_ExtendInf [Inhabited X] :
+    xl.ExtendInf ⇊ 0 xl.length = xl := by
+  simp [List.ExtendInf, instFinSubseq, FinSubseq]
 
 theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
     ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by
