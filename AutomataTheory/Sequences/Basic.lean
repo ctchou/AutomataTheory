@@ -70,8 +70,8 @@ instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
 def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
-def List.ExtendInf [Inhabited A] (al : List A) : ℕ → A :=
-  fun k ↦ if h : k < al.length then al[k] else default
+def List.ExtendInf [Inhabited X] (xl : List X) : ℕ → X :=
+  fun k ↦ if h : k < xl.length then xl[k] else default
 
 /- Some technical lemmas are proved below.
 -/
@@ -87,23 +87,14 @@ theorem AppendListInf_assoc :
   rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < xl.length + xl'.length) ∨ ¬ k < xl.length + xl'.length by omega)
     <;> grind
 
-theorem ofFn_eq_ofFn {m n n' : ℕ}
-    (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
-    m - n = n' ∧ ∀ k < n', xs (k + n) = xs' k := by
-  simp [List.ofFn_inj'] at h
-  obtain ⟨rfl, h'⟩ := h
-  simp [funext_iff, Fin.forall_iff] at h'
-  simp ; intro k h_k
-  specialize h' k h_k
-  simp [h']
-
-theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
-    (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
-  ext k x
-  simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
-  intro h_k_m
-  rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
-  simp [(by omega : k - n + n = k)]
+theorem finSubseq_eq_FinSubseq {m n m' n' : ℕ}
+    (h : xs ⇊ m n = xs' ⇊ m' n') :
+    n - m = n' - m' ∧ ∀ k < n - m, xs (m + k) = xs' (m' + k) := by
+  simp [instFinSubseq, FinSubseq, List.ofFn_inj'] at h
+  obtain ⟨h_eq, h_fun⟩ := h
+  rw [← h_eq] at h_fun ; simp [funext_iff, Fin.forall_iff] at h_fun
+  simp [← h_eq] ; intro k h_k
+  rw [add_comm] ; simp [h_fun k h_k] ; congr 1 ; omega
 
 theorem appendListInf_FinSubseq_SuffixFrom {n : ℕ} :
     (xs ⇊ 0 n) ++ (xs <<< n) = xs := by
@@ -115,6 +106,21 @@ theorem appendListInf_FinSubseq_SuffixFrom {n : ℕ} :
 theorem appendListInf_elt_skip_list {n : ℕ} :
     (xl ++ xs) (n + xl.length) = xs n := by
   simp [instAppendListInf, AppendListInf]
+
+theorem appendListInf_elt_left {k : ℕ} (h : k < xl.length) :
+    (xl ++ xs) k = xl[k] := by
+  simp [instAppendListInf, AppendListInf, h]
+
+theorem appendListInf_elt_right {k : ℕ} (h : xl.length ≤ k) :
+    (xl ++ xs) k = xs (k - xl.length) := by
+  simp [instAppendListInf, AppendListInf, h]
+
+theorem appendListInf_FinSubseq_right {n : ℕ} (h : xl.length ≤ n) :
+    (xl ++ xs) ⇊ 0 n = xl ++ (xs ⇊ 0 (n - xl.length)) := by
+  ext k x
+  rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < n) ∨ ¬ k < n by omega) with h_k | h_k | h_k
+    <;> simp [h_k, instAppendListInf, AppendListInf, instFinSubseq, FinSubseq, List.getElem?_append]
+    <;> grind
 
 theorem suffixFrom_listLength_AppendListInf :
     (xl ++ xs) <<< xl.length = xs := by
@@ -141,13 +147,13 @@ theorem empty_FinSubseq {n : ℕ} :
     xs ⇊ n n = [] := by
   simp [instFinSubseq, FinSubseq]
 
-theorem append_FinSubseq_FinSubseq {k m n : ℕ} (h1 : k ≤ m) (h2 : m ≤ n) :
-    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
-  ext i x
-  rcases (show i < m - k ∨ ¬ i < (m - k) by omega) with h_i | h_i <;>
-    simp [h_i, getElem?_append, length_FinSubseq] <;> simp [instFinSubseq, FinSubseq]
-  · omega
-  · simp [(show i - (m - k) + m = i + k by omega)] ; omega
+theorem finSubseq_empty_iff {m n : ℕ} :
+    xs ⇊ m n = [] ↔ m ≥ n := by
+  simp [instFinSubseq, FinSubseq] ; omega
+
+theorem finSubseq_elt {m n k : ℕ} (h : k < n - m) :
+    (xs ⇊ m n)[k]'(by simp [length_FinSubseq, h]) = xs (k + m) := by
+  simp [instFinSubseq, FinSubseq]
 
 theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
     (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
@@ -173,6 +179,14 @@ theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
     xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
   rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
   congr ; simp [instFinSubseq, FinSubseq]
+
+theorem finSubseq_ExtendInf [Inhabited X] :
+    xl.ExtendInf ⇊ 0 xl.length = xl := by
+  simp [List.ExtendInf, instFinSubseq, FinSubseq]
+
+theorem extendinf_elt_left [Inhabited X] {k : ℕ} (h : k < xl.length) :
+    xl.ExtendInf k = xl[k] := by
+  simp [List.ExtendInf, h]
 
 theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
     ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by

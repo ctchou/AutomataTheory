@@ -162,7 +162,7 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     · specialize h_φ_V (j - 1)
       simp [(show j - 1 + 1 = j by omega)] at h_φ_V
       exact h_φ_V
-    · symm ; apply append_FinSubseq_FinSubseq <;>
+    · symm ; apply finSubseq_append_finSubseq <;>
         apply StrictMono.monotone h_φ_mono <;> omega
   let color (i j : ℕ) : M.State := M.RunOn (as ⇊ i j)
   have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by

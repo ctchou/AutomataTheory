@@ -50,10 +50,10 @@ theorem reg_lang_epsilon [Inhabited A] :
   · exact Finite.of_fintype Unit
   ext al ; simp ; constructor
   · rintro ⟨rfl⟩
-    use 0, (fun k ↦ default) ; simp
+    use 0, (fun k ↦ default) ; simp [empty_FinSubseq]
     use (fun k ↦ ()) ; simp [M, Automata.NA.FinRun]
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
-    suffices h_n : n = 0 by simp [h_n] at h_al ; simp [h_al]
+    suffices h_n : n = 0 by simp [← h_al, h_n, empty_FinSubseq]
     by_contra ; specialize h_next 0 (by omega) ; simp [M] at h_next
 
 /-- The language `univ` is regular.
@@ -64,9 +64,8 @@ theorem reg_lang_univ [Inhabited A] :
   use M, {()} ; constructor
   · exact Finite.of_fintype Unit
   ext al ; simp
-  use al.length, (fun k ↦ if h : k < al.length then al[k]'h else default) ; simp
-  use (fun _ ↦ ())
-  simp [M, Automata.NA.FinRun]
+  use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
+  use (fun _ ↦ ()) ; simp [M, Automata.NA.FinRun]
 
 /-- Regular languages are closed under union.
 -/

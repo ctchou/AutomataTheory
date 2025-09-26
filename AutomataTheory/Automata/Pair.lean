@@ -264,13 +264,14 @@ theorem pair_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State
   · assumption
   ext al ; constructor
   · rintro ⟨ss, h_path⟩
-    use al.length, al.ExtendInf
-    constructor <;> [skip ; simp [List.ExtendInf]]
+    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
     use ss ; exact pair_path_fin_run.mp h_path
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, rfl⟩, rfl⟩
     use ss ; apply pair_path_fin_run.mpr
-    simp [NA.FinRun, h_init]
-    intro k h_k ; simp [List.ExtendInf, h_k, h_next]
+    simp [NA.FinRun, h_init, length_FinSubseq]
+    intro k h_k
+    have h1 : k < (as ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
+    simp (disch := omega) [extendinf_elt_left h1, finSubseq_elt, h_next]
 
 /-- If `M` is finite-state, then `M.PairAccLang acc s s'` is regular for any pair of
 states `s` and `s'`.  Note that we need to use the history NA construction to
@@ -284,8 +285,7 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
   · simp [M', NA.SingleInit] ; exact Finite.instProd
   ext al ; constructor
   · rintro ⟨ss, h_path, k0, h_k0, h_k0_acc⟩
-    use al.length, al.ExtendInf
-    constructor <;> [skip ; simp [List.ExtendInf]]
+    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
     obtain ⟨h_run, rfl⟩ := pair_path_fin_run.mp h_path
     have h_ne_init : Set.Nonempty {False} := by simp
     have h_ne_next : ∀ (s : (M.SingleInit s).State × Prop) (a : A), Set.Nonempty {s.2 ∨ s.1 ∈ acc} := by simp
@@ -309,13 +309,15 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
     have h_run := na_hist_fin_run_proj h_run'
     use (Prod.fst ∘ ss')
     constructor
-    · apply pair_path_fin_run.mpr ; simp
+    · apply pair_path_fin_run.mpr ; simp [length_FinSubseq]
       apply na_FinRun_modulo (hr := h_run)
-      · intro k h_k ; simp [List.ExtendInf, h_k]
+      · intro k h_k
+        have h1 : k < (as ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
+        simp (disch := omega) [extendinf_elt_left h1, finSubseq_elt]
       · simp
     simp
     obtain (h_acc | h_acc) := h_acc.symm
-    · use n ; simp [h_acc]
+    · use n ; simp [h_acc, length_FinSubseq]
     by_contra! h_contra
     suffices h : ∀ k < n + 1, ¬ (ss' k).2 by simp [h n (by omega)] at h_acc
     intro k h_k ; induction' k with k h_ind
@@ -323,7 +325,7 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
       simp [M', NA.addHist] at h_init
       simp [h_init]
     specialize h_ind (by omega)
-    specialize h_contra k (by omega)
+    specialize h_contra k (by simp [length_FinSubseq] ; omega)
     have h_next := h_run'.2 k (by omega)
     simp [M', NA.addHist, h_ind, h_contra] at h_next
     simp [h_next]

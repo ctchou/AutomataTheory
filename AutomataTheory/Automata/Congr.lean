@@ -38,13 +38,12 @@ variable {c : Congruence A}
 /-- Running `c.toDA` on input `as` ends in state `⟦ as ⟧`.
 -/
 theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
-    c.toDA.DetRun as n = ⟦ List.ofFn (fun k : Fin n ↦ as k) ⟧ := by
+    c.toDA.DetRun as n = ⟦ as ⇊ 0 n ⟧ := by
   induction' n with n h_ind
-  · simp [Automata.DA.DetRun, Congruence.toDA]
+  · simp [Automata.DA.DetRun, Congruence.toDA, empty_FinSubseq]
   simp only [Automata.DA.DetRun, h_ind]
   simp only [Congruence.toDA, Quotient.lift_mk]
-  suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
-  exact Eq.symm List.ofFn_succ_last
+  simp [finSubseq_succ_right]
 
 /-- The language accepted by `c.toDA` with a unique accepting state `s`
 is exactly the equivalence class of `s`.
@@ -57,11 +56,11 @@ theorem acc_lang_congr [Inhabited A] (s : c.toDA.State) :
     simp [h_ss_n, automaton_congr_run, Congruence.EqvCls]
   · rintro ⟨rfl⟩
     let as := fun k ↦ if h : k < al.length then al[k] else default
-    use al.length, as
-    constructor <;> [skip ; simp [as]]
-    use (c.toDA.DetRun as)
-    constructor
+    have h1 : as ⇊ 0 al.length = al := by
+      ext k a ; simp [instFinSubseq, FinSubseq] ; grind
+    use al.length, as ; simp [h1]
+    use (c.toDA.DetRun as) ; constructor
     · exact Automata.da_fin_run_exists al.length as
-    · simp [automaton_congr_run, as]
+    · simp [automaton_congr_run, h1]
 
 end AutomataCongr

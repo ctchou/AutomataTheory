@@ -117,12 +117,10 @@ theorem da_acc_lang_iff_run_acc [Inhabited A] (M : DA A) (acc : Set M.State) (al
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, rfl⟩
     have h0 := da_fin_run_unique h_run n (by omega)
     have h1 := da_run_on_of_det_run M as n
-    simp [instFinSubseq, FinSubseq] at h1
     simp [h1, ← h0, h_acc]
   · intro h_acc
-    use al.length, al.ExtendInf ; simp [List.ExtendInf]
-    use (M.DetRun al.ExtendInf)
-    constructor
+    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
+    use (M.DetRun al.ExtendInf) ; constructor
     · exact da_fin_run_exists (M := M) al.length al.ExtendInf
     · simp [← da_run_on_to_det_run, h_acc]
 
@@ -141,39 +139,33 @@ theorem da_acc_lang_compl [Inhabited A] :
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     rintro ⟨n', as', ⟨ss', h_run', h_acc'⟩, h_al'⟩
-    have h_len : al.length = n := by rw [h_al, List.length_ofFn (f := (fun k : Fin n ↦ as k))]
-    have h_len' : al.length = n' := by rw [h_al', List.length_ofFn (f := (fun k : Fin n' ↦ as' k))]
+    have h_len : al.length = n := by simp [← h_al, length_FinSubseq]
+    have h_len' : al.length = n' := by simp [← h_al', length_FinSubseq]
     obtain ⟨rfl⟩ := show n' = n by rw [← h_len, ← h_len']
     have h_run_n := na_FinRun_FixSuffix h_run
     have h_run_n' := na_FinRun_FixSuffix h_run'
     have h_as_eq : FixSuffix as' n default = FixSuffix as n default := by
-      ext k
-      rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
-      have h_as_k : as k = al.get ⟨k, (by omega : k < al.length)⟩ := by simp [h_al]
-      have h_as_k' : as' k = al.get ⟨k, (by omega : k < al.length)⟩ := by simp [h_al']
+      ext k ; rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
+      have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp [← h_al, instFinSubseq, FinSubseq]
+      have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp [← h_al', instFinSubseq, FinSubseq]
       rw [h_as_k, h_as_k']
     rw [h_as_eq] at h_run_n'
     have h_ss_n := da_fin_run_unique h_run_n n (by omega)
     have h_ss_n' := da_fin_run_unique h_run_n' n (by omega)
     simp [FixSuffix] at h_ss_n h_ss_n'
-    rw [h_ss_n] at h_acc
-    rw [h_ss_n'] at h_acc'
+    rw [h_ss_n] at h_acc ; rw [h_ss_n'] at h_acc'
     contradiction
   · intro h_compl
     let as := fun k ↦ if h : k < al.length then al[k] else default
-    have h_al : al = List.ofFn (fun k : Fin al.length ↦ as k) := by
-      simp [List.ext_get_iff]
-      intro k h_k ; simp [as, h_k]
-    use al.length, as ; simp [← h_al]
+    have h_al : as ⇊ 0 al.length = al := by simp [as, instFinSubseq, FinSubseq]
+    use al.length, as ; simp [h_al]
     let ss := M.DetRun as
-    have h_run : M.toNA.FinRun al.length as ss := by
-      exact da_fin_run_exists al.length as
+    have h_run : M.toNA.FinRun al.length as ss := by exact da_fin_run_exists al.length as
     use ss ; constructor
     · exact h_run
     intro h_acc
     have : al ∈ (M.toNA.AcceptedLang acc) := by
-      use al.length, as
-      simp [← h_al] ; use! ss
+      use al.length, as ; simp [h_al] ; use! ss
     contradiction
 
 /-- The ω-language accepted by a deterministic Buchi automaton is the ω-limit
