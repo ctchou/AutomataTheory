@@ -315,24 +315,19 @@ theorem acc_lang_concat_ne :
     (M0.Concat acc0 M1).AcceptedLang (inr '' acc1) =
     (M0.AcceptedLang acc0) * (M1.AcceptedLang acc1 \ {[]}) := by
   ext al ; constructor
-  · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, h_al⟩
+  · rintro ⟨m, as, ⟨ss, h_run, h_acc⟩, rfl⟩
     have h_s1_ex : ∃ s1, ss m = inr s1 := by
       rcases h_acc with ⟨s1, _, h_s1⟩
       use s1 ; rw [h_s1]
     obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_fin_run_1.mp ⟨h_run, h_s1_ex⟩
-    use (List.ofFn (fun k : Fin n ↦ as k))
-    use (List.ofFn (fun k : Fin (m - n) ↦ as (k + n)))
-    constructor <;> [skip ; constructor]
+    use (as ⇊ 0 n), (as ⇊ n m)
+    simp (disch := omega) [finSubseq_append_finSubseq, finSubseq_empty_iff, h_n]
+    constructor
     · use n, as ; simp ; use ss0
-    · constructor
-      · use (m - n), (as <<< n)
-        constructor
-        · use ss1 ; simp [h_run1]
-          obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
-          simpa [← inr.inj h_s1]
-        · ext k a ; simp [instSuffixFrom, SuffixFrom]
-      · simp ; omega
-    · rw [h_al, ← ofFn_of_append_ofFn_oFn (show n ≤ m by omega)]
+    · use (m - n), (as <<< n) ; simp (disch := omega) [suffixFrom_FinSubseq0]
+      use ss1 ; simp [h_run1]
+      obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
+      simpa [← inr.inj h_s1]
   . rintro ⟨al0, al1, h_al0, h_al1, h_al⟩
     obtain ⟨h_al1, h_al1_ne⟩ := h_al1
     simp at h_al1_ne

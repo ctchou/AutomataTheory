@@ -141,13 +141,9 @@ theorem empty_FinSubseq {n : ℕ} :
     xs ⇊ n n = [] := by
   simp [instFinSubseq, FinSubseq]
 
-theorem append_FinSubseq_FinSubseq {k m n : ℕ} (h1 : k ≤ m) (h2 : m ≤ n) :
-    (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
-  ext i x
-  rcases (show i < m - k ∨ ¬ i < (m - k) by omega) with h_i | h_i <;>
-    simp [h_i, getElem?_append, length_FinSubseq] <;> simp [instFinSubseq, FinSubseq]
-  · omega
-  · simp [(show i - (m - k) + m = i + k by omega)] ; omega
+theorem finSubseq_empty_iff {m n : ℕ} :
+    xs ⇊ m n = [] ↔ m ≥ n := by
+  simp [instFinSubseq, FinSubseq] ; omega
 
 theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
     (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
