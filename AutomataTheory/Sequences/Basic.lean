@@ -120,6 +120,13 @@ theorem appendListInf_elt_left {k : ℕ} (h : k < xl.length) :
     (xl ++ xs) k = xl[k] := by
   simp [instAppendListInf, AppendListInf, h]
 
+theorem appendListInf_FinSubseq_right {n : ℕ} (h : xl.length ≤ n) :
+    (xl ++ xs) ⇊ 0 n = xl ++ (xs ⇊ 0 (n - xl.length)) := by
+  ext k x
+  rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < n) ∨ ¬ k < n by omega) with h_k | h_k | h_k
+    <;> simp [h_k, instAppendListInf, AppendListInf, instFinSubseq, FinSubseq, List.getElem?_append]
+    <;> grind
+
 theorem suffixFrom_listLength_AppendListInf :
     (xl ++ xs) <<< xl.length = xs := by
   ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]

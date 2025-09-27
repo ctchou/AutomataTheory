@@ -334,16 +334,10 @@ theorem acc_lang_concat_ne :
     rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩⟩
     rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, rfl⟩⟩
     have h_m : 0 < m := by simp [finSubseq_empty_iff] at h_al1_ne ; omega
---    let as := fun k ↦ if k < n then as0 k else as1 (k - n)
-    let as := (as0 ⇊ 0 n) ++ (as1 <<< n)
-    use (n + m), as
-    constructor
+    let as := (as0 ⇊ 0 n) ++ as1
+    use (n + m), as ; constructor
     · let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
-      use ss
-      have h_ss_nm : ss (n + m) = inr (ss1 m) := by
-        have h_m1 : ¬ n + m < n + 1 := by omega
-        simp [ss, h_m1]
-      constructor
+      use ss ; constructor
       · suffices (M0.Concat acc0 M1).FinRun (n + m) as ss ∧ (∃ s1, ss (n + m) = inr s1) by tauto
         apply na_concat_fin_run_1.mpr
         use n ; constructor <;> [skip ; constructor]
@@ -353,15 +347,20 @@ theorem acc_lang_concat_ne :
           · intro k h_k
             have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
             simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
-        · use ss1 ; constructor <;> [constructor ; skip]
+        · use ss1 ; simp ; constructor <;> [constructor ; skip]
           · exact h_init1
-          · simp [instSuffixFrom, SuffixFrom, as] ; exact h_next1
+          · intro k h_k
+            have h1 : (as0 ⇊ 0 n).length = n := by simp [length_FinSubseq]
+            rw [← h1] ; simp [as, suffixFrom_listLength_AppendListInf]
+            exact h_next1 k h_k
           · simp [ss] ; omega
       · use (ss1 m)
+        have h_ss_nm : ss (n + m) = inr (ss1 m) := by
+          have h_m1 : ¬ n + m < n + 1 := by omega
+          simp [ss, h_m1]
         simp [h_acc1, h_ss_nm]
-    · rw [h_al, ofFn_of_append_ofFn_oFn (by omega : n ≤ n + m)] ; congr
-      · simp [as, h_al0]
-      · simp [as, h_al1]
+    · have h1 : (as0 ⇊ 0 n).length ≤ n + m := by simp [length_FinSubseq]
+      simp [as, appendListInf_FinSubseq_right h1, length_FinSubseq]
 
 /-- The ω-language of the concatenation NA that is accepted by `M1`'s accepting states
 is the language accepted by `M0` concatenated with the ω-language accepted by `M1`.
@@ -386,7 +385,7 @@ theorem acc_omega_lang_concat :
       intro k ; obtain ⟨j, h_j, ⟨t1, h_t1_acc, h_t1⟩, h_j_ss1⟩ := h_ss1_acc (n + k)
       use (j - n) ; rw [← h_t1, inr.inj_iff] at h_j_ss1
       simpa [(by omega : k ≤ j - n), ← h_j_ss1]
-  · rintro ⟨al0, as1, ⟨n, as0, ⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, h_al0⟩, ⟨ss1, h_run1, h_acc1⟩, h_as⟩
+  · rintro ⟨al0, as1, ⟨n, as0, ⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩, ⟨ss1, h_run1, h_acc1⟩, h_as⟩
     let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
     use ss  ; constructor
     · suffices (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) by tauto
@@ -394,11 +393,12 @@ theorem acc_omega_lang_concat :
       use n ; constructor
       · use ss0 ; simp [ss, h_acc0] ; constructor
         · exact h_init0
-        · intro k h_k ; simp [h_as, h_al0, instAppendListInf, AppendListInf, h_k]
-          exact h_next0 k (by omega)
-      · use ss1
-        have h_len : n = al0.length := by simp [h_al0, List.length_ofFn]
-        simpa [ss, h_as, h_len, suffixFrom_listLength_AppendListInf]
+        · intro k h_k
+          have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
+          simp (disch := omega) [h_as, appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
+      · use ss1 ; simp [ss]
+        have h1 : (as0 ⇊ 0 n).length = n := by simp [length_FinSubseq]
+        rw [← h1] ; simp [h_as, suffixFrom_listLength_AppendListInf, h_run1]
     · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
         simp only [eventually_atTop]
         use (n + 1) ; intro k h_k ; simp [ss] ; omega
