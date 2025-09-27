@@ -162,7 +162,7 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     · specialize h_φ_V (j - 1)
       simp [(show j - 1 + 1 = j by omega)] at h_φ_V
       exact h_φ_V
-    · symm ; apply finSubseq_append_finSubseq <;>
+    · apply finSubseq_append_finSubseq <;>
         apply StrictMono.monotone h_φ_mono <;> omega
   let color (i j : ℕ) : M.State := M.RunOn (as ⇊ i j)
   have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by
@@ -250,16 +250,16 @@ lemma choueka_lang_decomp_lemma {M : DA A} {acc : Set M.State} :
       have := length_pos_iff.mpr h_al1
       have := length_pos_iff.mpr h_al2
       have : m + al1.length + al2.length = al.length := by
-        rw [← h2, h_alm] ; simp [length_append, add_assoc] ; omega
+        rw [← h2, ← h_alm] ; simp [length_append, add_assoc] ; omega
       simp [-extract_eq_drop_take, DA.RunOn, ← da_run_from_on_append] at h_run1
       specialize h_run' (m + al1.length) (by omega) (by omega)
       have h3 : al.extract m (m + al1.length) = al1 := by
-        rw [← h2, h_alm] ; ext k a
+        rw [← h2, ← h_alm] ; ext k a
         rcases (show k < al1.length ∨ ¬ k < al1.length by omega) with h_k | h_k <;>
           simp [getElem?_append, getElem?_drop, h_k]
         simp [(show m + k - min m al.length = k by omega), h_k]
       have h4 : al.extract 0 (m + al1.length) = al.extract 0 m ++ al1 := by
-        rw [← h2, h_alm] ; ext k a
+        rw [← h2, ← h_alm] ; ext k a
         rcases (show k < m ∨ (¬ k < m ∧ k < m + al1.length) ∨ ¬ k < m + al1.length by omega) with h_k | h_k | h_k <;>
           simp (disch := omega) [getElem?_append, getElem?_take, h_k]
         · simp [(show k - m < al1.length by omega)]
