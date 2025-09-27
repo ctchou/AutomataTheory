@@ -97,6 +97,13 @@ theorem ofFn_eq_ofFn {m n n' : ℕ}
   specialize h' k h_k
   simp [h']
 
+--(as' (seg k))⇊ 0 (len (seg k)) = as⇊ (φ (seg k)) (φ (seg k + 1))
+
+theorem finSubseq_eq_FinSubseq {m n m' n' : ℕ}
+    (h : xs ⇊ m n = xs' ⇊ m' n') :
+    n - m = n' - m' ∧ ∀ k < n - m, xs (m + k) = xs' (m' + k) := by
+  sorry
+
 theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
     (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
   ext k x
@@ -118,6 +125,10 @@ theorem appendListInf_elt_skip_list {n : ℕ} :
 
 theorem appendListInf_elt_left {k : ℕ} (h : k < xl.length) :
     (xl ++ xs) k = xl[k] := by
+  simp [instAppendListInf, AppendListInf, h]
+
+theorem appendListInf_elt_right {k : ℕ} (h : xl.length ≤ k) :
+    (xl ++ xs) k = xs (k - xl.length) := by
   simp [instAppendListInf, AppendListInf, h]
 
 theorem appendListInf_FinSubseq_right {n : ℕ} (h : xl.length ≤ n) :

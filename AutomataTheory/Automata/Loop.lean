@@ -153,10 +153,12 @@ is a subset of itself.
 theorem acc_lang_loop_concat :
     ((M.Loop acc).AcceptedLang {inl ()}) * ((M.Loop acc).AcceptedLang {inl ()}) ⊆
     (M.Loop acc).AcceptedLang {inl ()} := by
-  rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, h_al1⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, h_al2⟩, rfl⟩
-  let as k := if k < n1 then as1 k else as2 (k - n1)
-  use (n1 + n2), as ; symm ; constructor
-  · simp [ofFn_of_append_ofFn_oFn (xs := as) (show n1 ≤ n1 + n2 by omega), as, h_al1, h_al2]
+  rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, rfl⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, rfl⟩, rfl⟩
+--  let as k := if k < n1 then as1 k else as2 (k - n1)
+--  let as := (as1 ⇊ 0 n1) ++ as2
+  use (n1 + n2), ((as1 ⇊ 0 n1) ++ as2) ; symm ; constructor
+  · have h1 : (as1⇊ 0 n1).length ≤ n1 + n2 := by simp [length_FinSubseq]
+    simp [appendListInf_FinSubseq_right h1, length_FinSubseq]
   let ss k := if k < n1 then ss1 k else ss2 (k - n1)
   use ss ; symm ; constructor
   · simp at h_acc2 ; simp [ss, h_acc2]
@@ -167,14 +169,21 @@ theorem acc_lang_loop_concat :
     · exact h_run1.1
   intro k h_k
   rcases (show k + 1 < n1 ∨ k + 1 = n1 ∨ k + 1 > n1 by omega) with h_k | h_k | h_k
+  · have h1 : k < (as1 ⇊ 0 n1).length := by simp [length_FinSubseq] ; omega
+    simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt]
+    have h_next := h_run1.2 k (by omega)
+    simp [ss, h_next, h_k, (show k < n1 by omega)]
   · have h_next := h_run1.2 k (by omega)
-    simp [as, ss, h_next, h_k, (show k < n1 by omega)]
-  · have h_next := h_run1.2 k (by omega)
-    suffices h_n1 : ss2 0 = ss1 (k + 1) by simp [as, ss, h_next, h_n1, ← h_k]
+    suffices h_n1 : ss2 0 = ss1 (k + 1) by
+      have h1 : k < (as1 ⇊ 0 n1).length := by simp [length_FinSubseq] ; omega
+      simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt]
+      simp [ss, ← h_k, h_n1, h_next]
     simp [← h_k] at h_acc1
     simp [h_acc1] ; exact h_run2.1
   · have h_next := h_run2.2 (k - n1) (by omega)
-    simp [as, ss, h_next, (show ¬ k < n1 by omega), (show ¬ k + 1 < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
+    have h1 : (as1 ⇊ 0 n1).length ≤ k := by simp [length_FinSubseq] ; omega
+    simp [appendListInf_elt_right h1, length_FinSubseq, ss, h_next,
+      (show ¬ k + 1 < n1 by omega), (show ¬ k < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
 /-- The language accepted by the loop NA is the Kleene star of
 the language accepted by `M`.
@@ -193,7 +202,8 @@ theorem acc_lang_loop [Inhabited A] :
         obtain ⟨k, h_loop⟩ := h_loop
         apply Nat.findGreatest_spec (m := k) (by omega) h_loop
       obtain ⟨h_m_0, h_m_n, h_m_inl⟩ := h_m
-      let al' := List.ofFn (fun k : Fin m ↦ as k)
+      let al' := as ⇊ 0 m
+      --List.ofFn (fun k : Fin m ↦ as k)
       have h_run' := na_FinRun_imp_FinRun h_m_n h_run
       obtain ⟨j, h_j⟩ := h_ind m h_m_n h_run' (by simp [h_m_inl]) (al') (by simp [al'])
       have h_d : n - m > 0 := by omega
@@ -214,16 +224,17 @@ theorem acc_lang_loop [Inhabited A] :
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_not_loop (by omega) (by omega)
         simp [instSuffixFrom, SuffixFrom] ; use s' ; simp [h_s']
       obtain ⟨ss'', h_run'', h_acc'', _⟩ := (na_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
-      let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
+--      let al'' := List.ofFn (fun k : Fin (n - m) ↦ as (k + m))
+      let al'' := as ⇊ m n
       use (j + 1) ; simp [instIterFin, IterFin]
       use al', al'' ; constructorm* _ ∧ _
       · exact h_j
-      · use (n - m), (as <<< m) ; simp [al'', instSuffixFrom, SuffixFrom]
-        use ss'' ; simpa [h_acc'']
-      · simp [h_al, al', al'', ofFn_of_append_ofFn_oFn (show m ≤ n by omega)]
-    · rcases (show n = 0 ∨ n > 0 by omega) with h_n | h_n
-      · obtain ⟨rfl⟩ := h_n ; simp at h_al
-        use 0 ; simp [h_al, instIterFin, IterFin]
+      · use (n - m), (as <<< m)
+        simp [al'', suffixFrom_FinSubseq0, (show m + (n - m) = n by omega)]
+        use ss''
+      · simp (disch := omega) [← h_al, al', al'', finSubseq_append_finSubseq]
+    · rcases (show n = 0 ∨ n > 0 by omega) with ⟨rfl⟩ | h_n
+      · use 0 ; simp [← h_al, instIterFin, IterFin, empty_FinSubseq]
       simp [loop] at h_loop
       have h_inr : ∀ k < n, k > 0 → ss k ∈ range inr := by
         intro k h_k_n h_k_0
@@ -238,7 +249,7 @@ theorem acc_lang_loop [Inhabited A] :
     revert al
     induction' i with i h_ind
     · intro al ; simp [instIterFin, IterFin] ; rintro ⟨rfl⟩
-      use 0 ; simp
+      use 0 ; simp [empty_FinSubseq]
       use (fun k ↦ default), (fun k ↦ inl ()) ; simp [NA.FinRun, NA.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
     specialize h_ind al1 h_al1
@@ -306,11 +317,12 @@ theorem acc_omega_lang_loop :
         exact h_run_k
       apply (na_loop_fin_run h_mono_k).mpr
       use (ss' (seg k))
-      obtain ⟨h_len_k, h_as'_k⟩ := ofFn_eq_ofFn <| h_as' (seg k)
-      simp [h_len_k, instSuffixFrom, SuffixFrom]
+      obtain ⟨h_len_k, h_as'_k⟩ := finSubseq_eq_FinSubseq <| h_as' (seg k)
+      simp at h_len_k h_as'_k
+      simp [← h_len_k, instSuffixFrom, SuffixFrom]
       constructorm* _ ∧ _
       · apply na_FinRun_modulo (n := len (seg k)) (as := as' (seg k)) (ss := ss' (seg k)) (hr := h_run (seg k))
-        · intro j h_j ; simp [SuffixFrom, h_as'_k j h_j]
+        · intro j h_j ; simp [SuffixFrom, h_as'_k j h_j, add_comm]
         · simp
       · exact h_acc (seg k)
       · simp [ss]
