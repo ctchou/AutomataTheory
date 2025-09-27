@@ -43,8 +43,7 @@ theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
   · simp [Automata.DA.DetRun, Congruence.toDA, empty_FinSubseq]
   simp only [Automata.DA.DetRun, h_ind]
   simp only [Congruence.toDA, Quotient.lift_mk]
-  suffices h_eq : ((List.ofFn fun k : Fin n ↦ as ↑k) ++ [as n]) = (List.ofFn fun k : Fin (n + 1) ↦ as ↑k) by simp [h_eq]
-  exact Eq.symm List.ofFn_succ_last
+  simp [finSubseq_succ_right]
 
 /-- The language accepted by `c.toDA` with a unique accepting state `s`
 is exactly the equivalence class of `s`.
