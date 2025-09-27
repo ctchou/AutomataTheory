@@ -26,7 +26,7 @@ finite-state deterministic Muller automaton.
 -/
 def DetMullerLang (L : Set (ℕ → A)) :=
   ∃ M : Automata.DA A, ∃ accSet : Set (Set M.State),
-  Finite M.State ∧ L = { as | M.MullerAccept accSet as }
+  Finite M.State ∧ { as | M.MullerAccept accSet as } = L
 
 /-- The language `∅` is a deterministic Muller language.
 -/
@@ -124,9 +124,7 @@ theorem det_muller_lang_omega_limit {L : Set (List A)}
     (h : RegLang L) : DetMullerLang L↗ω := by
   obtain ⟨M, acc, h_fin, rfl⟩ := reg_lang_det_accept h
   obtain ⟨accSet, h_acc⟩ := Automata.det_muller_accept_omega_limit M acc
-  use M, accSet ; constructor
-  · exact h_fin
-  · simp [h_acc]
+  use M, accSet
 
 /-- The concatenation of a regular language and a deterministic Muller language
 is a deterministic Muller language.
@@ -139,6 +137,11 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
   constructor
   · apply Finite.instProd
   · ext as ; constructor
+    · intro h_acc
+      obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
+      use (as ⇊ 0 n), (as <<< n)
+      simp [h_acc1, appendListInf_FinSubseq_SuffixFrom]
+      use n, as
     · rintro ⟨al0, as1, ⟨n, as0, h_as0, rfl⟩, h_as1, h_as⟩
       have h_acc0 : M0.toNA.FinAccept acc0 n as := by
         obtain ⟨ss0, h_run0, h_acc0⟩ := h_as0
@@ -151,11 +154,6 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
         have h1 : n = (as0 ⇊ 0 n).length := by simp [length_FinSubseq]
         rw [h1] ; simp [h_as, suffixFrom_listLength_AppendListInf] ; exact h_as1
       exact Automata.da_concat_to_muller_accept M0 acc0 M1 accSet1 as n h_acc0 h_acc1
-    · intro h_acc
-      obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
-      use (as ⇊ 0 n), (as <<< n)
-      simp [h_acc1, appendListInf_FinSubseq_SuffixFrom]
-      use n, as
 
 /-- Every deterministic Muller language is an ω-regular language.
 -/
