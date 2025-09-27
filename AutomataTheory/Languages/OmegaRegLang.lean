@@ -27,7 +27,7 @@ variable {A : Type}
 the Büchi acceptance condition.
 -/
 def OmegaRegLang (L : Set (ℕ → A)) :=
-  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedOmegaLang acc
+  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ M.AcceptedOmegaLang acc = L
 
 /-- The language `∅` is ω-regular.
 -/
@@ -140,7 +140,7 @@ theorem omega_reg_lang_omega_limit {L : Set (List A)}
   obtain ⟨M, acc, h_fin, rfl⟩ := reg_lang_det_accept h
   use M.toNA, acc ; constructor
   · exact h_fin
-  · symm ; exact Automata.da_acc_omega_lang
+  · exact Automata.da_acc_omega_lang
 
 /-- An ω-language is ω-regular if and only if it is the finite union of sets
 of the form `U * V^ω`, where all `U`s and `V`s are regular languages.
