@@ -328,15 +328,14 @@ theorem acc_lang_concat_ne :
       use ss1 ; simp [h_run1]
       obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
       simpa [← inr.inj h_s1]
-  . rintro ⟨al0, al1, h_al0, h_al1, h_al⟩
+  . rintro ⟨al0, al1, h_al0, h_al1, rfl⟩
     obtain ⟨h_al1, h_al1_ne⟩ := h_al1
     simp at h_al1_ne
-    rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, h_al0⟩⟩
-    rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, h_al1⟩⟩
-    have h_m : 0 < m := by
-      have h_len : m = al1.length := by simp [h_al1, List.length_ofFn]
-      simp [h_len, List.length_pos_iff.mpr h_al1_ne]
-    let as := fun k ↦ if k < n then as0 k else as1 (k - n)
+    rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩⟩
+    rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, rfl⟩⟩
+    have h_m : 0 < m := by simp [finSubseq_empty_iff] at h_al1_ne ; omega
+--    let as := fun k ↦ if k < n then as0 k else as1 (k - n)
+    let as := (as0 ⇊ 0 n) ++ (as1 <<< n)
     use (n + m), as
     constructor
     · let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
@@ -351,7 +350,9 @@ theorem acc_lang_concat_ne :
         · omega
         · use ss0 ; simp [as, ss, h_acc0] ; constructor
           · exact h_init0
-          · intro k h_k ; simp [h_k, h_next0 k h_k]
+          · intro k h_k
+            have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
+            simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
         · use ss1 ; constructor <;> [constructor ; skip]
           · exact h_init1
           · simp [instSuffixFrom, SuffixFrom, as] ; exact h_next1

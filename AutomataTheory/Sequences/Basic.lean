@@ -116,6 +116,10 @@ theorem appendListInf_elt_skip_list {n : ℕ} :
     (xl ++ xs) (n + xl.length) = xs n := by
   simp [instAppendListInf, AppendListInf]
 
+theorem appendListInf_elt_left {k : ℕ} (h : k < xl.length) :
+    (xl ++ xs) k = xl[k] := by
+  simp [instAppendListInf, AppendListInf, h]
+
 theorem suffixFrom_listLength_AppendListInf :
     (xl ++ xs) <<< xl.length = xs := by
   ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
@@ -144,6 +148,10 @@ theorem empty_FinSubseq {n : ℕ} :
 theorem finSubseq_empty_iff {m n : ℕ} :
     xs ⇊ m n = [] ↔ m ≥ n := by
   simp [instFinSubseq, FinSubseq] ; omega
+
+theorem finSubseq_elt {m n k : ℕ} (h : k < n - m) :
+    (xs ⇊ m n)[k]'(by simp [length_FinSubseq, h]) = xs (k + m) := by
+  simp [instFinSubseq, FinSubseq]
 
 theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
     (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
