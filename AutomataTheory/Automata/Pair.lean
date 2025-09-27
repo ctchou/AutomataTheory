@@ -263,15 +263,15 @@ theorem pair_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State
   use (M.SingleInit s), {s'} ; constructor
   · assumption
   ext al ; constructor
-  · rintro ⟨ss, h_path⟩
-    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
-    use ss ; exact pair_path_fin_run.mp h_path
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, rfl⟩, rfl⟩
     use ss ; apply pair_path_fin_run.mpr
     simp [NA.FinRun, h_init, length_FinSubseq]
     intro k h_k
     have h1 : k < (as ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
     simp (disch := omega) [extendinf_elt_left h1, finSubseq_elt, h_next]
+  · rintro ⟨ss, h_path⟩
+    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
+    use ss ; exact pair_path_fin_run.mp h_path
 
 /-- If `M` is finite-state, then `M.PairAccLang acc s s'` is regular for any pair of
 states `s` and `s'`.  Note that we need to use the history NA construction to
@@ -284,27 +284,6 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
   use M', {p | p.1 = s' ∧ (p.2 ∨ s' ∈ acc) } ; constructor
   · simp [M', NA.SingleInit] ; exact Finite.instProd
   ext al ; constructor
-  · rintro ⟨ss, h_path, k0, h_k0, h_k0_acc⟩
-    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
-    obtain ⟨h_run, rfl⟩ := pair_path_fin_run.mp h_path
-    have h_ne_init : Set.Nonempty {False} := by simp
-    have h_ne_next : ∀ (s : (M.SingleInit s).State × Prop) (a : A), Set.Nonempty {s.2 ∨ s.1 ∈ acc} := by simp
-    obtain ⟨hist, h_run'⟩ := na_hist_fin_run_exists h_ne_init h_ne_next h_run
-    use (fun k ↦ (ss k, hist k)) ; simp [M', h_run']
-    obtain (rfl | h_k0) := show k0 = al.length ∨ k0 < al.length by omega
-    · simp [h_k0_acc]
-    suffices h : ∀ k > k0, k < al.length + 1 → hist k by simp [h al.length h_k0]
-    intro k h_k
-    obtain ⟨j, rfl⟩ := show ∃ j, k = k0 + j + 1 by use (k - k0 - 1) ; omega
-    clear h_k ; induction' j with j h_ind
-    · have h_next := h_run'.2 k0 h_k0
-      simp [NA.addHist, h_k0_acc] at h_next
-      simp [h_next]
-    intro h_j
-    specialize h_ind (by omega)
-    have h_next := h_run'.2 (k0 + j + 1) (by omega)
-    simp [NA.addHist, h_ind] at h_next
-    simp [h_next, (show k0 + (j + 1) + 1 = k0 + j + 1 + 1 by omega)]
   · rintro ⟨n, as, ⟨ss', h_run', rfl, h_acc⟩, rfl⟩
     have h_run := na_hist_fin_run_proj h_run'
     use (Prod.fst ∘ ss')
@@ -329,6 +308,27 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
     have h_next := h_run'.2 k (by omega)
     simp [M', NA.addHist, h_ind, h_contra] at h_next
     simp [h_next]
+  · rintro ⟨ss, h_path, k0, h_k0, h_k0_acc⟩
+    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
+    obtain ⟨h_run, rfl⟩ := pair_path_fin_run.mp h_path
+    have h_ne_init : Set.Nonempty {False} := by simp
+    have h_ne_next : ∀ (s : (M.SingleInit s).State × Prop) (a : A), Set.Nonempty {s.2 ∨ s.1 ∈ acc} := by simp
+    obtain ⟨hist, h_run'⟩ := na_hist_fin_run_exists h_ne_init h_ne_next h_run
+    use (fun k ↦ (ss k, hist k)) ; simp [M', h_run']
+    obtain (rfl | h_k0) := show k0 = al.length ∨ k0 < al.length by omega
+    · simp [h_k0_acc]
+    suffices h : ∀ k > k0, k < al.length + 1 → hist k by simp [h al.length h_k0]
+    intro k h_k
+    obtain ⟨j, rfl⟩ := show ∃ j, k = k0 + j + 1 by use (k - k0 - 1) ; omega
+    clear h_k ; induction' j with j h_ind
+    · have h_next := h_run'.2 k0 h_k0
+      simp [NA.addHist, h_k0_acc] at h_next
+      simp [h_next]
+    intro h_j
+    specialize h_ind (by omega)
+    have h_next := h_run'.2 (k0 + j + 1) (by omega)
+    simp [NA.addHist, h_ind] at h_next
+    simp [h_next, (show k0 + (j + 1) + 1 = k0 + j + 1 + 1 by omega)]
 
 /-- The ω-regular language accepted by a finite-state NA `M` is the union of ω-languages
 of the form `(M.PairLang s0 sa) * (M.PairLang sa sa)^ω`, where `s0` and `sa` range over initial

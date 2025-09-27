@@ -29,7 +29,7 @@ variable {A : Type}
 /-- A language is regular iff it is accepted by a finite-state Automata.NA.
 -/
 def RegLang (L : Set (List A)) :=
-  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ L = M.AcceptedLang acc
+  ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ M.AcceptedLang acc = L
 
 /-- The language `∅` is regular.
 -/
@@ -49,12 +49,12 @@ theorem reg_lang_epsilon [Inhabited A] :
   use M, {()} ; constructor
   · exact Finite.of_fintype Unit
   ext al ; simp ; constructor
-  · rintro ⟨rfl⟩
-    use 0, (fun k ↦ default) ; simp [empty_FinSubseq]
-    use (fun k ↦ ()) ; simp [M, Automata.NA.FinRun]
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
     suffices h_n : n = 0 by simp [← h_al, h_n, empty_FinSubseq]
     by_contra ; specialize h_next 0 (by omega) ; simp [M] at h_next
+  · rintro ⟨rfl⟩
+    use 0, (fun k ↦ default) ; simp [empty_FinSubseq]
+    use (fun k ↦ ()) ; simp [M, Automata.NA.FinRun]
 
 /-- The language `univ` is regular.
 -/
@@ -158,8 +158,8 @@ lemma reg_lang_concat_ne {L0 L1 : Set (List A)}
       ext al ; simp
       intro h1 h2 ; simp [h2] at h1
       contradiction
-    rw [h_l1] at h_l1'
-    rw [h_l0, h_l1, h_l1', Automata.acc_lang_concat_ne]
+    rw [← h_l1] at h_l1'
+    rw [← h_l0, ← h_l1, h_l1', Automata.acc_lang_concat_ne]
 
 /-- Helper lemma for `reg_lang_concat` below.
 -/
@@ -173,8 +173,8 @@ lemma reg_lang_concat_e {L0 L1 : Set (List A)}
   · have h_l1' : L1 = (L1 \ {[]}) ∪ {[]} := by
       symm ; apply Set.diff_union_of_subset ; simp [h_e]
     have h_l1'' : [] ∉ L1 \ {[]} := by simp
-    rw [h_l1] at h_l1' h_l1''
-    rw [h_l0, h_l1, h_l1', ConcatFin_union_distrib, ConcatFin_epsilon,
+    rw [← h_l1] at h_l1' h_l1''
+    rw [← h_l0, ← h_l1, h_l1', ConcatFin_union_distrib, ConcatFin_epsilon,
         Automata.acc_lang_acc_union, Automata.acc_lang_concat_e, Automata.acc_lang_concat_ne, union_comm]
 
 /-- Regular languages are closed under concatenation.
@@ -203,6 +203,6 @@ theorem reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A}
   use c.toDA.toNA, {s}
   constructor
   · exact h
-  · symm ; exact acc_lang_congr s
+  · exact acc_lang_congr s
 
 end RegLang
