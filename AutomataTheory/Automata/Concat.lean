@@ -395,10 +395,10 @@ theorem acc_omega_lang_concat :
         · exact h_init0
         · intro k h_k
           have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
-          simp (disch := omega) [h_as, appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
+          simp (disch := omega) [← h_as, appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
       · use ss1 ; simp [ss]
         have h1 : (as0 ⇊ 0 n).length = n := by simp [length_FinSubseq]
-        rw [← h1] ; simp [h_as, suffixFrom_listLength_AppendListInf, h_run1]
+        rw [← h1] ; simp [← h_as, suffixFrom_listLength_AppendListInf, h_run1]
     · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
         simp only [eventually_atTop]
         use (n + 1) ; intro k h_k ; simp [ss] ; omega

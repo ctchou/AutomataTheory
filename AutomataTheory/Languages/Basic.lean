@@ -32,7 +32,7 @@ instance : Mul (Set (List A)) :=
 /-- Concatenation of a language and an ω-language, resulting in an ω-language.
 -/
 def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
-  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ as = al0 ++ as1 }
+  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ al0 ++ as1 = as }
 
 /-- Use the infix notation `*` for `ConcatInf`.
 -/
