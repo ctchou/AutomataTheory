@@ -87,30 +87,32 @@ theorem AppendListInf_assoc :
   rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < xl.length + xl'.length) ∨ ¬ k < xl.length + xl'.length by omega)
     <;> grind
 
-theorem ofFn_eq_ofFn {m n n' : ℕ}
-    (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
-    m - n = n' ∧ ∀ k < n', xs (k + n) = xs' k := by
-  simp [List.ofFn_inj'] at h
-  obtain ⟨rfl, h'⟩ := h
-  simp [funext_iff, Fin.forall_iff] at h'
-  simp ; intro k h_k
-  specialize h' k h_k
-  simp [h']
-
---(as' (seg k))⇊ 0 (len (seg k)) = as⇊ (φ (seg k)) (φ (seg k + 1))
+-- theorem ofFn_eq_ofFn {m n n' : ℕ}
+--     (h : List.ofFn (fun k : Fin (m - n) ↦ xs (k + n)) = List.ofFn (fun k : Fin n' ↦ xs' k)) :
+--     m - n = n' ∧ ∀ k < n', xs (k + n) = xs' k := by
+--   simp [List.ofFn_inj'] at h
+--   obtain ⟨rfl, h'⟩ := h
+--   simp [funext_iff, Fin.forall_iff] at h'
+--   simp ; intro k h_k
+--   specialize h' k h_k
+--   simp [h']
 
 theorem finSubseq_eq_FinSubseq {m n m' n' : ℕ}
     (h : xs ⇊ m n = xs' ⇊ m' n') :
     n - m = n' - m' ∧ ∀ k < n - m, xs (m + k) = xs' (m' + k) := by
-  sorry
+  simp [instFinSubseq, FinSubseq, List.ofFn_inj'] at h
+  obtain ⟨h_eq, h_fun⟩ := h
+  rw [← h_eq] at h_fun ; simp [funext_iff, Fin.forall_iff] at h_fun
+  simp [← h_eq] ; intro k h_k
+  rw [add_comm] ; simp [h_fun k h_k] ; congr 1 ; omega
 
-theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
-    (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
-  ext k x
-  simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
-  intro h_k_m
-  rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
-  simp [(by omega : k - n + n = k)]
+-- theorem ofFn_of_append_ofFn_oFn {m n : ℕ} (h : n ≤ m) :
+--     (List.ofFn fun k : Fin m ↦ xs k) = (List.ofFn fun k : Fin n ↦ xs k) ++ List.ofFn fun k : Fin (m - n) ↦ xs (k + n) := by
+--   ext k x
+--   simp [← List.ofFn_fin_append, Fin.append, Fin.addCases, (by omega : n + (m - n) = m)]
+--   intro h_k_m
+--   rcases Classical.em (k < n) with h_k_n | h_k_n <;> simp [h_k_n]
+--   simp [(by omega : k - n + n = k)]
 
 theorem appendListInf_FinSubseq_SuffixFrom {n : ℕ} :
     (xs ⇊ 0 n) ++ (xs <<< n) = xs := by
