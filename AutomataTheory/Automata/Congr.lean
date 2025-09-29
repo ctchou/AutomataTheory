@@ -40,10 +40,10 @@ variable {c : Congruence A}
 theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
     c.toDA.DetRun as n = ⟦ as ⇊ 0 n ⟧ := by
   induction' n with n h_ind
-  · simp [Automata.DA.DetRun, Congruence.toDA, empty_FinSubseq]
+  · simp [Automata.DA.DetRun, Congruence.toDA, extract_nil]
   simp only [Automata.DA.DetRun, h_ind]
   simp only [Congruence.toDA, Quotient.lift_mk]
-  simp [finSubseq_succ_right]
+  simp [extract_succ_right]
 
 /-- The language accepted by `c.toDA` with a unique accepting state `s`
 is exactly the equivalence class of `s`.
@@ -55,12 +55,9 @@ theorem acc_lang_congr [Inhabited A] (s : c.toDA.State) :
     have h_ss_n := Automata.da_fin_run_unique h_run n (by omega)
     simp [h_ss_n, automaton_congr_run, Congruence.EqvCls]
   · rintro ⟨rfl⟩
-    let as := fun k ↦ if h : k < al.length then al[k] else default
-    have h1 : as ⇊ 0 al.length = al := by
-      ext k a ; simp [instFinSubseq, FinSubseq] ; grind
-    use al.length, as ; simp [h1]
-    use (c.toDA.DetRun as) ; constructor
-    · exact Automata.da_fin_run_exists al.length as
-    · simp [automaton_congr_run, h1]
+    use al.length, al.padDefault ; simp [extract_padDefault]
+    use (c.toDA.DetRun al.padDefault) ; constructor
+    · exact Automata.da_fin_run_exists al.length al.padDefault
+    · simp [automaton_congr_run, extract_padDefault]
 
 end AutomataCongr

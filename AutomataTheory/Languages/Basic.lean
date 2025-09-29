@@ -131,16 +131,16 @@ theorem epsilon_ConcatInf {L : Set (ℕ → A)} :
     ({[]} : Set (List A)) * L = L := by
   ext as ; constructor
   · rintro ⟨al, as, h_al, h_as, rfl⟩ ; simp at h_al
-    simp [h_al, h_as, nil_AppendListInf]
-  · intro h_as ; use [], as ; simp [h_as, nil_AppendListInf]
+    simp [h_al, h_as, nil_append_stream]
+  · intro h_as ; use [], as ; simp [h_as, nil_append_stream]
 
 theorem ConcatInf_assoc {L0 L0' : Set (List A)} {L1 : Set (ℕ → A)} :
     (L0 * L0') * L1 = L0 * (L0' * L1) := by
   ext as ; constructor
   · rintro ⟨al, as1, ⟨al0, al0', h_al0, h_al0', rfl⟩, h_as1, rfl⟩
-    use al0, (al0' ++ as1) ; simp [h_al0, AppendListInf_assoc] ; use al0', as1
+    use al0, (al0' ++ as1) ; simp [h_al0, append_append_stream] ; use al0', as1
   · rintro ⟨al0, as', h_al0, ⟨al0', as1, h_al0', h_as1, rfl⟩, rfl⟩
-    rw [← AppendListInf_assoc]
+    rw [← append_append_stream]
     use (al0 ++ al0'), as1 ; simp [h_as1] ; use al0, al0'
 
 theorem ConcatInf_mono {L0 L0' : Set (List A)} {L1 L1' : Set (ℕ → A)}
@@ -208,11 +208,11 @@ theorem mem_ConcatInf_IterOmega {L0 L1 : Set (List A)} {as : ℕ → A}
   use (fun m ↦ φ1 (m) + al0.length)
   constructorm* _ ∧ _
   · intro m n h_mn ; have := h_mono h_mn ; grind
-  · simp [instFinSubseq, FinSubseq, instAppendListInf, AppendListInf, h_φ1_0, h_al0]
+  · simp [h_φ1_0, h_al0, extract_append_zero_right, extract_nil]
   · intro m
     have h1 : φ1 (m + 1) + al0.length - (φ1 m + al0.length) = φ1 (m + 1) - φ1 m := by omega
     specialize h_φ1_sub m
-    simpa [instFinSubseq, FinSubseq, ← Nat.add_assoc, appendListInf_elt_skip_list, h1]
+    simpa (disch := omega) [extract_apppend_right_right]
 
 theorem ConcatInf_self_IterOmega {L : Set (List A)} :
     L * L^ω = L^ω := by
@@ -238,12 +238,11 @@ theorem ConcatInf_self_IterOmega {L : Set (List A)} :
         omega
       · simp ; intro n
         have h1 := StrictMono.monotone h_mono (show 1 ≤ n + 1 by omega)
-        simp [finSubseq_of_SuffixFrom h1, h_rest]
+        have h2 := StrictMono.monotone h_mono (show 1 ≤ n + 1 + 1 by omega)
+        simp [extract_drop, h_rest, (show φ 1 + (φ (n + 1) - φ 1) = φ (n + 1) by omega),
+          (show φ 1 + (φ (n + 1 + 1) - φ 1) = φ (n + 1 + 1) by omega)]
     · ext k
-      rcases (show k < φ 1 - φ 0 ∨ ¬ k < φ 1 - φ 0 by omega) with h_k | h_k <;>
-        simp [h_k, instAppendListInf, AppendListInf, instSuffixFrom, SuffixFrom, instFinSubseq, FinSubseq] <;>
-        simp [h_init]
-      simp [show k - φ 1 + φ 1 = k by omega]
+      simp [h_init, append_extract_drop]
 
 theorem ConcatInf_IterStar_IterOmega {L : Set (List A)} :
     L∗ * L^ω = L^ω := by
@@ -252,14 +251,14 @@ theorem ConcatInf_IterStar_IterOmega {L : Set (List A)} :
     simp [instIterStar, IterStar, instIterFin] at h_al0
     obtain ⟨n, h_al0⟩ := h_al0
     induction' n with n h_ind generalizing al0 as1 <;> simp [IterFin] at h_al0
-    · simpa [h_al0, nil_AppendListInf]
+    · simpa [h_al0, nil_append_stream]
     obtain ⟨al1, al2, h_al1, h_al2, rfl⟩ := h_al0
     have h_as2 : al2 ++ as1 ∈ L^ω := by
       rw [← ConcatInf_self_IterOmega] ; use al2,  as1
     specialize h_ind al1 (al2 ++ as1) h_as2 h_al1
-    simpa [AppendListInf_assoc]
+    simpa [append_append_stream]
   · intro h_as ; use [], as
-    simp [h_as, nil_AppendListInf]
+    simp [h_as, nil_append_stream]
     apply subset_IterStar_epsilon ; rfl
 
 theorem IterOmega_IterStar {L : Set (List A)} :
@@ -271,7 +270,7 @@ theorem IterOmega_IterStar {L : Set (List A)} :
     have h_sz : ∀ n, sz n > 0 := by
       intro n ; by_contra ; have h_contra : sz n = 0 := by omega
       specialize h_beg n ; specialize h_end n
-      simp [h_contra, length_FinSubseq] at h_end
+      simp [h_contra, length_extract] at h_end
       have := h_mono (show n < n + 1 by omega) ; omega
     let ξ n := ∑ i ∈ range n, sz i
     have h_init' : ξ 0 = 0 := by simp [ξ]
@@ -294,13 +293,13 @@ theorem IterOmega_IterStar {L : Set (List A)} :
     have h0 : ξ (Segment ξ k + 1) = ξ (Segment ξ k) + sz (Segment ξ k) := by simp [ξ, Finset.sum_range_succ]
     specialize h_seg (Segment ξ k) (k - ξ (Segment ξ k)) (by omega)
     specialize h_end (Segment ξ k)
-    simp [length_FinSubseq] at h_end
+    simp [length_extract] at h_end
     have h1 : ψ (Segment ξ k) (k - ξ (Segment ξ k) + 1) ≤ φ (Segment ξ k + 1) - φ (Segment ξ k) := by
       have := StrictMonoOn.monotoneOn (h_monoOn (Segment ξ k))
         (show k - ξ (Segment ξ k) + 1 < sz (Segment ξ k) + 1 by omega)
         (show sz (Segment ξ k) < sz (Segment ξ k) + 1 by omega)
         (by omega) ; omega
-    simp [extract_FinSubseq2' h1] at h_seg
+    simp [extract_extract2' h1] at h_seg
     rcases (show k + 1 < ξ (Segment ξ k + 1) ∨ k + 1 = ξ (Segment ξ k + 1) by omega) with h_k | h_k
     · have h2 := segment_range_val h_mono' (show ξ (Segment ξ k) ≤ k + 1 by omega) (h_k)
       have h3 := h_monoOn (Segment ξ k)

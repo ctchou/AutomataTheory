@@ -61,9 +61,9 @@ theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
     InfOcc (xs <<< k) = InfOcc xs := by
   ext x ; simp [InfOcc, frequently_atTop] ; constructor
   · intro h_inf n ; obtain ⟨m, h_m, rfl⟩ := h_inf n
-    use (m + k) ; simp [instSuffixFrom, SuffixFrom] ; omega
+    use (k + m) ; simp [get_drop'] ; omega
   · intro h_inf n ; obtain ⟨m, h_m, rfl⟩ := h_inf (n + k)
-    use (m - k) ; simp [instSuffixFrom, SuffixFrom, (show n ≤ m - k by omega), (show m - k + k = m by omega)]
+    use (m - k) ; simp [get_drop', (show n ≤ m - k by omega), (show k + (m - k) = m by omega)]
 
 /-- Over a finite type, `xs k` is in `InfOcc xs` for all sufficiently large `k`.
 -/
@@ -177,8 +177,7 @@ theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
     simp [← inf_occ_suffix ((getD · y) ∘ os) n] at h_inf
     apply Frequently.mono h_inf
     intro k
-    simp [instSuffixFrom, SuffixFrom]
-    obtain ⟨x', h_x'⟩ := h_n' (k + n) (by omega)
-    simp [h_x']
+    obtain ⟨x', h_x'⟩ := h_n' (n + k) (by omega)
+    simp [get_drop', h_x']
 
 end InfOcc

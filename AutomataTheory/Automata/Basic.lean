@@ -94,13 +94,14 @@ theorem na_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
   exact h.2 k h_k
 
 theorem na_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fin (n + 1) → M.State}
-    (h : M.FinRun' n as ss) : M.FinRun n (as ++ (const ℕ (default : A))) (ss ++ (const ℕ (ss 0))) := by
+    (h : M.FinRun' n as ss) : M.FinRun n (fun k ↦ if h : k < n then as ⟨k, h⟩ else default)
+      (fun k ↦ if h : k < n + 1 then ss ⟨k, h⟩ else ss 0) := by
   constructor
-  · simp [instAppendFinInf, AppendFinInf] ; exact h.1
+  · simp ; exact h.1
   intro k h_k
   have h_step := h.2 ⟨k, h_k⟩
   simp at h_step
-  simpa [instAppendFinInf, AppendFinInf, h_k, (show k < n + 1 by omega)]
+  simpa [h_k, (show k < n + 1 by omega)]
 
 theorem na_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
     (h : M.FinAccept acc n as) : M.FinAccept' acc n (fun k ↦ as k) := by
@@ -111,12 +112,12 @@ theorem na_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
   simpa
 
 theorem na_FinAccept_of_FinAccept' [Inhabited A] {n : ℕ} {as : Fin n → A}
-    (h : M.FinAccept' acc n as) : M.FinAccept acc n (as ++ (const ℕ (default : A))) := by
+    (h : M.FinAccept' acc n as) : M.FinAccept acc n (fun k ↦ if h : k < n then as ⟨k, h⟩ else default) := by
   rcases h with ⟨ss, h_run, h_n⟩
-  use (ss ++ (const ℕ (ss 0)))
+  use (fun k ↦ if h : k < n + 1 then ss ⟨k, h⟩ else ss 0)
   constructor
   · exact na_FinRun_of_FinRun' h_run
-  simpa [instAppendFinInf, AppendFinInf]
+  simpa
 
 /-- The following theorem shows that under the assumption that the alphabet type `A`
 is inhabited, the definitions using infinite sequences and those using finite sequences
@@ -131,10 +132,10 @@ theorem na_AcceptedLang_of_FinAccept' [Inhabited A] :
     · exact na_FinAccept'_of_FinAccept h_acc
     · exact h_al
   · rintro ⟨n, as, h_acc, h_al⟩
-    use n, (as ++ (const ℕ (default : A)))
+    use n, (fun k ↦ if h : k < n then as ⟨k, h⟩ else default)
     constructor
     · exact na_FinAccept_of_FinAccept' h_acc
-    · simpa [instFinSubseq, FinSubseq, instAppendFinInf, AppendFinInf]
+    · simpa [extract_eq_ofFn]
 
 end AutomataFiniteRuns
 
@@ -174,13 +175,13 @@ section AutomataBasicResults
 
 variable {A : Type} {M : NA A}
 
-theorem na_FinRun_FixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
-    (h : M.FinRun n as ss) : M.FinRun n (FixSuffix as n default) (FixSuffix ss (n + 1) (ss 0)) := by
+theorem na_FinRun_fixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+    (h : M.FinRun n as ss) : M.FinRun n (fixSuffix as n default) (fixSuffix ss (n + 1) (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
-  · simpa [FixSuffix]
+  · simpa [fixSuffix]
   intro k h_k
-  simp [FixSuffix, h_k, (by omega : k < n + 1)]
+  simp [fixSuffix, h_k, (by omega : k < n + 1)]
   exact h_next k h_k
 
 theorem na_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → M.State}

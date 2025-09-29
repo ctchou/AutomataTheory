@@ -153,16 +153,16 @@ theorem na_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat 
         · have h_ss_n'' := h_ss1 0
           simp [h_ss_n] at h_ss_n''
           rw [inr.inj_iff] at h_ss_n''
-          simpa [instSuffixFrom, SuffixFrom, h_k, ← h_ss_n'']
+          simpa [get_drop', h_k, ← h_ss_n'']
         · have h_k0 : k - 1 + Nat.find h_n + 1 = k + Nat.find h_n := by omega
           have h_next_k := h_next (k - 1 + Nat.find h_n) (by omega)
           simp [NA.Concat, h_k0, h_ss1 (k - 1) (by omega)] at h_next_k
           obtain ⟨sk1, h_sk1_next, h_sk1⟩ := h_next_k
           have h_k1 : k < m - Nat.find h_n + 1 := by omega
           have h_k2 : k < m - Nat.find h_n + 2 := by omega
-          have h_k3 : k + (Nat.find h_n - 1) = (k - 1) + Nat.find h_n := by omega
+          have h_k3 : (Nat.find h_n - 1) + k = (k - 1) + Nat.find h_n := by omega
           rw [h_ss1 k (by omega), inr.inj_iff] at h_sk1
-          simpa [instSuffixFrom, SuffixFrom, h_k, h_k1, h_k2, h_k3, ← h_sk1]
+          simpa [get_drop', h_k, h_k1, h_k2, h_k3, ← h_sk1]
       · intro k h_k h_k_m
         have h_k1 : k - (Nat.find h_n - 1) ≠ 0 := by omega
         have h_k2 : (k - (Nat.find h_n - 1) - 1) = k - Nat.find h_n := by omega
@@ -178,11 +178,11 @@ theorem na_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat 
         simpa [h_ss0 k (by omega), h_ss0 (k + 1) (by omega), NA.Concat]
       · obtain ⟨rfl⟩ := h_k
         have h_next_k := h_next1 0 (by omega)
-        simp [instSuffixFrom, SuffixFrom] at h_next_k
+        simp [get_drop'] at h_next_k
         simp [h_ss0 n (by omega), h_ss1 (n + 1) (by omega) (by omega), NA.Concat, h_acc0]
         use (ss1 0)
       · have h_next_k := h_next1 (k - n) (by omega)
-        simp [instSuffixFrom, SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
+        simp [get_drop', (by omega : n + (k - n) = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
         simpa [h_ss1 k (by omega) (by omega), h_ss1 (k + 1) (by omega) (by omega), NA.Concat]
     . have := h_ss1 m (by omega) (by omega)
       use (ss1 (m - n))
@@ -246,12 +246,12 @@ theorem na_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).Sta
         · have h_ss_n'' := h_ss1 0
           simp [h_ss_n] at h_ss_n''
           rw [inr.inj_iff] at h_ss_n''
-          simpa [instSuffixFrom, SuffixFrom, h_k, ← h_ss_n'']
+          simpa [get_drop', h_k, ← h_ss_n'']
         · have h_next_k := h_next ((k - 1) + Nat.find h_n)
           rw [(by omega : k = (k - 1) + 1)] at h_next_k
           simp [(by omega : (k - 1 + Nat.find h_n + 1) = k + Nat.find h_n)] at h_next_k
           simp [h_ss1, NA.Concat] at h_next_k
-          simpa [instSuffixFrom, SuffixFrom, h_k, (by omega : k + (Nat.find h_n - 1) = (k - 1) + Nat.find h_n)]
+          simpa [get_drop', h_k, (by omega : (Nat.find h_n - 1) + k = (k - 1) + Nat.find h_n)]
       · intro k h_k
         have h_k1 : k - (Nat.find h_n - 1) ≠ 0 := by omega
         have h_k2 : (k - (Nat.find h_n - 1) - 1) = k - Nat.find h_n := by omega
@@ -266,11 +266,11 @@ theorem na_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).Sta
         simpa [h_ss0 k (by omega), h_ss0 (k + 1) (by omega), NA.Concat]
       · obtain ⟨rfl⟩ := h_k
         have h_next_k := h_next1 0
-        simp [instSuffixFrom, SuffixFrom] at h_next_k
+        simp [get_drop'] at h_next_k
         simp [h_ss0 n (by omega), h_ss1 (n + 1) (by omega), NA.Concat, h_acc0]
         use (ss1 0)
       · have h_next_k := h_next1 (k - n)
-        simp [instSuffixFrom, SuffixFrom, (by omega : k - n + n = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
+        simp [get_drop', (by omega : n + (k - n) = k), (by omega : k - n + 1 = k + 1 - n)] at h_next_k
         simpa [h_ss1 k (by omega), h_ss1 (k + 1) (by omega), NA.Concat]
     . have := h_ss1 (n + 1) (by omega)
       use (n + 1), (ss1 (n + 1 - n))
@@ -321,10 +321,10 @@ theorem acc_lang_concat_ne :
       use s1 ; rw [h_s1]
     obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_fin_run_1.mp ⟨h_run, h_s1_ex⟩
     use (as ⇊ 0 n), (as ⇊ n m)
-    simp (disch := omega) [finSubseq_append_finSubseq, finSubseq_empty_iff, h_n]
+    simp (disch := omega) [append_extract_extract, extract_nil_iff, h_n]
     constructor
     · use n, as ; simp ; use ss0
-    · use (m - n), (as <<< n) ; simp (disch := omega) [suffixFrom_FinSubseq0]
+    · use (m - n), (as <<< n) ; simp (disch := omega) [extract_drop]
       use ss1 ; simp [h_run1]
       obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
       simpa [← inr.inj h_s1]
@@ -333,7 +333,7 @@ theorem acc_lang_concat_ne :
     simp at h_al1_ne
     rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩⟩
     rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, rfl⟩⟩
-    have h_m : 0 < m := by simp [finSubseq_empty_iff] at h_al1_ne ; omega
+    have h_m : 0 < m := by simp [extract_nil_iff] at h_al1_ne ; omega
     let as := (as0 ⇊ 0 n) ++ as1
     use (n + m), as ; constructor
     · let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
@@ -345,13 +345,13 @@ theorem acc_lang_concat_ne :
         · use ss0 ; simp [as, ss, h_acc0] ; constructor
           · exact h_init0
           · intro k h_k
-            have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
-            simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
+            have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+            simp (disch := omega) [get_append_left' h1, get_extract, h_next0 k h_k]
         · use ss1 ; simp ; constructor <;> [constructor ; skip]
           · exact h_init1
           · intro k h_k
-            have h1 : (as0 ⇊ 0 n).length = n := by simp [length_FinSubseq]
-            rw [← h1] ; simp [as, suffixFrom_listLength_AppendListInf]
+            have h1 : (as0 ⇊ 0 n).length = n := by simp [length_extract]
+            rw [← h1] ; simp [as, drop_append_stream]
             exact h_next1 k h_k
           · simp [ss] ; omega
       · use (ss1 m)
@@ -359,8 +359,8 @@ theorem acc_lang_concat_ne :
           have h_m1 : ¬ n + m < n + 1 := by omega
           simp [ss, h_m1]
         simp [h_acc1, h_ss_nm]
-    · have h1 : (as0 ⇊ 0 n).length ≤ n + m := by simp [length_FinSubseq]
-      simp [as, appendListInf_FinSubseq_right h1, length_FinSubseq]
+    · have h1 : (as0 ⇊ 0 n).length ≤ n + m := by simp [length_extract]
+      simp [as, extract_append_zero_right h1, length_extract]
 
 /-- The ω-language of the concatenation NA that is accepted by `M1`'s accepting states
 is the language accepted by `M0` concatenated with the ω-language accepted by `M1`.
@@ -373,7 +373,7 @@ theorem acc_omega_lang_concat :
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc
     have h_s1_ex : ∃ n s1, ss n = inr s1 := by use n, s1 ; simp [h_s1]
     obtain ⟨n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_inf_run.mp ⟨h_run, h_s1_ex⟩
-    use (as ⇊ 0 n), (as <<< n) ; simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
+    use (as ⇊ 0 n), (as <<< n) ; simp [append_extract_drop] ; constructor
     · use n, as ; constructor
       · use ss0
       · rfl
@@ -394,11 +394,11 @@ theorem acc_omega_lang_concat :
       · use ss0 ; simp [ss, h_acc0] ; constructor
         · exact h_init0
         · intro k h_k
-          have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
-          simp (disch := omega) [← h_as, appendListInf_elt_left h1, finSubseq_elt, h_next0 k h_k]
+          have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+          simp (disch := omega) [← h_as, get_append_left' h1, get_extract, h_next0 k h_k]
       · use ss1 ; simp [ss]
-        have h1 : (as0 ⇊ 0 n).length = n := by simp [length_FinSubseq]
-        rw [← h1] ; simp [← h_as, suffixFrom_listLength_AppendListInf, h_run1]
+        have h1 : (as0 ⇊ 0 n).length = n := by simp [length_extract]
+        rw [← h1] ; simp [← h_as, drop_append_stream, h_run1]
     · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
         simp only [eventually_atTop]
         use (n + 1) ; intro k h_k ; simp [ss] ; omega

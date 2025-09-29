@@ -140,7 +140,7 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
     · intro h_acc
       obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
       use (as ⇊ 0 n), (as <<< n)
-      simp [h_acc1, appendListInf_FinSubseq_SuffixFrom]
+      simp [h_acc1, append_extract_drop]
       use n, as
     · rintro ⟨al0, as1, ⟨n, as0, h_as0, rfl⟩, h_as1, h_as⟩
       have h_acc0 : M0.toNA.FinAccept acc0 n as := by
@@ -148,11 +148,11 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
         use ss0 ; simp [← h_as, h_acc0] ; constructor
         · exact h_run0.1
         intro k h_k
-        have h1 : k < (as0 ⇊ 0 n).length := by simp [length_FinSubseq, h_k]
-        simp (disch := omega) [appendListInf_elt_left h1, finSubseq_elt, h_run0.2 k h_k]
+        have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+        simp (disch := omega) [get_append_left' h1, get_extract, h_run0.2 k h_k]
       have h_acc1 : M1.MullerAccept accSet1 (as <<< n) := by
-        have h1 : n = (as0 ⇊ 0 n).length := by simp [length_FinSubseq]
-        rw [h1] ; simp [← h_as, suffixFrom_listLength_AppendListInf] ; exact h_as1
+        have h1 : n = (as0 ⇊ 0 n).length := by simp [length_extract]
+        rw [h1] ; simp [← h_as, drop_append_stream] ; exact h_as1
       exact Automata.da_concat_to_muller_accept M0 acc0 M1 accSet1 as n h_acc0 h_acc1
 
 /-- Every deterministic Muller language is an ω-regular language.

@@ -72,10 +72,15 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLan
     apply Frequently.mono h_inf ; intro m
     exact (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).2.mp
   obtain ⟨ss0', h_ss_0, h_ss_φ0, h_next0'⟩ := h_pair_0'
-  simp [instFinSubseq, FinSubseq] at h_ss_φ0 h_next0'
+  simp (disch := omega) [length_extract, get_extract] at h_ss_φ0 h_next0'
   have h_lem1 : ∀ m,  (fun k ↦ as' (k + φ' 0)) ⇊ (φ' m - φ' 0) (φ' (m + 1) - φ' 0) = as' ⇊ (φ' m) (φ' (m + 1)) := by
     intro m
-    exact finSubseq_of_SuffixFrom (show φ' 0 ≤ φ' m by simp [StrictMono.le_iff_le h_mono']) (φ' (m + 1))
+    have h1 : (fun k ↦ as' (k + φ' 0)) = as' <<< φ' 0 := by
+      ext k ; simp [get_drop'] ; congr 1 ; omega
+    have := StrictMono.monotone h_mono' (show 0 ≤ m by omega)
+    have := StrictMono.monotone h_mono' (show 0 ≤ m + 1 by omega)
+    simp [h1, extract_drop, (show φ' 0 + (φ' m - φ' 0) = φ' m by omega),
+      (show φ' 0 + (φ' (m + 1) - φ' 0) = φ' (m + 1) by omega)]
   obtain ⟨ss1', h_ss1', h_next1', h_acc1'⟩ := pair_acc_lang_frequently_to_run
     (acc := acc) (φ := (φ' · - φ' 0)) (as := fun k ↦ as' (k + φ' 0))
     (ss' := fun k ↦ ss (φ k)) (base_zero_strict_mono h_mono') (base_zero_shift φ')
@@ -167,7 +172,10 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
   · simp [Congruence.EqvCls, p]
   · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
     intro m
-    simp [finSubseq_of_SuffixFrom (show φ 0 ≤ φ m by simp [StrictMono.le_iff_le h_mono]) (φ (m + 1))]
+    have := StrictMono.monotone h_mono (show 0 ≤ m by omega)
+    have := StrictMono.monotone h_mono (show 0 ≤ m + 1 by omega)
+    simp [extract_drop, (show φ 0 + (φ m - φ 0) = φ m by omega),
+      (show φ 0 + (φ (m + 1) - φ 0) = φ (m + 1) by omega)]
     have h_card2 : Finset.card {φ m, φ (m + 1)} = 2 := by
       apply Finset.card_pair
       have := h_mono (show m < m + 1 by omega)
@@ -179,6 +187,6 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
     have h_color := h_color {φ m, φ (m + 1)} h_card2 (by intro x ; simp ; grind)
     simp [color, h_min, h_max] at h_color
     simp [Congruence.EqvCls, h_color]
-  · simp [appendListInf_FinSubseq_SuffixFrom]
+  · simp [append_extract_drop]
 
 end BuchiCongrFinite

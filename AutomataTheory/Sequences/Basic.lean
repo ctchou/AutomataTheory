@@ -10,10 +10,10 @@ import AutomataTheory.Mathlib.Imports
 This file contains some definitions and theorems about finite and infinite sequences,
 which are modeled by types `List X` and `ℕ → X` respectively (X being an arbitrary type).
 It is imported directly or indirectly by all other files in AutomataTheory except those
-in AutomataTheort.Mathlib.
+in AutomataTheory.Mathlib.
 -/
 
-open Function Set List Option Filter
+open Function Set Option Filter
 
 section Sequences
 
@@ -29,20 +29,10 @@ def AppendListInf (xl : List X) (xs : ℕ → X) : ℕ → X :=
 instance instAppendListInf : HAppend (List X) (ℕ → X) (ℕ → X) :=
   { hAppend := AppendListInf }
 
-/-- Append a finite map (which is equivalent to a list) and an infinite sequence.
--/
-def AppendFinInf {n : ℕ} (xs : Fin n → X) (xs' : ℕ → X) : ℕ → X :=
-  fun k ↦ if h : k < n then xs ⟨k, h⟩ else xs' (k - n)
-
-/-- Use the infix notation `++` for `AppendFintInf`.
--/
-instance instAppendFinInf {n : ℕ} : HAppend (Fin n → X) (ℕ → X) (ℕ → X) :=
-  { hAppend := AppendFinInf }
-
 /-- Remove the first n elements from an infinite sequence xs.
 -/
 def SuffixFrom (xs : ℕ → X) (n : ℕ) : ℕ → X :=
-  fun k ↦ xs (k + n)
+  fun k ↦ xs (n + k)
 
 /-- Use the infix notation `<<<` for `SuffixFrom`.
 -/
@@ -67,27 +57,37 @@ instance instFinSubseq : GetSeg (ℕ → X) (ℕ → ℕ → List X) :=
 
 /-- Fix all elements of `xs` to `x` from position `n` onward.
 -/
-def FixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
+def fixSuffix (xs : ℕ → X) (n : ℕ) (x : X) : ℕ → X :=
   fun k ↦ if k < n then xs k else x
 
-def List.ExtendInf [Inhabited X] (xl : List X) : ℕ → X :=
+def List.padDefault [Inhabited X] (xl : List X) : ℕ → X :=
   fun k ↦ if h : k < xl.length then xl[k] else default
 
 /- Some technical lemmas are proved below.
 -/
 variable {xl xl' : List X} {xs xs' : ℕ → X}
 
-theorem nil_AppendListInf :
+theorem get_drop' (xs : ℕ → X) {n k : ℕ} :
+    (xs <<< n) k = xs (n + k) := by
+  simp [instSuffixFrom, SuffixFrom]
+
+theorem extract_eq_ofFn {xs : ℕ → X} {m n : ℕ} :
+    xs ⇊ m n = List.ofFn (fun k : Fin (n - m) ↦ xs (k + m)) := by
+  rfl
+
+-- In mathlib
+theorem nil_append_stream :
     ([] : List X) ++ xs = xs := by
   ext k ; simp [instAppendListInf, AppendListInf]
 
-theorem AppendListInf_assoc :
+-- In mathlib
+theorem append_append_stream :
     (xl ++ xl') ++ xs = xl ++ (xl' ++ xs) := by
   ext k ; simp [instAppendListInf, AppendListInf]
   rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < xl.length + xl'.length) ∨ ¬ k < xl.length + xl'.length by omega)
     <;> grind
 
-theorem finSubseq_eq_FinSubseq {m n m' n' : ℕ}
+theorem extract_eq_extract {m n m' n' : ℕ}
     (h : xs ⇊ m n = xs' ⇊ m' n') :
     n - m = n' - m' ∧ ∀ k < n - m, xs (m + k) = xs' (m' + k) := by
   simp [instFinSubseq, FinSubseq, List.ofFn_inj'] at h
@@ -96,66 +96,61 @@ theorem finSubseq_eq_FinSubseq {m n m' n' : ℕ}
   simp [← h_eq] ; intro k h_k
   rw [add_comm] ; simp [h_fun k h_k] ; congr 1 ; omega
 
-theorem appendListInf_FinSubseq_SuffixFrom {n : ℕ} :
+theorem append_extract_drop {n : ℕ} :
     (xs ⇊ 0 n) ++ (xs <<< n) = xs := by
-  ext k ; simp [instAppendListInf, AppendListInf, instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom]
+  ext k ; simp [instAppendListInf, AppendListInf, instFinSubseq, FinSubseq, get_drop']
   rcases Classical.em (k < n) with h_k | h_k
   · simp [h_k]
-  · simp [(by omega : k - n + n = k)]
+  · simp [(by omega : n + (k - n) = k)]
 
-theorem appendListInf_elt_skip_list {n : ℕ} :
-    (xl ++ xs) (n + xl.length) = xs n := by
-  simp [instAppendListInf, AppendListInf]
-
-theorem appendListInf_elt_left {k : ℕ} (h : k < xl.length) :
+theorem get_append_left' {k : ℕ} (h : k < xl.length) :
     (xl ++ xs) k = xl[k] := by
   simp [instAppendListInf, AppendListInf, h]
 
-theorem appendListInf_elt_right {k : ℕ} (h : xl.length ≤ k) :
+theorem get_append_right' {k : ℕ} (h : xl.length ≤ k) :
     (xl ++ xs) k = xs (k - xl.length) := by
   simp [instAppendListInf, AppendListInf, h]
 
-theorem appendListInf_FinSubseq_right {n : ℕ} (h : xl.length ≤ n) :
+theorem extract_apppend_right_right {m n : ℕ} (h : xl.length ≤ m) :
+    (xl ++ xs) ⇊ m n = xs ⇊ (m - xl.length) (n - xl.length) := by
+  ext k x
+  rcases (show k < n - m ∨ ¬ k < n - m by omega) with h_k | h_k <;>
+    simp [h_k, instAppendListInf, AppendListInf, instFinSubseq, FinSubseq] <;> grind
+
+theorem extract_append_zero_right {n : ℕ} (h : xl.length ≤ n) :
     (xl ++ xs) ⇊ 0 n = xl ++ (xs ⇊ 0 (n - xl.length)) := by
   ext k x
   rcases (show k < xl.length ∨ (¬ k < xl.length ∧ k < n) ∨ ¬ k < n by omega) with h_k | h_k | h_k
     <;> simp [h_k, instAppendListInf, AppendListInf, instFinSubseq, FinSubseq, List.getElem?_append]
     <;> grind
 
-theorem suffixFrom_listLength_AppendListInf :
+-- In mathlib
+theorem drop_append_stream :
     (xl ++ xs) <<< xl.length = xs := by
-  ext k ; simp [instSuffixFrom, SuffixFrom, instAppendListInf, AppendListInf]
+  ext k ; simp [get_drop', instAppendListInf, AppendListInf]
 
-theorem sub_base_of_SuffixFrom {X : Type*} {xs : ℕ → X} {j k : ℕ} (h : j ≤ k) :
-    (xs <<< j) (k - j) = xs k := by
-  simp [instSuffixFrom, SuffixFrom, (show k - j + j = k by omega)]
+theorem extract_drop {k m n : ℕ} :
+    (xs <<< k) ⇊ m n = xs ⇊ (k + m) (k + n) := by
+  simp [instFinSubseq, FinSubseq, get_drop', (show k + n - (k + m) = n - m by omega)]
+  ext i ; congr 1 ; omega
 
-theorem finSubseq_of_SuffixFrom {k m : ℕ} (h_m : k ≤ m) (n : ℕ) :
-    (xs <<< k) ⇊ (m - k) (n - k) = xs ⇊ m n := by
-  simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom, add_assoc,
-    (show m - k + k = m by omega), (show n - k - (m - k) = n - m by omega)]
-
-theorem suffixFrom_FinSubseq0 {k n : ℕ} :
-    (xs <<< k) ⇊ 0 n = xs ⇊ k (k + n) := by
-  simp [instFinSubseq, FinSubseq, instSuffixFrom, SuffixFrom]
-
-theorem length_FinSubseq {xs : ℕ → X} {m n : ℕ} :
+theorem length_extract {xs : ℕ → X} {m n : ℕ} :
     (xs ⇊ m n).length = n - m := by
   simp [instFinSubseq, FinSubseq]
 
-theorem empty_FinSubseq {n : ℕ} :
+theorem extract_nil {n : ℕ} :
     xs ⇊ n n = [] := by
   simp [instFinSubseq, FinSubseq]
 
-theorem finSubseq_empty_iff {m n : ℕ} :
+theorem extract_nil_iff {m n : ℕ} :
     xs ⇊ m n = [] ↔ m ≥ n := by
   simp [instFinSubseq, FinSubseq] ; omega
 
-theorem finSubseq_elt {m n k : ℕ} (h : k < n - m) :
-    (xs ⇊ m n)[k]'(by simp [length_FinSubseq, h]) = xs (k + m) := by
+theorem get_extract {m n k : ℕ} (h : k < n - m) :
+    (xs ⇊ m n)[k]'(by simp [length_extract, h]) = xs (k + m) := by
   simp [instFinSubseq, FinSubseq]
 
-theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
+theorem extract_extract2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
     (xs ⇊ m n).extract i j = xs ⇊ (m + i) (m + j) := by
   ext k x
   rcases (show k < j - i ∨ ¬ k < j - i by omega) with h_k | h_k <;>
@@ -163,30 +158,30 @@ theorem extract_FinSubseq2' {xs : ℕ → X} {m n i j : ℕ} (h : j ≤ n - m) :
   · simp [(show i + k < n - m by omega), (show k < m + j - (m + i) by omega), (show i + k + m = k + (m + i) by omega)]
   · simp [(show ¬ k < m + j - (m + i) by omega)]
 
-theorem extract_FinSubseq2 {xs : ℕ → X} {n i j : ℕ} (h : j ≤ n) :
+theorem extract_extract2 {xs : ℕ → X} {n i j : ℕ} (h : j ≤ n) :
     (xs ⇊ 0 n).extract i j = xs ⇊ i j := by
-  simp [extract_FinSubseq2' (show j ≤ n - 0 by omega)]
+  simp [extract_extract2' (show j ≤ n - 0 by omega)]
 
-theorem extract_FinSubseq1 {xs : ℕ → X} {n i : ℕ} :
+theorem extract_extract1 {xs : ℕ → X} {n i : ℕ} :
     (xs ⇊ 0 n).extract i = xs ⇊ i n := by
-  simp [extract_FinSubseq2 (show n ≤ n by omega), length_FinSubseq]
+  simp [extract_extract2 (show n ≤ n by omega), length_extract]
 
-theorem finSubseq_append_finSubseq (xs : ℕ → X) {k m n : ℕ} (h_km : k ≤ m) (h_mn : m ≤ n) :
+theorem append_extract_extract (xs : ℕ → X) {k m n : ℕ} (h_km : k ≤ m) (h_mn : m ≤ n) :
     (xs ⇊ k m) ++ (xs ⇊ m n) = xs ⇊ k n := by
   ext i x ; simp [instFinSubseq, FinSubseq, List.getElem?_append] ; grind
 
-theorem finSubseq_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
+theorem extract_succ_right (xs : ℕ → X) {m n : ℕ} (h_mn : m ≤ n) :
     xs ⇊ m (n + 1) = xs ⇊ m n ++ [xs n] := by
-  rw [← finSubseq_append_finSubseq xs h_mn (show n ≤ n + 1 by omega)]
+  rw [← append_extract_extract xs h_mn (show n ≤ n + 1 by omega)]
   congr ; simp [instFinSubseq, FinSubseq]
 
-theorem finSubseq_ExtendInf [Inhabited X] :
-    xl.ExtendInf ⇊ 0 xl.length = xl := by
-  simp [List.ExtendInf, instFinSubseq, FinSubseq]
+theorem extract_padDefault [Inhabited X] :
+    xl.padDefault ⇊ 0 xl.length = xl := by
+  simp [List.padDefault, instFinSubseq, FinSubseq]
 
-theorem extendinf_elt_left [Inhabited X] {k : ℕ} (h : k < xl.length) :
-    xl.ExtendInf k = xl[k] := by
-  simp [List.ExtendInf, h]
+theorem padDefault_elt_left [Inhabited X] {k : ℕ} (h : k < xl.length) :
+    xl.padDefault k = xl[k] := by
+  simp [List.padDefault, h]
 
 theorem antitone_fin_eventually {n : ℕ} {f : ℕ → Fin n} (h : Antitone f) :
     ∃ i : Fin n, ∃ m, ∀ k ≥ m, f k = i := by

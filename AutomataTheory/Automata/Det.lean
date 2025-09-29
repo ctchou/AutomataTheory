@@ -97,16 +97,15 @@ theorem da_run_from_on_append (M : DA A) (s : M.State) (al1 al2 : List A) :
 theorem da_run_on_of_det_run (M : DA A) (as : ℕ → A) (n : ℕ) :
     M.RunOn (as ⇊ 0 n) = M.DetRun as n := by
   induction' n with n h_ind
-  · simp [DA.DetRun, DA.RunOn, DA.RunFromOn, instFinSubseq, FinSubseq]
-  have h1 := finSubseq_succ_right as (show 0 ≤ n by omega)
+  · simp [extract_nil, DA.DetRun, DA.RunOn, DA.RunFromOn]
+  have h1 := extract_succ_right as (show 0 ≤ n by omega)
   rw [DA.RunOn, DA.DetRun, ← h_ind, h1, da_run_from_on_append] ; rfl
 
 /-- A technical result for extending a finite run to an infinite run.
 -/
 theorem da_run_on_to_det_run [Inhabited A] (M : DA A) (al : List A) :
-    M.RunOn al = M.DetRun al.ExtendInf al.length := by
-  rw [← da_run_on_of_det_run M al.ExtendInf al.length]
-  congr ; ext i a ; simp [instFinSubseq, FinSubseq, List.ExtendInf]
+    M.RunOn al = M.DetRun al.padDefault al.length := by
+  simp [← da_run_on_of_det_run M al.padDefault al.length, extract_padDefault]
 
 /-- A finite word `al` is accepted by `M` if and only if `M` reaches an
 accepting state after running on `al` starting from the initial state.
@@ -119,9 +118,9 @@ theorem da_acc_lang_iff_run_acc [Inhabited A] (M : DA A) (acc : Set M.State) (al
     have h1 := da_run_on_of_det_run M as n
     simp [h1, ← h0, h_acc]
   · intro h_acc
-    use al.length, al.ExtendInf ; simp [finSubseq_ExtendInf]
-    use (M.DetRun al.ExtendInf) ; constructor
-    · exact da_fin_run_exists (M := M) al.length al.ExtendInf
+    use al.length, al.padDefault ; simp [extract_padDefault]
+    use (M.DetRun al.padDefault) ; constructor
+    · exact da_fin_run_exists (M := M) al.length al.padDefault
     · simp [← da_run_on_to_det_run, h_acc]
 
 end DetAutomataBasic
@@ -139,25 +138,26 @@ theorem da_acc_lang_compl [Inhabited A] :
   constructor
   · rintro ⟨n, as, ⟨ss, h_run, h_acc⟩, h_al⟩
     rintro ⟨n', as', ⟨ss', h_run', h_acc'⟩, h_al'⟩
-    have h_len : al.length = n := by simp [← h_al, length_FinSubseq]
-    have h_len' : al.length = n' := by simp [← h_al', length_FinSubseq]
+    have h_len : al.length = n := by simp [← h_al, length_extract]
+    have h_len' : al.length = n' := by simp [← h_al', length_extract]
     obtain ⟨rfl⟩ := show n' = n by rw [← h_len, ← h_len']
-    have h_run_n := na_FinRun_FixSuffix h_run
-    have h_run_n' := na_FinRun_FixSuffix h_run'
-    have h_as_eq : FixSuffix as' n default = FixSuffix as n default := by
-      ext k ; rcases Classical.em (k < n) with h_k | h_k <;> simp [FixSuffix, h_k]
-      have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp [← h_al, instFinSubseq, FinSubseq]
-      have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp [← h_al', instFinSubseq, FinSubseq]
+    have h_run_n := na_FinRun_fixSuffix h_run
+    have h_run_n' := na_FinRun_fixSuffix h_run'
+    have h_as_eq : fixSuffix as' n default = fixSuffix as n default := by
+      ext k ; rcases Classical.em (k < n) with h_k | h_k <;> simp [fixSuffix, h_k]
+      have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al, get_extract]
+      have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al', get_extract]
       rw [h_as_k, h_as_k']
     rw [h_as_eq] at h_run_n'
     have h_ss_n := da_fin_run_unique h_run_n n (by omega)
     have h_ss_n' := da_fin_run_unique h_run_n' n (by omega)
-    simp [FixSuffix] at h_ss_n h_ss_n'
+    simp [fixSuffix] at h_ss_n h_ss_n'
     rw [h_ss_n] at h_acc ; rw [h_ss_n'] at h_acc'
     contradiction
   · intro h_compl
-    let as := fun k ↦ if h : k < al.length then al[k] else default
-    have h_al : as ⇊ 0 al.length = al := by simp [as, instFinSubseq, FinSubseq]
+--    let as := fun k ↦ if h : k < al.length then al[k] else default
+    let as := al.padDefault
+    have h_al : as ⇊ 0 al.length = al := by simp [as, extract_padDefault]
     use al.length, as ; simp [h_al]
     let ss := M.DetRun as
     have h_run : M.toNA.FinRun al.length as ss := by exact da_fin_run_exists al.length as
@@ -188,9 +188,8 @@ theorem da_acc_omega_lang :
     apply frequently_iff_strict_mono.mpr
     use φ ; simp [h_mono] ; intro m
     obtain ⟨n, as', ⟨ss, h_run', h_acc'⟩, h_as'⟩ := h_acc m
-    simp [instFinSubseq, FinSubseq, List.ofFn_inj'] at h_as'
+    have h_as' := extract_eq_extract h_as' ; simp at h_as'
     obtain ⟨rfl, h_as'⟩ := h_as'
-    simp [funext_iff, Fin.forall_iff] at h_as'
     have h_run : M.toNA.FinRun (φ m) as ss := na_FinRun_modulo
       (M := M.toNA) (n := φ m) (as := as') (as' := as) (ss := ss) (ss' := ss) (by grind) (by grind) h_run'
     have := da_fin_run_unique h_run (φ m) (by omega)

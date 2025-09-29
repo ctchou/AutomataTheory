@@ -73,17 +73,19 @@ theorem acc_lang_inter [Inhabited A] :
     · exact na_prod_fin_run.mp h_run i
     · exact h_acc i
   · intro h_all
-    have h_all' : ∀ i, ∃ ss_i, (M i).FinRun al.length (fun k ↦ al[k]!) ss_i ∧ ss_i (al.length) ∈ acc i := by
-      intro i
-      obtain ⟨n, as, ⟨ss_i, h_run_i, h_acc_i⟩, h_al⟩ := h_all i
-      have h_n : n = al.length := by simp [← h_al, length_FinSubseq]
+    have h_all' : ∀ i, ∃ ss_i, (M i).FinRun al.length al.padDefault ss_i ∧ ss_i (al.length) ∈ acc i := by
+      intro i ; obtain ⟨n, as, ⟨ss_i, h_run_i, h_acc_i⟩, h_al⟩ := h_all i
+      have h_n : n = al.length := by simp [← h_al, length_extract]
       obtain rfl := h_n
       use ss_i ; simp [h_acc_i]
       constructor
       · exact h_run_i.1
-      intro k h_k ; rw [← h_al]
-      simpa [h_k, instFinSubseq, FinSubseq] using h_run_i.2 k h_k
-    use al.length, (fun k ↦ al[k]!) ; simp [instFinSubseq, FinSubseq]
+      intro k h_k
+      have h1 : k < (as⇊ 0 al.length).length := by simp [length_extract, h_k]
+      have h2 : al.padDefault k = as k := by
+        rw [← h_al] ; simp (disch := omega) [padDefault_elt_left, get_extract]
+      simp [h2, h_run_i.2 k h_k]
+    use al.length, al.padDefault ; simp [extract_padDefault]
     choose ss_i h_ss_i using h_all'
     use (fun k i ↦ ss_i i k) ; constructor
     · apply na_prod_fin_run.mpr

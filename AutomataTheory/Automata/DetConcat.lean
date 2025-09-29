@@ -106,13 +106,13 @@ theorem da_concat_det_run_2 (as : ℕ → A) (n : ℕ) (i : Fin (Nat.card M2.Sta
   obtain ⟨j, rfl⟩ := show ∃ j, k = m + 1 + j by use k - m - 1 ; omega
   induction' j with j h_ind
   · simp [DA.DetRun] at h_s2 ⊢
-    simp [h_s2, instSuffixFrom, SuffixFrom]
+    simp [h_s2, get_drop']
   specialize h_ind (by omega)
   have h_next := da_concat_next_2 M1 acc1 M2 ((M1.Concat acc1 M2).DetRun as (m + 1 + j)) (as (m + 1 + j)) i
   simp [h_ind, eq_ite_iff] at h_next
   rcases h_next with ⟨_, h_some⟩ | ⟨_, h_none⟩
-  · simp [DA.DetRun, h_some, instSuffixFrom, SuffixFrom,
-      (show 1 + j + m = m + 1 + j by omega), (show m + 1 + j - m = 1 + j by omega),
+  · simp [DA.DetRun, h_some, get_drop',
+      (show m + (1 + j) = m + 1 + j by omega), (show m + 1 + j - m = 1 + j by omega),
       (show m + 1 + (j + 1) - m = 1 + j + 1 by omega)]
   · obtain ⟨s2', h_s2'⟩ := h_gt_m (m + 1 + j + 1) (by omega)
     simp [DA.DetRun, h_none] at h_s2'
@@ -165,7 +165,7 @@ theorem da_concat_ptr2_exists (as : ℕ → A) (n : ℕ) (h_n : M1.DetRun as n �
     obtain ⟨i, h_i, h_min⟩ := Finite.exists_minimal h_fin h_ne
     simp [I] at h_i h_min
     use i
-    simp [h_i, DA.DetRun, da_concat_next_2, da_concat_det_run_1, h_n, instSuffixFrom, SuffixFrom, ← ne_none_iff_isSome]
+    simp [h_i, DA.DetRun, da_concat_next_2, da_concat_det_run_1, h_n, get_drop', ← ne_none_iff_isSome]
     intro j h_j h_contra ; have := h_min h_contra ; fin_omega
   obtain ⟨i, h_i, _⟩ := h_ind
   let I := {j | ((M1.Concat acc1 M2).DetRun as (n + k + 1)).2 j = some (M2.DetRun (as <<< n) (k + 1))}
@@ -181,7 +181,7 @@ theorem da_concat_ptr2_exists (as : ℕ → A) (n : ℕ) (h_n : M1.DetRun as n �
     intro j' h_j' h_contra ; have := h_min h_contra ; fin_omega
   constructorm* _ ∧ _
   · grind
-  · simp [DA.DetRun, instSuffixFrom, SuffixFrom, (show n + k + 1 = k + 1 + n by omega)]
+  · simp [DA.DetRun, get_drop', (show n + (k + 1) = n + k + 1 by omega)]
   · grind
 
 /-- Use the `choose` function to pick out the `i` that is asserted to exist

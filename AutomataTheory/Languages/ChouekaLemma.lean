@@ -63,13 +63,13 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
       ∀ k, m < k → k < φ n → M.RunOn (as ⇊ m k) ≠ M.RunOn (as ⇊ 0 k) := by
     intro n
     obtain ⟨m, h_m0, h_m1, h_acc, h_run, h_run'⟩ := h_prefix n
-    simp [length_FinSubseq] at h_m1
-    simp [-extract_eq_drop_take, extract_FinSubseq2 (show m ≤ φ n by omega)] at h_acc
-    simp [-extract_eq_drop_take, extract_FinSubseq1] at h_run
+    simp [length_extract] at h_m1
+    simp [-extract_eq_drop_take, extract_extract2 (show m ≤ φ n by omega)] at h_acc
+    simp [-extract_eq_drop_take, extract_extract1] at h_run
     use m ; simp [h_m0, h_m1, h_acc, h_run]
     intro k h_k h_k'
-    specialize h_run' k h_k (by simp [length_FinSubseq, h_k'])
-    simp [-extract_eq_drop_take, extract_FinSubseq2 (show k ≤ φ n by omega)] at h_run'
+    specialize h_run' k h_k (by simp [length_extract, h_k'])
+    simp [-extract_eq_drop_take, extract_extract2 (show k ≤ φ n by omega)] at h_run'
     exact h_run'
   choose φ' h_φ'_0 h_φ'_n h_acc h_run h_run' using h_m_ex
   have h_inj : Injective φ' := by
@@ -93,11 +93,11 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
     · exact h_acc (σ 0)
     have h1 := h_φ'_n (σ (n - 1))
     have h2 := h_φ_φ' (n - 1) ; simp [show n - 1 + 1 = n by omega] at h2
-    have h3 := finSubseq_append_finSubseq as (show φ' (σ (n - 1)) ≤ φ (σ (n - 1)) by omega)
+    have h3 := append_extract_extract as (show φ' (σ (n - 1)) ≤ φ (σ (n - 1)) by omega)
       (show φ (σ (n - 1)) ≤ φ' (σ n) by omega)
     have h4 := h_run (σ (n - 1)) ; simp [DA.RunOn] at h4
     simp [← h3, DA.RunOn, da_run_from_on_append, h4]
-    have h5 := finSubseq_append_finSubseq as (show 0 ≤ φ (σ (n - 1)) by omega)
+    have h5 := append_extract_extract as (show 0 ≤ φ (σ (n - 1)) by omega)
       (show φ (σ (n - 1)) ≤ φ' (σ n) by omega)
     simp [← da_run_from_on_append, h5]
     exact h_acc (σ n)
@@ -156,13 +156,13 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     intro i j h_ij ; simp [instIterStar, IterStar]
     use (j - i) ; generalize h_n : j - i = n
     induction' n with n h_ind generalizing i j <;> simp [instIterFin, IterFin]
-    · simp [empty_FinSubseq, (show i = j by omega)]
+    · simp [extract_nil, (show i = j by omega)]
     use (as ⇊ (φ i) (φ (j - 1))), (as ⇊ (φ (j - 1)) (φ j)) ; constructorm* _ ∧ _
     · exact h_ind i (j - 1) (by omega) (by omega)
     · specialize h_φ_V (j - 1)
       simp [(show j - 1 + 1 = j by omega)] at h_φ_V
       exact h_φ_V
-    · apply finSubseq_append_finSubseq <;>
+    · apply append_extract_extract <;>
         apply StrictMono.monotone h_φ_mono <;> omega
   let color (i j : ℕ) : M.State := M.RunOn (as ⇊ i j)
   have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by
@@ -171,12 +171,12 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   obtain ⟨s, h_acc, σ, h_σ_mono, h_σ_color⟩ := ramsey_lemma (acc.toFinite) h_φ_mono h_color
   simp [color] at h_σ_color
   use (as ⇊ 0 (φ (σ 0))), (as <<< (φ (σ 0)))
-  simp [appendListInf_FinSubseq_SuffixFrom] ; constructor
+  simp [append_extract_drop] ; constructor
   · specialize h_kstar 0 (σ 0) (by omega)
     simp [h_φ_0] at h_kstar
     exact h_kstar
   apply frequently_iff_strict_mono.mpr
-  simp [suffixFrom_FinSubseq0]
+  simp [extract_drop]
   let p k j := φ (σ k) < j ∧ j ≤ φ (σ (k + 1)) ∧ M.RunOn (as ⇊ (φ (σ k)) j) = M.RunOn (as ⇊ (φ (σ 0)) j)
   have h_p_ex : ∀ k, ∃ j, p k j := by
     intro k ; use (φ (σ (k + 1)))
@@ -200,16 +200,16 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   have h1 : φ (σ (k + 1)) - φ (σ 0) < ξ (k + 1) - φ (σ 0) := by omega
   have h2 : φ (σ 0) + (ξ (k + 1) - φ (σ 0)) = ξ (k + 1) := by omega
   have h3 : φ (σ 0) + (φ (σ (k + 1)) - φ (σ 0)) = φ (σ (k + 1)) := by omega
-  simp [-extract_eq_drop_take, length_FinSubseq, h_k1_0, h1]
+  simp [-extract_eq_drop_take, length_extract, h_k1_0, h1]
   rw [h2]
-  simp [-extract_eq_drop_take, extract_FinSubseq2' (le_of_lt h1), extract_FinSubseq2']
+  simp [-extract_eq_drop_take, extract_extract2' (le_of_lt h1), extract_extract2']
   rw [h2, h3]
   simp [-extract_eq_drop_take, h_k1_run, h_σ_color 0 (k + 1) (by omega), h_acc]
   intro j h_j1 h_j2
   have h_j_min := h_ξ_min (k + 1) (φ (σ 0) + j) (by omega)
   simp [p] at h_j_min
   specialize h_j_min (by omega) (by omega)
-  simp [-extract_eq_drop_take, extract_FinSubseq2' (le_of_lt h_j2), h3, h_j_min]
+  simp [-extract_eq_drop_take, extract_extract2' (le_of_lt h_j2), h3, h_j_min]
 
 /-- If the language accepted by `M` is of the form `V∗`, then `V^ω = V∗ * (M.ChouekaLang acc)↗ω`.
 Note that this theorem does need to assume that `M` is finite-state.
