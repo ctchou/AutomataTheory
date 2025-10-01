@@ -15,7 +15,7 @@ by an ω-regular language is an ω-regular language.  This contruction works
 even when the state types are infinite.
 -/
 
-open Function Set Filter Sum
+open Function Set Filter Sum Stream'
 open Classical
 
 namespace Automata
@@ -52,7 +52,7 @@ private lemma not_M1_state {s : (M0.Concat acc0 M1).State}
 /-- A finite run of the concatenation NA that ends in a state of `M0`
 is completely a run of `M0`.
 -/
-theorem na_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
+theorem na_concat_fin_run_0 {m : ℕ} {as : Stream' A} {ss : Stream' (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s0, ss m = inl s0) ↔
     (∃ ss0, M0.FinRun m as ss0 ∧ ∀ k < m + 1, ss k = inl (ss0 k)) := by
   constructor
@@ -93,10 +93,10 @@ theorem na_concat_fin_run_0 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat 
 /-- A finite run of the concatenation NA that ends in a state of `M1`
 consists of a run of `M0` followed by a run of `M1`.
 -/
-theorem na_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
+theorem na_concat_fin_run_1 {m : ℕ} {as : Stream' A} {ss : Stream' (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s1, ss m = inr s1) ↔
     ∃ n < m, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-             (∃ ss1, M1.FinRun (m - n) (as <<< n) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
+             (∃ ss1, M1.FinRun (m - n) (as.drop n) ss1 ∧ ∀ k ≥ n + 1, k < m + 1 → ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_sm⟩
     have h_n : ∃ n s1, ss n = inr s1 := by use m
@@ -190,10 +190,10 @@ theorem na_concat_fin_run_1 {m : ℕ} {as : ℕ → A} {ss : ℕ → (M0.Concat 
 /-- An infinite run of the concatenation NA that contains a state of `M1`
 consists of a finite run of `M0` followed by an infinite run of `M1`.
 -/
-theorem na_concat_inf_run {as : ℕ → A} {ss : ℕ → (M0.Concat acc0 M1).State} :
+theorem na_concat_inf_run {as : Stream' A} {ss : Stream' (M0.Concat acc0 M1).State} :
     (M0.Concat acc0 M1).InfRun as ss ∧ (∃ n s1, ss n = inr s1) ↔
     ∃ n, (∃ ss0, M0.FinRun n as ss0 ∧ ss0 n ∈ acc0 ∧ ∀ k < n + 1, ss k = inl (ss0 k)) ∧
-         (∃ ss1, M1.InfRun (as <<< n) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
+         (∃ ss1, M1.InfRun (as.drop n) ss1 ∧ ∀ k ≥ n + 1, ss k = inr (ss1 (k - n))) := by
   constructor
   · rintro ⟨⟨⟨s0, h_s0_init, h_s0⟩, h_next⟩, h_n⟩
     use (Nat.find h_n - 1)
@@ -299,7 +299,7 @@ theorem acc_lang_concat_e :
     simpa [← h_sm]
   · rintro ⟨m, as, ⟨ss0, h_run0, h_acc0⟩, h_al⟩
     use m, as ; simp [h_al]
-    let ss : ℕ → (M0.Concat acc0 M1).State := inl ∘ ss0
+    let ss : Stream' (M0.Concat acc0 M1).State := inl ∘ ss0
     use ss ; constructor
     · suffices (M0.Concat acc0 M1).FinRun m as ss ∧ (∃ s0, ss m = inl s0) by tauto
       apply na_concat_fin_run_0.mpr
@@ -320,11 +320,11 @@ theorem acc_lang_concat_ne :
       rcases h_acc with ⟨s1, _, h_s1⟩
       use s1 ; rw [h_s1]
     obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_fin_run_1.mp ⟨h_run, h_s1_ex⟩
-    use (as ⇊ 0 n), (as ⇊ n m)
+    use (as.extract 0 n), (as.extract n m)
     simp (disch := omega) [append_extract_extract, extract_nil_iff, h_n]
     constructor
     · use n, as ; simp ; use ss0
-    · use (m - n), (as <<< n) ; simp (disch := omega) [extract_drop]
+    · use (m - n), (as.drop n) ; simp (disch := omega) [extract_drop]
       use ss1 ; simp [h_run1]
       obtain ⟨s1, h_acc1, h_s1⟩ := h_ss1 m (by omega) (by omega) ▸ h_acc
       simpa [← inr.inj h_s1]
@@ -334,7 +334,7 @@ theorem acc_lang_concat_ne :
     rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩⟩
     rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, rfl⟩⟩
     have h_m : 0 < m := by simp [extract_nil_iff] at h_al1_ne ; omega
-    let as := (as0 ⇊ 0 n) ++ as1
+    let as := (as0.extract 0 n) ++ₛ as1
     use (n + m), as ; constructor
     · let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
       use ss ; constructor
@@ -345,12 +345,12 @@ theorem acc_lang_concat_ne :
         · use ss0 ; simp [as, ss, h_acc0] ; constructor
           · exact h_init0
           · intro k h_k
-            have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+            have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
             simp (disch := omega) [get_append_left' h1, get_extract, h_next0 k h_k]
         · use ss1 ; simp ; constructor <;> [constructor ; skip]
           · exact h_init1
           · intro k h_k
-            have h1 : (as0 ⇊ 0 n).length = n := by simp [length_extract]
+            have h1 : (as0.extract 0 n).length = n := by simp [length_extract]
             rw [← h1] ; simp [as, drop_append_stream]
             exact h_next1 k h_k
           · simp [ss] ; omega
@@ -359,7 +359,7 @@ theorem acc_lang_concat_ne :
           have h_m1 : ¬ n + m < n + 1 := by omega
           simp [ss, h_m1]
         simp [h_acc1, h_ss_nm]
-    · have h1 : (as0 ⇊ 0 n).length ≤ n + m := by simp [length_extract]
+    · have h1 : (as0.extract 0 n).length ≤ n + m := by simp [length_extract]
       simp [as, extract_append_zero_right h1, length_extract]
 
 /-- The ω-language of the concatenation NA that is accepted by `M1`'s accepting states
@@ -373,7 +373,7 @@ theorem acc_omega_lang_concat :
     obtain ⟨n, s1, h_s1_acc, h_s1⟩ := Frequently.exists h_acc
     have h_s1_ex : ∃ n s1, ss n = inr s1 := by use n, s1 ; simp [h_s1]
     obtain ⟨n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_inf_run.mp ⟨h_run, h_s1_ex⟩
-    use (as ⇊ 0 n), (as <<< n) ; simp [append_extract_drop] ; constructor
+    use (as.extract 0 n), (as.drop n) ; simp [append_extract_drop] ; constructor
     · use n, as ; constructor
       · use ss0
       · rfl
@@ -394,10 +394,10 @@ theorem acc_omega_lang_concat :
       · use ss0 ; simp [ss, h_acc0] ; constructor
         · exact h_init0
         · intro k h_k
-          have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+          have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
           simp (disch := omega) [← h_as, get_append_left' h1, get_extract, h_next0 k h_k]
       · use ss1 ; simp [ss]
-        have h1 : (as0 ⇊ 0 n).length = n := by simp [length_extract]
+        have h1 : (as0.extract 0 n).length = n := by simp [length_extract]
         rw [← h1] ; simp [← h_as, drop_append_stream, h_run1]
     · have h_ss1_ev : ∀ᶠ k in atTop, ss (k + n) = inr (ss1 k) := by
         simp only [eventually_atTop]

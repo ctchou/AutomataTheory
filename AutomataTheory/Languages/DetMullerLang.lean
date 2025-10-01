@@ -14,7 +14,7 @@ This file proves various closure properties of deterministic Muller
 to have finite state types.
 -/
 
-open Function Set
+open Function Set Stream'
 open scoped Computability
 
 section DetMullerLang
@@ -24,14 +24,14 @@ variable {A : Type}
 /-- An ω-language is deterministic Muller iff it is accepted by a
 finite-state deterministic Muller automaton.
 -/
-def DetMullerLang (L : Set (ℕ → A)) :=
+def DetMullerLang (L : Set (Stream' A)) :=
   ∃ M : Automata.DA A, ∃ accSet : Set (Set M.State),
   Finite M.State ∧ { as | M.MullerAccept accSet as } = L
 
 /-- The language `∅` is a deterministic Muller language.
 -/
 theorem det_muller_lang_empty :
-    DetMullerLang (∅ : Set (ℕ → A)) := by
+    DetMullerLang (∅ : Set (Stream' A)) := by
   let M := Automata.DA.mk (A := A) Unit () (fun _ _ ↦ ())
   use M, ∅ ; constructor
   · exact Finite.of_fintype Unit
@@ -40,18 +40,18 @@ theorem det_muller_lang_empty :
 /-- The language `univ` is a deterministic Muller language.
 -/
 theorem det_muller_lang_univ :
-    DetMullerLang (univ : Set (ℕ → A)) := by
+    DetMullerLang (univ : Set (Stream' A)) := by
   let M := Automata.DA.mk (A := A) Unit () (fun _ _ ↦ ())
   use M, {{()}} ; constructor
   · exact Finite.of_fintype Unit
   ext as ; simp [Automata.DA.MullerAccept]
   have h : M.DetRun as = fun _ ↦ () := by
-    ext k ; induction' k <;> simp [Automata.DA.DetRun, M]
+    ext k ; induction' k <;> simp [M]
   ext s ; simp [h, InfOcc]
 
 /-- Deterministic Muller languages are closed under complementation.
 -/
-theorem det_muller_lang_compl {L : Set (ℕ → A)}
+theorem det_muller_lang_compl {L : Set (Stream' A)}
     (h : DetMullerLang L) : DetMullerLang Lᶜ := by
   obtain ⟨M, accSet, h_fin, rfl⟩ := h
   use M, accSetᶜ ; constructor
@@ -60,7 +60,7 @@ theorem det_muller_lang_compl {L : Set (ℕ → A)}
 
 /-- Deterministic Muller languages are closed under intersection.
 -/
-theorem det_muller_lang_inter {L0 L1 : Set (ℕ → A)}
+theorem det_muller_lang_inter {L0 L1 : Set (Stream' A)}
     (h0 : DetMullerLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 ∩ L1) := by
   obtain ⟨M0, accSet0, h_fin0, rfl⟩ := h0
   obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
@@ -79,7 +79,7 @@ theorem det_muller_lang_inter {L0 L1 : Set (ℕ → A)}
 
 /-- Deterministic Muller languages are closed under finite bounded indexed intersection.
 -/
-theorem det_muller_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+theorem det_muller_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (Stream' A)}
     (h : ∀ i ∈ s, DetMullerLang (L i)) : DetMullerLang (⋂ i ∈ s, L i) := by
   generalize h_n : s.ncard = n
   induction' n with n h_ind generalizing s
@@ -90,7 +90,7 @@ theorem det_muller_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set
 
 /-- Deterministic Muller languages are closed under union.
 -/
-theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
+theorem det_muller_lang_union {L0 L1 : Set (Stream' A)}
     (h0 : DetMullerLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 ∪ L1) := by
   obtain ⟨M0, accSet0, h_fin0, rfl⟩ := h0
   obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
@@ -109,7 +109,7 @@ theorem det_muller_lang_union {L0 L1 : Set (ℕ → A)}
 
 /-- Deterministic Muller languages are closed under finite bounded indexed union.
 -/
-theorem det_muller_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+theorem det_muller_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (Stream' A)}
     (h : ∀ i ∈ s, DetMullerLang (L i)) : DetMullerLang (⋃ i ∈ s, L i) := by
   generalize h_n : s.ncard = n
   induction' n with n h_ind generalizing s
@@ -129,7 +129,7 @@ theorem det_muller_lang_omega_limit {L : Set (List A)}
 /-- The concatenation of a regular language and a deterministic Muller language
 is a deterministic Muller language.
 -/
-theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
+theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (Stream' A)}
     (h0 : RegLang L0) (h1 : DetMullerLang L1) : DetMullerLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, rfl⟩ := reg_lang_det_accept h0
   obtain ⟨M1, accSet1, h_fin1, rfl⟩ := h1
@@ -139,7 +139,7 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
   · ext as ; constructor
     · intro h_acc
       obtain ⟨n, h_acc0, h_acc1⟩ := Automata.da_concat_of_muller_accept M0 acc0 M1 accSet1 as h_acc
-      use (as ⇊ 0 n), (as <<< n)
+      use (as.extract 0 n), (as.drop n)
       simp [h_acc1, append_extract_drop]
       use n, as
     · rintro ⟨al0, as1, ⟨n, as0, h_as0, rfl⟩, h_as1, h_as⟩
@@ -148,16 +148,16 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
         use ss0 ; simp [← h_as, h_acc0] ; constructor
         · exact h_run0.1
         intro k h_k
-        have h1 : k < (as0 ⇊ 0 n).length := by simp [length_extract, h_k]
+        have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
         simp (disch := omega) [get_append_left' h1, get_extract, h_run0.2 k h_k]
-      have h_acc1 : M1.MullerAccept accSet1 (as <<< n) := by
-        have h1 : n = (as0 ⇊ 0 n).length := by simp [length_extract]
+      have h_acc1 : M1.MullerAccept accSet1 (as.drop n) := by
+        have h1 : n = (as0.extract 0 n).length := by simp [length_extract]
         rw [h1] ; simp [← h_as, drop_append_stream] ; exact h_as1
       exact Automata.da_concat_to_muller_accept M0 acc0 M1 accSet1 as n h_acc0 h_acc1
 
 /-- Every deterministic Muller language is an ω-regular language.
 -/
-theorem det_muller_lang_imp_omega_reg_lang [Inhabited A] {L : Set (ℕ → A)}
+theorem det_muller_lang_imp_omega_reg_lang [Inhabited A] {L : Set (Stream' A)}
     (h : DetMullerLang L) : OmegaRegLang L := by
   obtain ⟨M, accSet, h_fin, rfl⟩ := h
   rw [Automata.det_muller_accept_boolean_form]
@@ -172,7 +172,7 @@ theorem det_muller_lang_imp_omega_reg_lang [Inhabited A] {L : Set (ℕ → A)}
 
 /-- Every deterministic Muller language is an ω-regular language.
 -/
-theorem omega_reg_lang_imp_det_muller_lang [Inhabited A] {L : Set (ℕ → A)}
+theorem omega_reg_lang_imp_det_muller_lang [Inhabited A] {L : Set (Stream' A)}
     (h : OmegaRegLang L) : DetMullerLang L := by
   obtain ⟨n, U, V, h_reg, rfl⟩ := omega_reg_lang_iff_finite_union_form.mp h
   rw [← biUnion_univ] ; apply det_muller_lang_biUnion
@@ -187,7 +187,7 @@ theorem omega_reg_lang_imp_det_muller_lang [Inhabited A] {L : Set (ℕ → A)}
 /-- McNaughton's theorem: An ω-language is ω-regular
 if and only if it is deterministic Muller.
 -/
-theorem omega_reg_lang_iff_det_muller_lang [Inhabited A] {L : Set (ℕ → A)} :
+theorem omega_reg_lang_iff_det_muller_lang [Inhabited A] {L : Set (Stream' A)} :
     OmegaRegLang L ↔ DetMullerLang L := by
   constructor
   · intro h ; exact omega_reg_lang_imp_det_muller_lang h

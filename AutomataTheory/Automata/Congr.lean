@@ -13,7 +13,7 @@ Note that the theorems in this file do not require that the congruence
 relation is of finite index.
 -/
 
-open Function Set
+open Function Set Stream'
 
 section AutomataCongr
 
@@ -37,8 +37,8 @@ variable {c : Congruence A}
 
 /-- Running `c.toDA` on input `as` ends in state `⟦ as ⟧`.
 -/
-theorem automaton_congr_run (as : ℕ → A) (n : ℕ) :
-    c.toDA.DetRun as n = ⟦ as ⇊ 0 n ⟧ := by
+theorem automaton_congr_run (as : Stream' A) (n : ℕ) :
+    c.toDA.DetRun as n = ⟦ as.extract 0 n ⟧ := by
   induction' n with n h_ind
   · simp [Automata.DA.DetRun, Congruence.toDA, extract_nil]
   simp only [Automata.DA.DetRun, h_ind]

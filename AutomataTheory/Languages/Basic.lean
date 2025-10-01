@@ -8,11 +8,11 @@ import AutomataTheory.Sequences.Segments
 
 /-!
 This file contains some basic definitions and theorems about
-languages (i.e., subsets of `List A`) and ω-languages (i.e., subsets of `ℕ → A`),
+languages (i.e., subsets of `List A`) and ω-languages (i.e., subsets of `Stream' A`),
 where `A` is the type of "alphabet".
 -/
 
-open Function Finset Set List Filter
+open Function Finset Set Filter Stream'
 open scoped Computability
 
 section Languages
@@ -31,12 +31,12 @@ instance : Mul (Set (List A)) :=
 
 /-- Concatenation of a language and an ω-language, resulting in an ω-language.
 -/
-def ConcatInf (L0 : Set (List A)) (L1 : Set (ℕ → A)) : Set (ℕ → A) :=
-  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ al0 ++ as1 = as }
+def ConcatInf (L0 : Set (List A)) (L1 : Set (Stream' A)) : Set (Stream' A) :=
+  { as | ∃ al0 as1, al0 ∈ L0 ∧ as1 ∈ L1 ∧ al0 ++ₛ as1 = as }
 
 /-- Use the infix notation `*` for `ConcatInf`.
 -/
-instance : HMul (Set (List A)) (Set (ℕ → A)) (Set (ℕ → A)) :=
+instance : HMul (Set (List A)) (Set (Stream' A)) (Set (Stream' A)) :=
   { hMul := ConcatInf }
 
 /-- Concatenation of `n` copies of a languages, resulting in a language.
@@ -64,8 +64,8 @@ instance instIterStar : KStar (Set (List A)) :=
 /-- Concatenation of countably infinitely many copies of a languages, resulting in an ω-language.
 A.k.a. ω-power.
 -/
-def IterOmega (L : Set (List A)) : Set (ℕ → A) :=
-  { as | ∃ φ : ℕ → ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L }
+def IterOmega (L : Set (List A)) : Set (Stream' A) :=
+  { as | ∃ φ : Stream' ℕ, StrictMono φ ∧ φ 0 = 0 ∧ ∀ m, as.extract (φ m) (φ (m + 1)) ∈ L }
 
 /-- Use the postfix notation ^ω` for `IterOmega`.
 -/
@@ -75,14 +75,14 @@ class OmegaPower (α : Type) (β : outParam (Type)) where
 
 postfix:1024 "^ω" => OmegaPower.omegaPower
 
-instance instIterOmega : OmegaPower (Set (List A)) (Set (ℕ → A)) :=
+instance instIterOmega : OmegaPower (Set (List A)) (Set (Stream' A)) :=
   { omegaPower := IterOmega }
 
 /- The ω-limit of a language L is the ω-language of infinite sequences each of which
 contains infinitely many prefixes in L.
 -/
-def OmegaLimit (L : Set (List A)) : Set (ℕ → A) :=
-  { as | ∃ᶠ m in atTop, as ⇊ 0 m ∈ L }
+def OmegaLimit (L : Set (List A)) : Set (Stream' A) :=
+  { as | ∃ᶠ m in atTop, as.extract 0 m ∈ L }
 
 /-- Use the postfix notation ↗ω` for `OmegaLimit`.
 -/
@@ -92,7 +92,7 @@ class OmegaLimitCls (α : Type) (β : outParam (Type)) where
 
 postfix:1024 "↗ω" => OmegaLimitCls.omegaLimit
 
-instance instOmegaLimit : OmegaLimitCls (Set (List A)) (Set (ℕ → A)) :=
+instance instOmegaLimit : OmegaLimitCls (Set (List A)) (Set (Stream' A)) :=
   { omegaLimit := OmegaLimit }
 
 /- The following are some miscellaneous theorems -/
@@ -121,29 +121,29 @@ theorem ConcatFin_union_distrib {L0 L1 L2 : Set (List A)} :
     · use al0, al1 ; tauto
     · use al0, al2 ; tauto
 
-theorem empty_ConcatInf {L : Set (ℕ → A)} :
+theorem empty_ConcatInf {L : Set (Stream' A)} :
     (∅ : Set (List A)) * L = ∅ := by
   ext as ; simp
   rintro ⟨al, as, h_al, _⟩
   simp at h_al
 
-theorem epsilon_ConcatInf {L : Set (ℕ → A)} :
+theorem epsilon_ConcatInf {L : Set (Stream' A)} :
     ({[]} : Set (List A)) * L = L := by
   ext as ; constructor
   · rintro ⟨al, as, h_al, h_as, rfl⟩ ; simp at h_al
     simp [h_al, h_as, nil_append_stream]
   · intro h_as ; use [], as ; simp [h_as, nil_append_stream]
 
-theorem ConcatInf_assoc {L0 L0' : Set (List A)} {L1 : Set (ℕ → A)} :
+theorem ConcatInf_assoc {L0 L0' : Set (List A)} {L1 : Set (Stream' A)} :
     (L0 * L0') * L1 = L0 * (L0' * L1) := by
   ext as ; constructor
   · rintro ⟨al, as1, ⟨al0, al0', h_al0, h_al0', rfl⟩, h_as1, rfl⟩
-    use al0, (al0' ++ as1) ; simp [h_al0, append_append_stream] ; use al0', as1
+    use al0, (al0' ++ₛ as1) ; simp [h_al0, append_append_stream] ; use al0', as1
   · rintro ⟨al0, as', h_al0, ⟨al0', as1, h_al0', h_as1, rfl⟩, rfl⟩
     rw [← append_append_stream]
     use (al0 ++ al0'), as1 ; simp [h_as1] ; use al0, al0'
 
-theorem ConcatInf_mono {L0 L0' : Set (List A)} {L1 L1' : Set (ℕ → A)}
+theorem ConcatInf_mono {L0 L0' : Set (List A)} {L1 L1' : Set (Stream' A)}
     (h0 : L0 ⊆ L0') (h1 : L1 ⊆ L1') :
     L0 * L1 ⊆ L0' * L1' := by
   rintro as ⟨al0, as0, h_al0, h_as0, rfl⟩
@@ -164,7 +164,7 @@ theorem subset_IterStar_self (L : Set (List A)) :
   exact this
 
 theorem IterFin_seg_exists {L : Set (List A)} {m : ℕ} {al : List A} (h : al ∈ L ^ m) :
-    ∃ n ≤ m, ∃ φ : ℕ → ℕ, StrictMonoOn φ {k | k < n + 1} ∧ φ 0 = 0 ∧ φ n = al.length ∧
+    ∃ n ≤ m, ∃ φ : Stream' ℕ, StrictMonoOn φ {k | k < n + 1} ∧ φ 0 = 0 ∧ φ n = al.length ∧
       ∀ k < n, al.extract (φ k) (φ (k + 1)) ∈ L := by
   induction' m with m h_ind generalizing al <;> simp [instIterFin, IterFin] at h
   · use 0 ; simp ; use (fun _ ↦ 0) ; simp [h]
@@ -172,10 +172,10 @@ theorem IterFin_seg_exists {L : Set (List A)} {m : ℕ} {al : List A} (h : al �
   obtain ⟨n, h_n, φ, h_mono, h_init, h_last, h_seg⟩ := h_ind h_al0
   rcases Classical.em (al1 = []) with ⟨rfl⟩ | h_al1'
   . use n ; simp [show n ≤ m + 1 by omega] ; use φ
-  have := ne_nil_iff_length_pos.mp h_al1'
-  use (n + 1) ; simp [(show n + 1 ≤ m + 1 by omega), -extract_eq_drop_take]
+  have := List.ne_nil_iff_length_pos.mp h_al1'
+  use (n + 1) ; simp [(show n + 1 ≤ m + 1 by omega), -List.extract_eq_drop_take]
   use (fun k ↦ if k < n + 1 then φ k else al0.length + al1.length)
-  simp [h_init, -extract_eq_drop_take] ; constructor
+  simp [h_init, -List.extract_eq_drop_take] ; constructor
   · intro i h_i j h_j h_ij ; simp at h_i h_j
     rcases (show (i < n + 1 ∧ j < n + 1) ∨ (i < n + 1 ∧ j = n + 1) by omega)
       with ⟨h_i', h_j'⟩ | ⟨h_i', h_j'⟩ <;> simp [h_i', h_j']
@@ -184,26 +184,26 @@ theorem IterFin_seg_exists {L : Set (List A)} {m : ℕ} {al : List A} (h : al �
       omega
   · intro k h_k ; rcases (show k < n ∨ n = k by omega) with h_k' | ⟨rfl⟩
     · suffices h1 : (al0 ++ al1).extract (φ k) (φ (k + 1)) = al0.extract (φ k) (φ (k + 1)) by
-        simp [h_k, h_k', h1, h_seg, -extract_eq_drop_take]
+        simp [h_k, h_k', h1, h_seg, -List.extract_eq_drop_take]
       have := h_mono h_k (show k + 1 < n + 1 by omega) (by omega)
       have h1 : φ k + (φ (k + 1) - φ k) = φ (k + 1) := by omega
       have h2 : φ (k + 1) ≤ al0.length := by
         have := StrictMonoOn.monotoneOn h_mono (show k + 1 < n + 1 by omega) (show n < n + 1 by omega) (by omega)
         simpa [← h_last]
-      simp only [take_drop, h1, take_append_of_le_length h2]
+      simp only [List.take_drop, h1, List.take_append_of_le_length h2]
     · simp [h_last, h_al1]
 
 theorem IterStar_seg_exists {L : Set (List A)} {al : List A} (h : al ∈ L∗) :
-    ∃ n, ∃ φ : ℕ → ℕ, StrictMonoOn φ {k | k < n + 1} ∧ φ 0 = 0 ∧ φ n = al.length ∧
+    ∃ n, ∃ φ : Stream' ℕ, StrictMonoOn φ {k | k < n + 1} ∧ φ 0 = 0 ∧ φ n = al.length ∧
       ∀ k < n, al.extract (φ k) (φ (k + 1)) ∈ L := by
   simp [instIterStar, IterStar, instIterFin] at h
   obtain ⟨m, h_m⟩ := h
   obtain ⟨n, h_n, h_ex⟩ := IterFin_seg_exists h_m
   use n
 
-theorem mem_ConcatInf_IterOmega {L0 L1 : Set (List A)} {as : ℕ → A}
-    (h : as ∈ L0 * L1^ω) : ∃ φ : ℕ → ℕ, StrictMono φ ∧
-      as ⇊ 0 (φ 0) ∈ L0 ∧ ∀ m, as ⇊ (φ m) (φ (m + 1)) ∈ L1 := by
+theorem mem_ConcatInf_IterOmega {L0 L1 : Set (List A)} {as : Stream' A}
+    (h : as ∈ L0 * L1^ω) : ∃ φ : Stream' ℕ, StrictMono φ ∧
+      as.extract 0 (φ 0) ∈ L0 ∧ ∀ m, as.extract (φ m) (φ (m + 1)) ∈ L1 := by
   obtain ⟨al0, as1, h_al0, ⟨φ1, h_mono, h_φ1_0, h_φ1_sub⟩, rfl⟩ := h
   use (fun m ↦ φ1 (m) + al0.length)
   constructorm* _ ∧ _
@@ -229,7 +229,7 @@ theorem ConcatInf_self_IterOmega {L : Set (List A)} :
       rcases (show n = 0 ∨ ¬ n = 0 by omega) with h_n | h_n <;> simp [h_n, h_init]
       specialize h_rest (n - 1) ; simp_all [(show n - 1 + 1 = n by omega)]
   · rintro ⟨φ, h_mono, h_init, h_rest⟩
-    use (as ⇊ (φ 0) (φ 1)), (as <<< (φ 1))
+    use (as.extract (φ 0) (φ 1)), (as.drop (φ 1))
     simp [h_rest] ; constructor
     · use (fun k ↦ φ (k + 1) - φ 1) ; constructor
       · intro m n h_mn ; simp
@@ -253,9 +253,9 @@ theorem ConcatInf_IterStar_IterOmega {L : Set (List A)} :
     induction' n with n h_ind generalizing al0 as1 <;> simp [IterFin] at h_al0
     · simpa [h_al0, nil_append_stream]
     obtain ⟨al1, al2, h_al1, h_al2, rfl⟩ := h_al0
-    have h_as2 : al2 ++ as1 ∈ L^ω := by
+    have h_as2 : al2 ++ₛ as1 ∈ L^ω := by
       rw [← ConcatInf_self_IterOmega] ; use al2,  as1
-    specialize h_ind al1 (al2 ++ as1) h_as2 h_al1
+    specialize h_ind al1 (al2 ++ₛ as1) h_as2 h_al1
     simpa [append_append_stream]
   · intro h_as ; use [], as
     simp [h_as, nil_append_stream]
@@ -282,7 +282,7 @@ theorem IterOmega_IterStar {L : Set (List A)} :
     suffices h : ∀ k,
         φ (Segment ξ k) + ψ (Segment ξ k) (k - ξ (Segment ξ k)) <
         φ (Segment ξ (k + 1)) + ψ (Segment ξ (k + 1)) (k + 1 - ξ (Segment ξ (k + 1))) ∧
-        as⇊ (φ (Segment ξ k) + ψ (Segment ξ k) (k - ξ (Segment ξ k)))
+        as.extract (φ (Segment ξ k) + ψ (Segment ξ k) (k - ξ (Segment ξ k)))
           (φ (Segment ξ (k + 1)) + ψ (Segment ξ (k + 1)) (k + 1 - ξ (Segment ξ (k + 1)))) ∈ L by
       constructor
       · apply strictMono_nat_of_lt_succ ; intro k ; exact (h k).1

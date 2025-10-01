@@ -15,7 +15,7 @@ So far we need, and hence will assume, only the right congruence condition.
 The left congruence condition is shown in a comment for completeness.
 -/
 
-open Function Set
+open Function Set Stream'
 
 section Congruences
 
@@ -38,13 +38,13 @@ def Congruence.EqvCls (c : Congruence A) (s : c.QuotType) : Set (List A) :=
 
 /-- An ω-language of the form `U * V^ω`, where `U` and `V` are equivalence classes of the congruence.
 -/
-def Congruence.ConcatOmegaLang (c : Congruence A) (s t : c.QuotType) : Set (ℕ → A) :=
+def Congruence.ConcatOmegaLang (c : Congruence A) (s t : c.QuotType) : Set (Stream' A) :=
   (c.EqvCls s) * (c.EqvCls t)^ω
 
 /-- A congruence "saturates" an ω-language `L` iff whenever U * V^ω and L has a nonempty intersection,
 U * V^ω is a subset of L, for any equivalence classes `U` and `V` of the congruence.
 -/
-def Congruence.Saturates (c : Congruence A) (L : Set (ℕ → A)) :=
+def Congruence.Saturates (c : Congruence A) (L : Set (Stream' A)) :=
   ∀ s t : c.QuotType, (c.ConcatOmegaLang s t ∩ L).Nonempty → c.ConcatOmegaLang s t ⊆ L
 
 /-- A congruence is "ample" iff every infinite word belongs to an ω-language of the form `U * V^ω`,
@@ -57,7 +57,7 @@ variable {c : Congruence A}
 
 /-- If a congruence `c` saturates an ω-language `L`, then `c` saturates the complement of `L` as well.
 -/
-theorem congruence_saturates_compl {L : Set (ℕ → A)}
+theorem congruence_saturates_compl {L : Set (Stream' A)}
     (h_sat : c.Saturates L) : c.Saturates Lᶜ := by
   rintro s t ⟨as, h_as, h_as_c⟩ as' h_as'
   by_contra h_contra
@@ -70,7 +70,7 @@ theorem congruence_saturates_compl {L : Set (ℕ → A)}
 /-- If a congruence `c` is ample and saturates an ω-language `L`, then `L` is the union of ω-languages
     of the form `U * V^ω`, where `U` and `V` are equivalence classes of `c`.
 -/
-theorem congruence_ample_saturates_union {L : Set (ℕ → A)}
+theorem congruence_ample_saturates_union {L : Set (Stream' A)}
     (h_amp : c.Ample) (h_sat : c.Saturates L) :
     L =  ⋃ s, ⋃ t, if (c.ConcatOmegaLang s t ∩ L).Nonempty then c.ConcatOmegaLang s t else ∅ := by
   ext as ; simp ; constructor

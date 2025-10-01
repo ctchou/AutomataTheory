@@ -12,21 +12,21 @@ This file contains some definitions and theorems for doing
 prove that omega-regular languages are closed under intersection.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 section Temporal
 
 /-- Whenever `p` holds at an element in `xs`, `q` holds at the next element in `xs`.
 -/
-def Step {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
+def Step {X : Type*} (xs : Stream' X) (p q : Set X) : Prop :=
   ∀ k, xs k ∈ p → xs (k + 1) ∈ q
 
 /-- Whenever `p` holds at an element in `xs`, `q` holds eventually at a later element in `xs`.
 -/
-def LeadsTo {X : Type*} (xs : ℕ → X) (p q : Set X) : Prop :=
+def LeadsTo {X : Type*} (xs : Stream' X) (p q : Set X) : Prop :=
   ∀ k, xs k ∈ p → ∃ k' ≥ k, xs k' ∈ q
 
-variable {X : Type*} {xs : ℕ → X}
+variable {X : Type*} {xs : Stream' X}
 
 theorem leads_to_step {p q : Set X}
     (h : Step xs p q) : LeadsTo xs p q := by

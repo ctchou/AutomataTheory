@@ -13,7 +13,7 @@ the closure of regular languages under complementation and works
 even when the state type is infinite.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -35,18 +35,18 @@ variable {M : NA A}
 
 instance : Membership M.State M.PSet.State := by exact { mem := fun s ↦ s }
 
-lemma na_pset_reach_init (as : ℕ → A) :
+lemma na_pset_reach_init (as : Stream' A) :
     M.PSet.DetRun as 0 = M.init := by
   simp [DA.DetRun, NA.PSet]
 
-lemma na_pset_reach_next (as : ℕ → A) (k : ℕ) :
+lemma na_pset_reach_next (as : Stream' A) (k : ℕ) :
     M.PSet.DetRun as (k + 1) = ⋃ s ∈ M.PSet.DetRun as k, M.next s (as k) := by
   simp [DA.DetRun, NA.PSet]
 
 /-- For any input `as`, running `M.Pset` on `as` ends in the unique state
 that is exact the set of states reachable by running `M` on `as`.
 -/
-theorem na_pset_run (as : ℕ → A) (k : ℕ) :
+theorem na_pset_run (as : Stream' A) (k : ℕ) :
     M.PSet.DetRun as k = { s : M.State | ∃ ss, M.FinRun k as ss ∧ ss k = s } := by
   induction' k with k h_ind
   · rw [na_pset_reach_init as, Set.ext_iff]

@@ -11,7 +11,7 @@ Basic definitions and theorems about automata and the acceptance of
 languages and (ω-)languages by automata.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -48,20 +48,20 @@ variable {A : Type}
 
 /-- A finite run of an automaton.
 -/
-def NA.FinRun (M : NA A) (n : ℕ) (as : ℕ → A) (ss : ℕ → M.State) :=
+def NA.FinRun (M : NA A) (n : ℕ) (as : Stream' A) (ss : Stream' M.State) :=
   ss 0 ∈ M.init ∧ ∀ k < n, ss (k + 1) ∈ M.next (ss k) (as k)
 
 /-- The acceptance condition for finite runs.
 -/
-def NA.FinAccept (M : NA A) (acc : Set M.State) (n : ℕ) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, M.FinRun n as ss ∧ ss n ∈ acc
+def NA.FinAccept (M : NA A) (acc : Set M.State) (n : ℕ) (as : Stream' A) :=
+  ∃ ss : Stream' M.State, M.FinRun n as ss ∧ ss n ∈ acc
 
 /-- The language accepted by an automaton.
 -/
 def NA.AcceptedLang (M : NA A) (acc : Set M.State) : Set (List A) :=
-  { al | ∃ n as, M.FinAccept acc n as ∧ as ⇊ 0 n = al }
+  { al | ∃ n as, M.FinAccept acc n as ∧ as.extract 0 n = al }
 
-/-- It may seem strange that we use infinite sequences (namely, functions of types ℕ → *)
+/-- It may seem strange that we use infinite sequences (namely, functions of types Stream' *)
 in the definitions about finite runs above.  In the following we give alternative
 definitions using finite sequences (namely, functions of types `Fin n` → *) and show
 that they are in fact equivalent to the definitions above, except that we occasionally
@@ -85,7 +85,7 @@ def NA.FinAccept' (M : NA A) (acc : Set M.State) (n : ℕ) (as : Fin n → A) :=
 
 variable {M : NA A} {acc : Set M.State}
 
-theorem na_FinRun'_of_FinRun {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+theorem na_FinRun'_of_FinRun {n : ℕ} {as : Stream' A} {ss : Stream' M.State}
     (h : M.FinRun n as ss) : M.FinRun' n (fun k ↦ as k) (fun k ↦ ss k) := by
   constructor
   · simp ; exact h.1
@@ -103,7 +103,7 @@ theorem na_FinRun_of_FinRun' [Inhabited A] {n : ℕ} {as : Fin n → A} {ss : Fi
   simp at h_step
   simpa [h_k, (show k < n + 1 by omega)]
 
-theorem na_FinAccept'_of_FinAccept {n : ℕ} {as : ℕ → A}
+theorem na_FinAccept'_of_FinAccept {n : ℕ} {as : Stream' A}
     (h : M.FinAccept acc n as) : M.FinAccept' acc n (fun k ↦ as k) := by
   rcases h with ⟨ss, h_run, h_n⟩
   use (fun k ↦ ss k)
@@ -126,11 +126,11 @@ actually define the same notion of the accepted language of an automaton.
 theorem na_AcceptedLang_of_FinAccept' [Inhabited A] :
     M.AcceptedLang acc = { al | ∃ n as, M.FinAccept' acc n as ∧ List.ofFn as = al } := by
   rw [NA.AcceptedLang, Set.ext_iff] ; intro al ; constructor
-  · rintro ⟨n, as, h_acc, h_al⟩
+  · rintro ⟨n, as, h_acc, rfl⟩
     use n, (fun k : Fin n ↦ as k)
     constructor
     · exact na_FinAccept'_of_FinAccept h_acc
-    · exact h_al
+    · simp [extract_eq_ofFn]
   · rintro ⟨n, as, h_acc, h_al⟩
     use n, (fun k ↦ if h : k < n then as ⟨k, h⟩ else default)
     constructor
@@ -145,28 +145,28 @@ variable {A : Type}
 
 /-- An infinite run of an automaton.
 -/
-def NA.InfRun (M : NA A) (as : ℕ → A) (ss : ℕ → M.State) :=
+def NA.InfRun (M : NA A) (as : Stream' A) (ss : Stream' M.State) :=
   ss 0 ∈ M.init ∧ ∀ k : ℕ, ss (k + 1) ∈ M.next (ss k) (as k)
 
 /-- The Büchi acceptance condition is the main one we use.
 But the Muller, Rabin, and Streett acceptance condtions are also
 included for completeness and future use.
 -/
-def NA.BuchiAccept (M : NA A) (acc : Set M.State) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
+def NA.BuchiAccept (M : NA A) (acc : Set M.State) (as : Stream' A) :=
+  ∃ ss : Stream' M.State, M.InfRun as ss ∧ ∃ᶠ k in atTop, ss k ∈ acc
 
-def NA.MullerAccept (M : NA A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ acc ∈ accSet, ∀ s, s ∈ acc ↔ (∃ᶠ k in atTop, ss k = s)
+def NA.MullerAccept (M : NA A) (accSet : Set (Set M.State)) (as : Stream' A) :=
+  ∃ ss : Stream' M.State, M.InfRun as ss ∧ ∃ acc ∈ accSet, ∀ s, s ∈ acc ↔ (∃ᶠ k in atTop, ss k = s)
 
-def NA.RabinAccept (M : NA A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∃ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) ∧ (∀ᶠ k in atTop, ss k ∉ pair.2)
+def NA.RabinAccept (M : NA A) (accPairs : Set (Set M.State × Set M.State)) (as : Stream' A) :=
+  ∃ ss : Stream' M.State, M.InfRun as ss ∧ ∃ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) ∧ (∀ᶠ k in atTop, ss k ∉ pair.2)
 
-def NA.StreettAccept (M : NA A) (accPairs : Set (Set M.State × Set M.State)) (as : ℕ → A) :=
-  ∃ ss : ℕ → M.State, M.InfRun as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
+def NA.StreettAccept (M : NA A) (accPairs : Set (Set M.State × Set M.State)) (as : Stream' A) :=
+  ∃ ss : Stream' M.State, M.InfRun as ss ∧ ∀ pair ∈ accPairs, (∃ᶠ k in atTop, ss k ∈ pair.1) → (∃ᶠ k in atTop, ss k ∈ pair.2)
 
 /-- The ω-language accepted by an automaton, using the Buchi acceptance condition.
 -/
-def NA.AcceptedOmegaLang (M : NA A) (acc : Set M.State) : Set (ℕ → A) :=
+def NA.AcceptedOmegaLang (M : NA A) (acc : Set M.State) : Set (Stream' A) :=
   { as | M.BuchiAccept acc as }
 
 end AutomataInfiniteRuns
@@ -175,7 +175,7 @@ section AutomataBasicResults
 
 variable {A : Type} {M : NA A}
 
-theorem na_FinRun_fixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+theorem na_FinRun_fixSuffix [Inhabited A] {n : ℕ} {as : Stream' A} {ss : Stream' M.State}
     (h : M.FinRun n as ss) : M.FinRun n (fixSuffix as n default) (fixSuffix ss (n + 1) (ss 0)) := by
   rcases h with ⟨h_init, h_next⟩
   constructor
@@ -184,18 +184,18 @@ theorem na_FinRun_fixSuffix [Inhabited A] {n : ℕ} {as : ℕ → A} {ss : ℕ �
   simp [fixSuffix, h_k, (by omega : k < n + 1)]
   exact h_next k h_k
 
-theorem na_FinRun_modulo {n : ℕ} {as as' : ℕ → A} {ss ss' : ℕ → M.State}
+theorem na_FinRun_modulo {n : ℕ} {as as' : Stream' A} {ss ss' : Stream' M.State}
     (ha : ∀ k < n, as k = as' k) (hs : ∀ k < n + 1, ss k = ss' k) (hr : M.FinRun n as ss) : M.FinRun n as' ss' := by
   rcases hr with ⟨h_init, h_next⟩ ; constructor
   · simpa [← hs]
   intro k h_k ; specialize h_next k h_k
   simpa [← ha k h_k, ← hs k (by omega), ← hs (k + 1) (by omega)]
 
-theorem na_FinRun_imp_FinRun {m n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+theorem na_FinRun_imp_FinRun {m n : ℕ} {as : Stream' A} {ss : Stream' M.State}
     (hmn : m < n) (hr : M.FinRun n as ss) : M.FinRun m as ss :=
   ⟨hr.1, (hr.2 · <| ·.trans hmn)⟩
 
-theorem na_InfRun_iff_FinRun {as : ℕ → A} {ss : ℕ → M.State} :
+theorem na_InfRun_iff_FinRun {as : Stream' A} {ss : Stream' M.State} :
     M.InfRun as ss ↔ ∀ n, M.FinRun n as ss := by
   constructor
   · rintro ⟨h_init, h_next⟩ n

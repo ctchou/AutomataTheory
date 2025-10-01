@@ -14,7 +14,7 @@ Note that the theorems in this file are true even when the alphabet,
 state, or index types are infinite.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -29,7 +29,7 @@ def NA.Prod (M : I → NA A) : NA A where
 
 variable {M : I → NA A}
 
-theorem na_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (NA.Prod M).State} :
+theorem na_prod_fin_run {n : ℕ} {as : Stream' A} {ss : Stream' (NA.Prod M).State} :
     (NA.Prod M).FinRun n as ss ↔ ∀ i, (M i).FinRun n as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -41,7 +41,7 @@ theorem na_prod_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (NA.Prod M).Sta
     · intro i ; exact (h_all i).1
     · intro k h_k i ; exact (h_all i).2 k h_k
 
-theorem na_prod_inf_run {as : ℕ → A} {ss : ℕ → (NA.Prod M).State} :
+theorem na_prod_inf_run {as : Stream' A} {ss : Stream' (NA.Prod M).State} :
     (NA.Prod M).InfRun as ss ↔ ∀ i, (M i).InfRun as (fun k ↦ ss k i) := by
   constructor
   · rintro ⟨h_init, h_next⟩ i
@@ -81,7 +81,7 @@ theorem acc_lang_inter [Inhabited A] :
       constructor
       · exact h_run_i.1
       intro k h_k
-      have h1 : k < (as⇊ 0 al.length).length := by simp [length_extract, h_k]
+      have h1 : k < (as.extract 0 al.length).length := by simp [length_extract, h_k]
       have h2 : al.padDefault k = as k := by
         rw [← h_al] ; simp (disch := omega) [padDefault_elt_left, get_extract]
       simp [h2, h_run_i.2 k h_k]

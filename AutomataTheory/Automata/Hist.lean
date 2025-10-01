@@ -10,7 +10,7 @@ import AutomataTheory.Automata.Basic
 The construction of adding a history state component to an NA.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -32,7 +32,7 @@ variable {M : NA A} {hist_init : Set H} {hist_next : M.State × H → A → Set 
 /-- The original state components of a finite run of the history NA is
 a finite run of the original NA.
 -/
-theorem na_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State × H}
+theorem na_hist_fin_run_proj {n : ℕ} {as : Stream' A} {ss : Stream' (M.State × H)}
     (h : (M.addHist hist_init hist_next).FinRun n as ss) : M.FinRun n as (Prod.fst ∘ ss) := by
   constructor
   · have h' := h.1
@@ -46,7 +46,7 @@ theorem na_hist_fin_run_proj {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State ×
 /-- The original state components of an infinite run of the history NA is
 an infinite run of the original NA.
 -/
-theorem na_hist_inf_run_proj {as : ℕ → A} {ss : ℕ → M.State × H}
+theorem na_hist_inf_run_proj {as : Stream' A} {ss : Stream' (M.State × H)}
     (h : (M.addHist hist_init hist_next).InfRun as ss) : M.InfRun as (Prod.fst ∘ ss) := by
   constructor
   · have h' := h.1
@@ -57,16 +57,16 @@ theorem na_hist_inf_run_proj {as : ℕ → A} {ss : ℕ → M.State × H}
     simp [NA.addHist] at h'
     exact h'.1
 
-private def MakeHist (as : ℕ → A) (ss : ℕ → M.State) (hs0 : H) (hs' : M.State × H → A -> H) : ℕ → H
+private def MakeHist (as : Stream' A) (ss : Stream' M.State) (hs0 : H) (hs' : M.State × H → A -> H) : Stream' H
   | 0 => hs0
   | k + 1 => hs' (ss k, MakeHist as ss hs0 hs' k) (as k)
 
 /-- Any finite run of the original NA can be extended to a finite run of
 the history NA, assuming that the history component can always "follow along".
 -/
-theorem na_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+theorem na_hist_fin_run_exists {n : ℕ} {as : Stream' A} {ss : Stream' M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
-    (h : M.FinRun n as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).FinRun n as (fun k ↦ (ss k, hs k)) := by
+    (h : M.FinRun n as ss) : ∃ hs : Stream' H, (M.addHist hist_init hist_next).FinRun n as (fun k ↦ (ss k, hs k)) := by
   obtain ⟨hs0, h_hs0⟩ := h_init
   choose hs' h_hs' using h_next
   let hs := MakeHist as ss hs0 hs'
@@ -80,9 +80,9 @@ theorem na_hist_fin_run_exists {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
 /-- Any infinite run of the original NA can be extended to an infinite run of
 the history NA, assuming that the history component can always "follow along".
 -/
-theorem na_hist_inf_run_exists {as : ℕ → A} {ss : ℕ → M.State}
+theorem na_hist_inf_run_exists {as : Stream' A} {ss : Stream' M.State}
     (h_init : hist_init.Nonempty) (h_next : ∀ s a, (hist_next s a).Nonempty)
-    (h : M.InfRun as ss) : ∃ hs : ℕ → H, (M.addHist hist_init hist_next).InfRun as (fun k ↦ (ss k, hs k)) := by
+    (h : M.InfRun as ss) : ∃ hs : Stream' H, (M.addHist hist_init hist_next).InfRun as (fun k ↦ (ss k, hs k)) := by
   obtain ⟨hs0, h_hs0⟩ := h_init
   choose hs' h_hs' using h_next
   let hs := MakeHist as ss hs0 hs'

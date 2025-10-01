@@ -13,7 +13,7 @@ Note that we need to make finiteness assumptions on both the index set and
 each automaton's state type.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -28,7 +28,7 @@ def DA.Prod (M : I → DA A) : DA A where
 
 variable (M : I → DA A)
 
-theorem da_prod_inf_run (as : ℕ → A) (i : I) :
+theorem da_prod_inf_run (as : Stream' A) (i : I) :
     (· i) ∘ (DA.Prod M).DetRun as = (M i).DetRun as := by
   ext k ; simp
   induction' k with k h_ind
@@ -41,7 +41,7 @@ theorem da_prod_finite :
     Finite (DA.Prod M).State := by
   exact Pi.finite
 
-theorem da_prod_inf_occ (as : ℕ → A) (i : I) :
+theorem da_prod_inf_occ (as : Stream' A) (i : I) :
     (· i) '' (InfOcc ((DA.Prod M).DetRun as)) =
     InfOcc ((· i) ∘ (DA.Prod M).DetRun as) := by
   apply inf_occ_proj
@@ -54,7 +54,7 @@ def DA.MullerAcc_Inter : Set (Set (DA.Prod M).State) :=
 def DA.MullerAcc_Union : Set (Set (DA.Prod M).State) :=
   { acc | ∃ i : I, ((· i) '' acc) ∈ (accSet i) }
 
-theorem det_muller_accept_inter (as : ℕ → A) :
+theorem det_muller_accept_inter (as : Stream' A) :
     (DA.Prod M).MullerAccept (DA.MullerAcc_Inter M accSet) as ↔
     ∀ i : I, (M i).MullerAccept (accSet i) as := by
   simp [DA.MullerAccept, DA.MullerAcc_Inter] ; constructor
@@ -63,7 +63,7 @@ theorem det_muller_accept_inter (as : ℕ → A) :
   · intro h_acc i ; specialize h_acc i
     simpa [da_prod_inf_occ M as i, da_prod_inf_run M as i]
 
-theorem det_muller_accept_union (as : ℕ → A) :
+theorem det_muller_accept_union (as : Stream' A) :
     (DA.Prod M).MullerAccept (DA.MullerAcc_Union M accSet) as ↔
     ∃ i : I, (M i).MullerAccept (accSet i) as := by
   simp [DA.MullerAccept, DA.MullerAcc_Union] ; constructor

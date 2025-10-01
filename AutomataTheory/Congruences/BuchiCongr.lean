@@ -12,7 +12,7 @@ The theory of an NA-based congruence used by J.R. Büchi to
 prove the closure of ω-regular langauges under complementation.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -68,24 +68,21 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLan
   have h_pair_0' := (h_congr_p (ss 0) (ss (φ 0))).1.mp <| h_pair_0
   have h_pair_1' := fun m ↦ (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).1.mp <| h_pair_1 m
   have h_inf := pair_acc_lang_frequently_from_run h_next h_acc h_mono
-  have h_inf' : ∃ᶠ m in atTop, as' ⇊ (φ' m) (φ' (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
+  have h_inf' : ∃ᶠ m in atTop, as'.extract (φ' m) (φ' (m + 1)) ∈ M.PairAccLang acc (ss (φ m)) (ss (φ (m + 1))) := by
     apply Frequently.mono h_inf ; intro m
     exact (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).2.mp
   obtain ⟨ss0', h_ss_0, h_ss_φ0, h_next0'⟩ := h_pair_0'
   simp (disch := omega) [length_extract, get_extract] at h_ss_φ0 h_next0'
-  have h_lem1 : ∀ m,  (fun k ↦ as' (k + φ' 0)) ⇊ (φ' m - φ' 0) (φ' (m + 1) - φ' 0) = as' ⇊ (φ' m) (φ' (m + 1)) := by
+  have h_lem1 : ∀ m,  (as'.drop (φ' 0)).extract (φ' m - φ' 0) (φ' (m + 1) - φ' 0) = as'.extract (φ' m) (φ' (m + 1)) := by
     intro m
-    have h1 : (fun k ↦ as' (k + φ' 0)) = as' <<< φ' 0 := by
-      ext k ; simp [get_drop'] ; congr 1 ; omega
     have := StrictMono.monotone h_mono' (show 0 ≤ m by omega)
     have := StrictMono.monotone h_mono' (show 0 ≤ m + 1 by omega)
-    simp [h1, extract_drop, (show φ' 0 + (φ' m - φ' 0) = φ' m by omega),
+    simp [extract_drop, (show φ' 0 + (φ' m - φ' 0) = φ' m by omega),
       (show φ' 0 + (φ' (m + 1) - φ' 0) = φ' (m + 1) by omega)]
   obtain ⟨ss1', h_ss1', h_next1', h_acc1'⟩ := pair_acc_lang_frequently_to_run
-    (acc := acc) (φ := (φ' · - φ' 0)) (as := fun k ↦ as' (k + φ' 0))
+    (acc := acc) (φ := (φ' · - φ' 0)) (as := as'.drop (φ' 0))
     (ss' := fun k ↦ ss (φ k)) (base_zero_strict_mono h_mono') (base_zero_shift φ')
-    (by simp [h_lem1, h_pair_1'])
-    (by simp [h_lem1, h_inf'])
+    (by simp [h_lem1, h_pair_1']) (by simp [h_lem1, h_inf'])
   use (fun k ↦ if k < φ' 0 then ss0' k else ss1' (k - φ' 0))
   constructor
   · constructor
@@ -103,7 +100,7 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLan
       simp [h_k, h_k', h1, h2]
     · simp [(show ¬ k < φ' 0 by omega), (show ¬ k + 1 < φ' 0 by omega)]
       have h1 := h_next1' (k - φ' 0)
-      simp [(show k - φ' 0 + φ' 0 = k by omega)] at h1
+      simp [get_drop', (show φ' 0 + (k - φ' 0) = k by omega)] at h1
       simp [(show k + 1 - φ' 0 = k - φ' 0 + 1 by omega), h1]
   · simp [Filter.frequently_atTop] at h_acc1' ⊢
     intro k0
@@ -164,11 +161,11 @@ theorem buchi_congr_ample [Finite M.State] : (M.BuchiCongr acc).Ample := by
   intro as
   have : Finite (M.BuchiCongr acc).QuotType := buchi_congr_finite_index
   let color (t : Finset ℕ) : (M.BuchiCongr acc).QuotType :=
-    if h : t.Nonempty then ⟦ as ⇊ (t.min' h) (t.max' h) ⟧ else ⟦ [] ⟧
+    if h : t.Nonempty then ⟦ as.extract (t.min' h) (t.max' h) ⟧ else ⟦ [] ⟧
   obtain ⟨q, ns, h_ns, h_color⟩ := inf_graph_ramsey color
   obtain ⟨φ, h_mono, rfl⟩ := strict_mono_of_infinite h_ns
-  let p : (M.BuchiCongr acc).QuotType := ⟦ as ⇊ 0 (φ 0) ⟧
-  use p, q, (as ⇊ 0 (φ 0)), (as <<< (φ 0)) ; constructorm* _ ∧ _
+  let p : (M.BuchiCongr acc).QuotType := ⟦ as.extract 0 (φ 0) ⟧
+  use p, q, (as.extract 0 (φ 0)), (as.drop (φ 0)) ; constructorm* _ ∧ _
   · simp [Congruence.EqvCls, p]
   · use (φ · - φ 0) ; simp [base_zero_strict_mono h_mono]
     intro m

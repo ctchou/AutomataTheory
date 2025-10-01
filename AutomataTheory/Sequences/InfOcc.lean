@@ -11,20 +11,20 @@ This file contains some definitions and theorems about
 infinite occurrences in an infinite sequence.
 -/
 
-open Function Set Prod Option Filter
+open Function Set Prod Option Filter Stream'
 open Classical
 
 section InfOcc
 
 /-- `InfOcc xs` is the set of elements that appears infinitely many times in `xs`.
 -/
-def InfOcc {X : Type*} (xs : ℕ → X) : Set X :=
+def InfOcc {X : Type*} (xs : Stream' X) : Set X :=
   { x | ∃ᶠ k in atTop, xs k = x }
 
 /-- An alternative characterization of "infinitely often".
 -/
-theorem frequently_iff_strict_mono {p : ℕ → Prop} :
-    (∃ᶠ n in atTop, p n) ↔ ∃ φ : ℕ → ℕ, StrictMono φ ∧ ∀ m, p (φ m) := by
+theorem frequently_iff_strict_mono {p : Stream' Prop} :
+    (∃ᶠ n in atTop, p n) ↔ ∃ φ : Stream' ℕ, StrictMono φ ∧ ∀ m, p (φ m) := by
   constructor
   · intro h
     exact extraction_of_frequently_atTop h
@@ -38,7 +38,7 @@ theorem frequently_iff_strict_mono {p : ℕ → Prop} :
 
 /-- Note that only the → direction needs the finiteness assumption.
 -/
-theorem frequently_in_finite_set {X : Type*} [Finite X] {s : Set X} {xs : ℕ → X} :
+theorem frequently_in_finite_set {X : Type*} [Finite X] {s : Set X} {xs : Stream' X} :
     (∃ᶠ k in atTop, xs k ∈ s) ↔ ∃ x ∈ s, ∃ᶠ k in atTop, xs k = x := by
   constructor
   · intro h_inf
@@ -57,8 +57,8 @@ theorem frequently_in_finite_set {X : Type*} [Finite X] {s : Set X} {xs : ℕ �
 
 /-- Removing any finite prefix of `xs` does not change `InfOcc xs`.
 -/
-theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
-    InfOcc (xs <<< k) = InfOcc xs := by
+theorem inf_occ_suffix {X : Type*} (xs : Stream' X) (k : ℕ) :
+    InfOcc (xs.drop k) = InfOcc xs := by
   ext x ; simp [InfOcc, frequently_atTop] ; constructor
   · intro h_inf n ; obtain ⟨m, h_m, rfl⟩ := h_inf n
     use (k + m) ; simp [get_drop'] ; omega
@@ -67,7 +67,7 @@ theorem inf_occ_suffix {X : Type*} (xs : ℕ → X) (k : ℕ) :
 
 /-- Over a finite type, `xs k` is in `InfOcc xs` for all sufficiently large `k`.
 -/
-theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
+theorem inf_occ_eventually {X : Type*} [Finite X] (xs : Stream' X) :
     ∀ᶠ k in atTop, xs k ∈ InfOcc xs := by
   have h_compl : ∀ x ∈ (InfOcc xs)ᶜ, ∃ n, ∀ k ≥ n, xs k ≠ x := by simp [InfOcc]
   choose lb h_lb using h_compl
@@ -83,7 +83,7 @@ theorem inf_occ_eventually {X : Type*} [Finite X] (xs : ℕ → X) :
 
 /-- Note that only the ⊇ direction needs the finiteness assumptions.
 -/
-theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [h : ∀ i, Finite (X i)] (xs : ℕ → Π i, X i) (i : I) :
+theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [h : ∀ i, Finite (X i)] (xs : Stream' (Π i, X i)) (i : I) :
     (· i) '' (InfOcc xs) = InfOcc ((· i) ∘ xs) := by
   ext x_i ; simp ; constructor
   · rintro ⟨x, h_inf, rfl⟩
@@ -99,7 +99,7 @@ theorem inf_occ_proj {I : Type*} [Finite I] {X : I → Type*} [h : ∀ i, Finite
 /-- Same as inf_acc_proj, but for pair types.  This result does follow from
 inf_occ_proj, but that proof (see below) turns out to be longer.
 -/
-theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
+theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] (xs : Stream' (X1 × X2)) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   constructor
@@ -127,7 +127,7 @@ theorem inf_occ_pair {X1 X2 : Type*} [Finite X1] [Finite X2] (xs : ℕ → X1 ×
 /- The following two proofs are due to Aaron Liu.
 The ⊆ direction of the first proof doesn't need injectivity assumption.
 -/
-theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injective) (xs : ℕ → α) :
+theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injective) (xs : Stream' α) :
     InfOcc (f ∘ xs) = f '' InfOcc xs := by
   apply subset_antisymm
   · intro x hx
@@ -137,7 +137,7 @@ theorem infOcc_comp_of_injective {α β : Type*} {f : α → β} (hf : f.Injecti
     intro x hx
     simpa [InfOcc, hf.eq_iff] using hx
 
-theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] (xs : ℕ → X1 × X2) :
+theorem inf_occ_pair' {X1 : Type u} {X2 : Type v} [Finite X1] [Finite X2] (xs : Stream' (X1 × X2)) :
     fst '' (InfOcc xs) = InfOcc (fst ∘ xs) ∧
     snd '' (InfOcc xs) = InfOcc (snd ∘ xs) := by
   let e := (Equiv.prodCongr Equiv.ulift Equiv.ulift).symm.trans (prodEquivPiFinTwo (ULift.{max u v} X1) (ULift.{max u v} X2))
@@ -161,7 +161,7 @@ instance {X : Type*} [Finite X] : Finite (Option X) :=
   have := Fintype.ofFinite X
   Finite.of_fintype _
 
-theorem inf_occ_opt {X : Type*} [Finite X] (os : ℕ → Option X) (y : X)
+theorem inf_occ_opt {X : Type*} [Finite X] (os : Stream' (Option X)) (y : X)
     (h : ∀ o ∈ InfOcc os, o.isSome) :
     {x | ∃ o ∈ InfOcc os, o = some x} = InfOcc ((getD · y) ∘ os) := by
   ext x ; constructor

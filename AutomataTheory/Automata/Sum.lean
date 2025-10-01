@@ -13,7 +13,7 @@ Note that the theorems in this file are true even when the alphabet,
 state, or index types are infinite.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -28,7 +28,7 @@ def NA.Sum (M : I → NA A) : NA A where
 
 variable {M : I → NA A}
 
-theorem na_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (NA.Sum M).State} :
+theorem na_sum_fin_run {n : ℕ} {as : Stream' A} {ss : Stream' (NA.Sum M).State} :
     (NA.Sum M).FinRun n as ss ↔ ∃ i ss_i, (M i).FinRun n as ss_i ∧ ∀ k < n + 1, ss k = ⟨i, ss_i k⟩ := by
   constructor
   · rintro ⟨h_init, h_next⟩
@@ -69,7 +69,7 @@ theorem na_sum_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (NA.Sum M).State
       have h_run_k := h_run.2 k h_k
       simpa [NA.Sum, h_ss k (by omega : k < n + 1), h_ss (k + 1) (by omega : k + 1 < n + 1)]
 
-theorem na_sum_inf_run {as : ℕ → A} {ss : ℕ → (NA.Sum M).State} :
+theorem na_sum_inf_run {as : Stream' A} {ss : Stream' (NA.Sum M).State} :
     (NA.Sum M).InfRun as ss ↔ ∃ i ss_i, (M i).InfRun as ss_i ∧ ss = (Sigma.mk i) ∘ ss_i := by
   constructor
   · rintro ⟨h_init, h_next⟩
@@ -98,7 +98,7 @@ theorem na_sum_inf_run {as : ℕ → A} {ss : ℕ → (NA.Sum M).State} :
         rw [h_ss_i k, h_ss_i (k + 1)] at h_next_k
         simp [NA.Sum] at h_next_k
         assumption
-    · ext k ; rw [h_ss_i k] ; simp
+    · ext k ; simp [get.eq_1] ; simp [h_ss_i k]
   · rintro ⟨i, ss_i, h_run, h_ss⟩
     simp [h_ss, NA.Sum]
     constructor

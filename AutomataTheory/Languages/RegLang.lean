@@ -17,7 +17,7 @@ Note that we do require that the Automata.NA accepting a regular language
 to have a finite state type.
 -/
 
-open Function Set Filter Sum
+open Function Set Filter Sum Stream'
 open scoped Computability
 
 section RegLang

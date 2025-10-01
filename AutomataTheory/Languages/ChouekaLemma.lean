@@ -12,7 +12,7 @@ This file proves the "basic lemma" in section 5 of Choueka's paper
 (see README for the reference).
 -/
 
-open Function Set List Filter
+open Function Set Filter Stream'
 open scoped Computability
 
 open Classical
@@ -59,17 +59,17 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
   intro as ; simp [instOmegaLimit, OmegaLimit, frequently_iff_strict_mono]
   intro φ h_φ_mono h_prefix
   have h_m_ex : ∀ n, ∃ m, 0 < m ∧ m < φ n ∧
-      M.RunOn (as ⇊ 0 m) ∈ acc ∧ M.RunOn (as ⇊ m (φ n)) = M.RunOn (as ⇊ 0 (φ n)) ∧
-      ∀ k, m < k → k < φ n → M.RunOn (as ⇊ m k) ≠ M.RunOn (as ⇊ 0 k) := by
+      M.RunOn (as.extract 0 m) ∈ acc ∧ M.RunOn (as.extract m (φ n)) = M.RunOn (as.extract 0 (φ n)) ∧
+      ∀ k, m < k → k < φ n → M.RunOn (as.extract m k) ≠ M.RunOn (as.extract 0 k) := by
     intro n
     obtain ⟨m, h_m0, h_m1, h_acc, h_run, h_run'⟩ := h_prefix n
     simp [length_extract] at h_m1
-    simp [-extract_eq_drop_take, extract_extract2 (show m ≤ φ n by omega)] at h_acc
-    simp [-extract_eq_drop_take, extract_extract1] at h_run
+    simp [-List.extract_eq_drop_take, extract_extract2 (show m ≤ φ n by omega)] at h_acc
+    simp [-List.extract_eq_drop_take, extract_extract1] at h_run
     use m ; simp [h_m0, h_m1, h_acc, h_run]
     intro k h_k h_k'
     specialize h_run' k h_k (by simp [length_extract, h_k'])
-    simp [-extract_eq_drop_take, extract_extract2 (show k ≤ φ n by omega)] at h_run'
+    simp [-List.extract_eq_drop_take, extract_extract2 (show k ≤ φ n by omega)] at h_run'
     exact h_run'
   choose φ' h_φ'_0 h_φ'_n h_acc h_run h_run' using h_m_ex
   have h_inj : Injective φ' := by
@@ -152,32 +152,32 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     {V : Set (List A)} (h_lang : M.toNA.AcceptedLang acc = V∗) :
     V^ω ⊆ V∗ * (M.ChouekaLang acc)↗ω := by
   rintro as ⟨φ, h_φ_mono, h_φ_0, h_φ_V⟩
-  have h_kstar : ∀ i j, i ≤ j → (as⇊ (φ i) (φ (j))) ∈ V∗ := by
+  have h_kstar : ∀ i j, i ≤ j → (as.extract (φ i) (φ (j))) ∈ V∗ := by
     intro i j h_ij ; simp [instIterStar, IterStar]
     use (j - i) ; generalize h_n : j - i = n
     induction' n with n h_ind generalizing i j <;> simp [instIterFin, IterFin]
     · simp [extract_nil, (show i = j by omega)]
-    use (as ⇊ (φ i) (φ (j - 1))), (as ⇊ (φ (j - 1)) (φ j)) ; constructorm* _ ∧ _
+    use (as.extract (φ i) (φ (j - 1))), (as.extract (φ (j - 1)) (φ j)) ; constructorm* _ ∧ _
     · exact h_ind i (j - 1) (by omega) (by omega)
     · specialize h_φ_V (j - 1)
       simp [(show j - 1 + 1 = j by omega)] at h_φ_V
       exact h_φ_V
     · apply append_extract_extract <;>
         apply StrictMono.monotone h_φ_mono <;> omega
-  let color (i j : ℕ) : M.State := M.RunOn (as ⇊ i j)
+  let color (i j : ℕ) : M.State := M.RunOn (as.extract i j)
   have h_color : ∀ i j, i < j → color (φ i) (φ j) ∈ acc := by
     intro i j h_ij ; simp [color, ← da_acc_lang_iff_run_acc, h_lang]
     apply h_kstar ; omega
   obtain ⟨s, h_acc, σ, h_σ_mono, h_σ_color⟩ := ramsey_lemma (acc.toFinite) h_φ_mono h_color
   simp [color] at h_σ_color
-  use (as ⇊ 0 (φ (σ 0))), (as <<< (φ (σ 0)))
+  use (as.extract 0 (φ (σ 0))), (as.drop (φ (σ 0)))
   simp [append_extract_drop] ; constructor
   · specialize h_kstar 0 (σ 0) (by omega)
     simp [h_φ_0] at h_kstar
     exact h_kstar
   apply frequently_iff_strict_mono.mpr
   simp [extract_drop]
-  let p k j := φ (σ k) < j ∧ j ≤ φ (σ (k + 1)) ∧ M.RunOn (as ⇊ (φ (σ k)) j) = M.RunOn (as ⇊ (φ (σ 0)) j)
+  let p k j := φ (σ k) < j ∧ j ≤ φ (σ (k + 1)) ∧ M.RunOn (as.extract (φ (σ k)) j) = M.RunOn (as.extract (φ (σ 0)) j)
   have h_p_ex : ∀ k, ∃ j, p k j := by
     intro k ; use (φ (σ (k + 1)))
     simp [p, h_φ_mono <| h_σ_mono (show k < k + 1 by omega)]
@@ -200,16 +200,16 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
   have h1 : φ (σ (k + 1)) - φ (σ 0) < ξ (k + 1) - φ (σ 0) := by omega
   have h2 : φ (σ 0) + (ξ (k + 1) - φ (σ 0)) = ξ (k + 1) := by omega
   have h3 : φ (σ 0) + (φ (σ (k + 1)) - φ (σ 0)) = φ (σ (k + 1)) := by omega
-  simp [-extract_eq_drop_take, length_extract, h_k1_0, h1]
+  simp [-List.extract_eq_drop_take, length_extract, h_k1_0, h1]
   rw [h2]
-  simp [-extract_eq_drop_take, extract_extract2' (le_of_lt h1), extract_extract2']
+  simp [-List.extract_eq_drop_take, extract_extract2' (le_of_lt h1), extract_extract2']
   rw [h2, h3]
-  simp [-extract_eq_drop_take, h_k1_run, h_σ_color 0 (k + 1) (by omega), h_acc]
+  simp [-List.extract_eq_drop_take, h_k1_run, h_σ_color 0 (k + 1) (by omega), h_acc]
   intro j h_j1 h_j2
   have h_j_min := h_ξ_min (k + 1) (φ (σ 0) + j) (by omega)
   simp [p] at h_j_min
   specialize h_j_min (by omega) (by omega)
-  simp [-extract_eq_drop_take, extract_extract2' (le_of_lt h_j2), h3, h_j_min]
+  simp [-List.extract_eq_drop_take, extract_extract2' (le_of_lt h_j2), h3, h_j_min]
 
 /-- If the language accepted by `M` is of the form `V∗`, then `V^ω = V∗ * (M.ChouekaLang acc)↗ω`.
 Note that this theorem does need to assume that `M` is finite-state.
@@ -234,61 +234,61 @@ lemma choueka_lang_decomp_lemma {M : DA A} {acc : Set M.State} :
     ⋃ s ∈ acc, { al | al ≠ [] ∧ M.RunOn al = s } *
       ( { al | al ≠ [] ∧ M.RunOn al = M.RunFromOn s al } ∩
         ( { al | al ≠ [] ∧ M.RunOn al = M.RunFromOn s al } * {[]}ᶜ )ᶜ ) := by
-  ext al ; simp [DA.ChouekaLang, -extract_eq_drop_take] ; constructor
+  ext al ; simp [DA.ChouekaLang, -List.extract_eq_drop_take] ; constructor
   · rintro ⟨m, h_m0, h_m1, h_acc, h_run, h_run'⟩
-    use (M.RunOn (al.extract 0 m)) ; simp [h_acc, -extract_eq_drop_take]
+    use (M.RunOn (al.extract 0 m)) ; simp [h_acc, -List.extract_eq_drop_take]
     use (al.extract 0 m), (al.extract m al.length)
-    have h1 := length_pos_iff.mp (show 0 < al.length by omega)
+    have h1 := List.length_pos_iff.mp (show 0 < al.length by omega)
     have h2 : al.extract 0 m ++ al.extract m = al := by
       ext k a ; rcases (show k < m ∨ ¬ k < m by omega) with h_k | h_k <;>
-        simp (disch := omega) [getElem?_append, getElem?_take, h_k] ; grind
-    simp [-extract_eq_drop_take, h_m1, h1, h2,
+        simp (disch := omega) [List.getElem?_append, List.getElem?_take, h_k] ; grind
+    simp [-List.extract_eq_drop_take, h_m1, h1, h2,
       (show ¬ m = 0 by omega), (show ¬ al.length - m = 0 by omega)]
     constructor
-    · simpa [-extract_eq_drop_take, DA.RunOn, ← da_run_from_on_append, h2]
+    · simpa [-List.extract_eq_drop_take, DA.RunOn, ← da_run_from_on_append, h2]
     · rintro ⟨al1, al2, ⟨h_al1, h_run1⟩, h_al2, h_alm⟩
-      have := length_pos_iff.mpr h_al1
-      have := length_pos_iff.mpr h_al2
+      have := List.length_pos_iff.mpr h_al1
+      have := List.length_pos_iff.mpr h_al2
       have : m + al1.length + al2.length = al.length := by
-        rw [← h2, ← h_alm] ; simp [length_append, add_assoc] ; omega
-      simp [-extract_eq_drop_take, DA.RunOn, ← da_run_from_on_append] at h_run1
+        rw [← h2, ← h_alm] ; simp [List.length_append, add_assoc] ; omega
+      simp [-List.extract_eq_drop_take, DA.RunOn, ← da_run_from_on_append] at h_run1
       specialize h_run' (m + al1.length) (by omega) (by omega)
       have h3 : al.extract m (m + al1.length) = al1 := by
         rw [← h2, ← h_alm] ; ext k a
         rcases (show k < al1.length ∨ ¬ k < al1.length by omega) with h_k | h_k <;>
-          simp [getElem?_append, getElem?_drop, h_k]
+          simp [List.getElem?_append, List.getElem?_drop, h_k]
         simp [(show m + k - min m al.length = k by omega), h_k]
       have h4 : al.extract 0 (m + al1.length) = al.extract 0 m ++ al1 := by
         rw [← h2, ← h_alm] ; ext k a
         rcases (show k < m ∨ (¬ k < m ∧ k < m + al1.length) ∨ ¬ k < m + al1.length by omega) with h_k | h_k | h_k <;>
-          simp (disch := omega) [getElem?_append, getElem?_take, h_k]
+          simp (disch := omega) [List.getElem?_append, List.getElem?_take, h_k]
         · simp [(show k - m < al1.length by omega)]
         · simp [(show ¬ k < m by omega)]
       rw [DA.RunOn, h3, h4] at h_run'
       contradiction
   · rintro ⟨s, h_al1_acc, al1, al2, ⟨h_al1_ne, rfl⟩, ⟨⟨h_al2_ne, h_al2_run⟩, h_al2'⟩, rfl⟩
     use al1.length
-    have h_al1_pos := length_pos_iff.mpr h_al1_ne
-    have h_al2_pos := length_pos_iff.mpr h_al2_ne
+    have h_al1_pos := List.length_pos_iff.mpr h_al1_ne
+    have h_al2_pos := List.length_pos_iff.mpr h_al2_ne
     have h1 : (al1 ++ al2).extract 0 al1.length = al1 := by simp
     have h2 : (al1 ++ al2).extract al1.length (al1.length + al2.length) = al2 := by simp
-    simp (disch := omega) [-extract_eq_drop_take, length_append, h_al1_pos, h_al2_pos, h1, h_al1_acc]
+    simp (disch := omega) [-List.extract_eq_drop_take, List.length_append, h_al1_pos, h_al2_pos, h1, h_al1_acc]
     constructor
     · simp [h2, DA.RunOn, da_run_from_on_append] ; exact h_al2_run
     intro k h_k1 h_k2 h_contra
     suffices _ : al2 ∈ {al | (al = [] → False) ∧ M.RunOn al = M.RunFromOn (M.RunOn al1) al} * {[]}ᶜ by
       contradiction
     use al2.extract 0 (k - al1.length), al2.extract (k - al1.length) al2.length
-    simp [-extract_eq_drop_take, h_al2_ne, (show ¬ k - al1.length = 0 by omega),
+    simp [-List.extract_eq_drop_take, h_al2_ne, (show ¬ k - al1.length = 0 by omega),
       (show ¬al2.length - (k - al1.length) = 0 ∧ k - al1.length < al2.length by omega)]
     constructor
     · have h3 : (al1 ++ al2).extract al1.length k = al2.extract 0 (k - al1.length) := by simp
-      have h4 : (al1 ++ al2).extract 0 k = al1 ++ al2.extract 0 (k - al1.length) := by simp [take_append] ; omega
-      simp [-extract_eq_drop_take, h3, h4, DA.RunOn, da_run_from_on_append] at h_contra
+      have h4 : (al1 ++ al2).extract 0 k = al1 ++ al2.extract 0 (k - al1.length) := by simp [List.take_append] ; omega
+      simp [-List.extract_eq_drop_take, h3, h4, DA.RunOn, da_run_from_on_append] at h_contra
       exact h_contra
     · ext j a
       rcases (show j < k - al1.length ∨ ¬ j < k - al1.length by omega) with h_j | h_j <;>
-        simp (disch := omega) [getElem?_append, getElem?_take, getElem?_drop, h_j]
+        simp (disch := omega) [List.getElem?_append, List.getElem?_take, List.getElem?_drop, h_j]
       simp [List.getElem?_eq_some_iff] ; omega
 
 lemma choueka_lang_reg_lemma_1 [Inhabited A] {M : DA A} [Finite M.State] (s : M.State) :

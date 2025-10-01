@@ -13,7 +13,7 @@ The deterministic automaton class `Automata.DA` is analogous to the
 `Automata.NA` class, except that its initial and next states are unique.
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -36,7 +36,7 @@ def DA.toNA (M : DA A) : NA A where
 
 /-- The unique run of a `DA` on an input sequence from `A`.
 -/
-def DA.DetRun (M : DA A) (as : ℕ → A) : ℕ → M.State
+def DA.DetRun (M : DA A) (as : Stream' A) : Stream' M.State
   | 0 => M.init
   | k + 1 => M.next (DetRun M as k) (as k)
 
@@ -54,27 +54,27 @@ variable {M : DA A}
 
 /-- A `DA` has an infinite run on any infinite input.
 -/
-theorem da_inf_run_exists (as : ℕ → A) :
+theorem da_inf_run_exists (as : Stream' A) :
     M.toNA.InfRun as (M.DetRun as) := by
   constructor <;> simp [DA.toNA, DA.DetRun]
 
 /-- A `DA` has a unique infinite run on any infinite input.
 -/
-theorem da_inf_run_unique {as : ℕ → A} {ss : ℕ → M.State}
+theorem da_inf_run_unique {as : Stream' A} {ss : Stream' M.State}
     (h : M.toNA.InfRun as ss) : ss = M.DetRun as := by
-  ext k ; induction' k with k h_ind
+  ext k ; simp [get.eq_1] ; induction' k with k h_ind
   · simpa [DA.toNA] using h.1
   · simpa [DA.DetRun, DA.toNA, h_ind] using h.2 k
 
 /-- A `DA` has a finite run on any finite input.
 -/
-theorem da_fin_run_exists (n : ℕ) (as : ℕ → A) :
+theorem da_fin_run_exists (n : ℕ) (as : Stream' A) :
     M.toNA.FinRun n as (M.DetRun as) :=
   na_InfRun_iff_FinRun.mp (da_inf_run_exists as) n
 
 /-- A `DA` has a unique finite run on any finite input.
 -/
-theorem da_fin_run_unique {n : ℕ} {as : ℕ → A} {ss : ℕ → M.State}
+theorem da_fin_run_unique {n : ℕ} {as : Stream' A} {ss : Stream' M.State}
     (h : M.toNA.FinRun n as ss) : ∀ k < n + 1, ss k = M.DetRun as k := by
   rcases h with ⟨h_init, h_next⟩
   intro k h_k ; induction' k with k h_ind
@@ -94,8 +94,8 @@ theorem da_run_from_on_append (M : DA A) (s : M.State) (al1 al2 : List A) :
 
 /-- Relatung `DA.RunOn` and `DA.DetRun`.
 -/
-theorem da_run_on_of_det_run (M : DA A) (as : ℕ → A) (n : ℕ) :
-    M.RunOn (as ⇊ 0 n) = M.DetRun as n := by
+theorem da_run_on_of_det_run (M : DA A) (as : Stream' A) (n : ℕ) :
+    M.RunOn (as.extract 0 n) = M.DetRun as n := by
   induction' n with n h_ind
   · simp [extract_nil, DA.DetRun, DA.RunOn, DA.RunFromOn]
   have h1 := extract_succ_right as (show 0 ≤ n by omega)
@@ -144,7 +144,7 @@ theorem da_acc_lang_compl [Inhabited A] :
     have h_run_n := na_FinRun_fixSuffix h_run
     have h_run_n' := na_FinRun_fixSuffix h_run'
     have h_as_eq : fixSuffix as' n default = fixSuffix as n default := by
-      ext k ; rcases Classical.em (k < n) with h_k | h_k <;> simp [fixSuffix, h_k]
+      ext k ; simp [get.eq_1] ; rcases Classical.em (k < n) with h_k | h_k <;> simp [fixSuffix, h_k]
       have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al, get_extract]
       have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al', get_extract]
       rw [h_as_k, h_as_k']
@@ -157,7 +157,7 @@ theorem da_acc_lang_compl [Inhabited A] :
   · intro h_compl
 --    let as := fun k ↦ if h : k < al.length then al[k] else default
     let as := al.padDefault
-    have h_al : as ⇊ 0 al.length = al := by simp [as, extract_padDefault]
+    have h_al : as.extract 0 al.length = al := by simp [as, extract_padDefault]
     use al.length, as ; simp [h_al]
     let ss := M.DetRun as
     have h_run : M.toNA.FinRun al.length as ss := by exact da_fin_run_exists al.length as
@@ -203,13 +203,13 @@ variable {A : Type}
 
 /-- Muller acceptance condition for a deterministic automaton.
 -/
-def DA.MullerAccept (M : DA A) (accSet : Set (Set M.State)) (as : ℕ → A) :=
+def DA.MullerAccept (M : DA A) (accSet : Set (Set M.State)) (as : Stream' A) :=
   InfOcc (M.DetRun as) ∈ accSet
 
 /-- For a deterministic Muller automaton, complementing the ω-language it accepts
 can be achieved by simply complementing the set of accepting state sets.
 -/
-theorem det_muller_accept_compl (M : DA A) (accSet : Set (Set M.State)) (as : ℕ → A) :
+theorem det_muller_accept_compl (M : DA A) (accSet : Set (Set M.State)) (as : Stream' A) :
     M.MullerAccept accSetᶜ as ↔ ¬ M.MullerAccept accSet as := by
   simp [DA.MullerAccept]
 

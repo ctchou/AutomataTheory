@@ -14,7 +14,7 @@ regular language is closed under the Kleene star and the ω-power
 of a regular language is an ω-regular language.
 -/
 
-open Function Set Sum Filter
+open Function Set Sum Filter Stream'
 open Classical
 open scoped Computability
 
@@ -52,7 +52,7 @@ private lemma not_inl_unit {s : (M.Loop acc).State} :
 /-- A finite run of the loop NA that contains the `inl ()` marker only
 at the beginning and at the end is an accepting run of `M`.
 -/
-theorem na_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop acc).State} (h : n > 0) :
+theorem na_loop_fin_run {n : ℕ} {as : Stream' A} {ss : Stream' (M.Loop acc).State} (h : n > 0) :
     (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k ∈ range inr) ↔
     ∃ ss', M.FinRun n as ss' ∧ ss' n ∈ acc ∧ ss 0 = inl () ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
   constructor
@@ -129,7 +129,7 @@ theorem na_loop_fin_run {n : ℕ} {as : ℕ → A} {ss : ℕ → (M.Loop acc).St
 /-- Conversely, for any finite accepting run of `M`, there is a finite run of the
 loop NA that contains the `inl ()` marker only at the beginning and at the end.
 -/
-theorem na_loop_fin_run_exists {n : ℕ} {as : ℕ → A} {ss' : ℕ → M.State}
+theorem na_loop_fin_run_exists {n : ℕ} {as : Stream' A} {ss' : Stream' M.State}
     (h_run' : M.FinRun n as ss') (h_acc' : ss' n ∈ acc) :
     ∃ ss, (M.Loop acc).FinRun n as ss ∧ ss n = inl () ∧ (∀ k < n, k > 0 → ss k = inr (ss' k)) := by
   rcases (show n = 0 ∨ n > 0 by omega) with ⟨rfl⟩ | h_n
@@ -154,10 +154,8 @@ theorem acc_lang_loop_concat :
     ((M.Loop acc).AcceptedLang {inl ()}) * ((M.Loop acc).AcceptedLang {inl ()}) ⊆
     (M.Loop acc).AcceptedLang {inl ()} := by
   rintro al ⟨al1, al2, ⟨n1, as1, ⟨ss1, h_run1, h_acc1⟩, rfl⟩, ⟨n2, as2, ⟨ss2, h_run2, h_acc2⟩, rfl⟩, rfl⟩
---  let as k := if k < n1 then as1 k else as2 (k - n1)
---  let as := (as1 ⇊ 0 n1) ++ as2
-  use (n1 + n2), ((as1 ⇊ 0 n1) ++ as2) ; symm ; constructor
-  · have h1 : (as1⇊ 0 n1).length ≤ n1 + n2 := by simp [length_extract]
+  use (n1 + n2), ((as1.extract 0 n1) ++ₛ as2) ; symm ; constructor
+  · have h1 : (as1.extract 0 n1).length ≤ n1 + n2 := by simp [length_extract]
     simp [extract_append_zero_right h1, length_extract]
   let ss k := if k < n1 then ss1 k else ss2 (k - n1)
   use ss ; symm ; constructor
@@ -169,19 +167,19 @@ theorem acc_lang_loop_concat :
     · exact h_run1.1
   intro k h_k
   rcases (show k + 1 < n1 ∨ k + 1 = n1 ∨ k + 1 > n1 by omega) with h_k | h_k | h_k
-  · have h1 : k < (as1 ⇊ 0 n1).length := by simp [length_extract] ; omega
+  · have h1 : k < (as1.extract 0 n1).length := by simp [length_extract] ; omega
     simp (disch := omega) [get_append_left' h1, get_extract]
     have h_next := h_run1.2 k (by omega)
     simp [ss, h_next, h_k, (show k < n1 by omega)]
   · have h_next := h_run1.2 k (by omega)
     suffices h_n1 : ss2 0 = ss1 (k + 1) by
-      have h1 : k < (as1 ⇊ 0 n1).length := by simp [length_extract] ; omega
+      have h1 : k < (as1.extract 0 n1).length := by simp [length_extract] ; omega
       simp (disch := omega) [get_append_left' h1, get_extract]
       simp [ss, ← h_k, h_n1, h_next]
     simp [← h_k] at h_acc1
     simp [h_acc1] ; exact h_run2.1
   · have h_next := h_run2.2 (k - n1) (by omega)
-    have h1 : (as1 ⇊ 0 n1).length ≤ k := by simp [length_extract] ; omega
+    have h1 : (as1.extract 0 n1).length ≤ k := by simp [length_extract] ; omega
     simp [get_append_right' h1, length_extract, ss, h_next,
       (show ¬ k + 1 < n1 by omega), (show ¬ k < n1 by omega), (show k + 1 - n1 = k - n1 + 1 by omega)]
 
@@ -202,20 +200,20 @@ theorem acc_lang_loop [Inhabited A] :
         obtain ⟨k, h_loop⟩ := h_loop
         apply Nat.findGreatest_spec (m := k) (by omega) h_loop
       obtain ⟨h_m_0, h_m_n, h_m_inl⟩ := h_m
-      let al' := as ⇊ 0 m
+      let al' := as.extract 0 m
       have h_run' := na_FinRun_imp_FinRun h_m_n h_run
       obtain ⟨j, h_j⟩ := h_ind m h_m_n h_run' (by simp [h_m_inl]) (al') (by simp [al'])
       have h_d : n - m > 0 := by omega
-      have h_run'' : (M.Loop acc).FinRun (n - m) (as <<< m) (ss <<< m) := by
+      have h_run'' : (M.Loop acc).FinRun (n - m) (as.drop m) (ss.drop m) := by
         constructor
         · simp [NA.Loop, get_drop', h_m_inl]
         intro k h_k
         have h_next := h_run.2 (k + m) (by omega)
         simp [h_next, get_drop', (show m + (k + 1) = k + m + 1 by omega), (show m + k = k + m by omega)]
-      have h_inl'' : (ss <<< m) (n - m) = inl () := by
+      have h_inl'' : (ss.drop m) (n - m) = inl () := by
         simp at h_acc
         simp [get_drop', (show m + (n - m) = n by omega), h_acc]
-      have h_inr'' : ∀ k < n - m, k > 0 → (ss <<< m) k ∈ range inr := by
+      have h_inr'' : ∀ k < n - m, k > 0 → (ss.drop m) k ∈ range inr := by
         intro k h_k_d h_k_0
         have h_not_loop : ¬ loop (k + m) := by
           exact Nat.findGreatest_is_greatest (show m < k + m by omega) (by omega)
@@ -223,11 +221,11 @@ theorem acc_lang_loop [Inhabited A] :
         obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| h_not_loop (by omega) (by omega)
         simp [get_drop'] ; use s' ; rw [add_comm] ; simp [h_s']
       obtain ⟨ss'', h_run'', h_acc'', _⟩ := (na_loop_fin_run h_d).mp ⟨h_run'', h_inl'', h_inr''⟩
-      let al'' := as ⇊ m n
+      let al'' := as.extract m n
       use (j + 1) ; simp [instIterFin, IterFin]
       use al', al'' ; constructorm* _ ∧ _
       · exact h_j
-      · use (n - m), (as <<< m)
+      · use (n - m), (as.drop m)
         simp [al'', extract_drop, (show m + (n - m) = n by omega)]
         use ss''
       · simp (disch := omega) [← h_al, al', al'', append_extract_extract]
@@ -273,10 +271,10 @@ theorem acc_omega_lang_loop :
       simp [NA.Loop] at h_init
       apply Nat.nth_zero_of_zero h_init
     · intro m
-      use (φ (m + 1) - φ m), (as <<< (φ m)) ; constructor
+      use (φ (m + 1) - φ m), (as.drop (φ m)) ; constructor
       · have h_mono_m : φ (m + 1) - φ m > 0 := by have := h_mono (show m < m + 1 by omega) ; omega
-        let ss1 := ss <<< (φ m)
-        have h_run1 : (M.Loop acc).FinRun (φ (m + 1) - φ m) (as <<< (φ m)) ss1 := by
+        let ss1 := ss.drop (φ m)
+        have h_run1 : (M.Loop acc).FinRun (φ (m + 1) - φ m) (as.drop (φ m)) ss1 := by
           constructor
           · simp [ss1, get_drop', NA.Loop]
             apply Nat.nth_mem_of_infinite (p := fun k ↦ ss k = inl ()) h_inf
@@ -289,7 +287,7 @@ theorem acc_omega_lang_loop :
           intro k h_k1 h_k0
           obtain ⟨s', h_s'⟩ := not_inl_unit.mp <| nth_succ_gap h_inf m k h_k1 h_k0
           use s' ; rw [add_comm] at h_s'
-          symm ; exact h_s'
+          simp [φ, ss1, ← h_s', get_drop']
         obtain ⟨ss', h_run', h_acc', _⟩ := (na_loop_fin_run h_mono_m).mp ⟨h_run1, h_inl, h_inr⟩
         use ss'
       · have := h_mono (show m < m + 1 by omega)
@@ -298,7 +296,7 @@ theorem acc_omega_lang_loop :
     choose len as' h_acc h_as' using h_acc
     choose ss' h_run h_acc using h_acc
     let seg k := Segment φ k
-    let ss k := if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
+    let ss : Stream' (Unit ⊕ NA.State A) := fun k ↦ if k ∈ range φ then inl () else inr (ss' (seg k) (k - φ (seg k)))
     use ss ; constructor <;> [constructor ; skip]
     · have h_0' : ∃ k, φ k = 0 := by use 0
       simp [ss, h_0', NA.Loop]
@@ -307,9 +305,9 @@ theorem acc_omega_lang_loop :
       have h_seg_k1 : k < φ (seg k + 1) := by exact segment_upper_bound h_mono h_0 k
       have h_mono_k : φ (seg k + 1) - φ (seg k) > 0 := by omega
       suffices h_lhs :
-          (M.Loop acc).FinRun (φ (seg k + 1) - φ (seg k)) (as <<< (φ (seg k))) (ss <<< (φ (seg k))) ∧
-          (ss <<< (φ (seg k))) (φ (seg k + 1) - φ (seg k)) = inl () ∧
-          (∀ j < φ (seg k + 1) - φ (seg k), j > 0 → (ss <<< (φ (seg k))) j ∈ range inr) by
+          (M.Loop acc).FinRun (φ (seg k + 1) - φ (seg k)) (as.drop (φ (seg k))) (ss.drop (φ (seg k))) ∧
+          (ss.drop (φ (seg k))) (φ (seg k + 1) - φ (seg k)) = inl () ∧
+          (∀ j < φ (seg k + 1) - φ (seg k), j > 0 → (ss.drop (φ (seg k))) j ∈ range inr) by
         have h_run_k := h_lhs.1.2 (k - φ (seg k)) (show k - φ (seg k) < φ (seg k + 1) - φ (seg k) by omega)
         simp [get_drop', (show φ (seg k) + (k - φ (seg k)) = k by omega),
           (show φ (seg k) + (k - φ (seg k) + 1) = k + 1 by omega)] at h_run_k

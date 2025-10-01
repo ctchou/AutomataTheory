@@ -18,7 +18,7 @@ infinitely often.
 [*] "OI2" = "Omega Intersection of 2 automata"
 -/
 
-open Function Set Filter
+open Function Set Filter Stream'
 
 namespace Automata
 
@@ -48,7 +48,7 @@ when it is waiting to see an accepting state of `Mi`, where `i` is either 0 or 1
 def NA.OI2_Acc : Set (NA.OI2 M acc).State :=
   { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 } ∪ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }
 
-private lemma na_oi2_lemma1 {as : ℕ → A} {ss : ℕ → (NA.OI2 M acc).State}
+private lemma na_oi2_lemma1 {as : Stream' A} {ss : Stream' (NA.OI2 M acc).State}
     (h_run : (NA.OI2 M acc).InfRun as ss) :
       (∃ᶠ k in atTop, ss k ∈ { s | s.1 0 ∈ acc 0 ∧ s.2 = 0 }) ↔
       (∃ᶠ k in atTop, ss k ∈ { s | s.1 1 ∈ acc 1 ∧ s.2 = 1 }) := by
@@ -102,7 +102,7 @@ private lemma na_oi2_lemma1 {as : ℕ → A} {ss : ℕ → (NA.OI2 M acc).State}
         exact Frequently.mono h_inf h_imp
     exact leads_to_trans h_lt1 h_lt2
 
-private lemma na_oi2_lemma2 {as : ℕ → A} {ss : ℕ → (NA.OI2 M acc).State}
+private lemma na_oi2_lemma2 {as : Stream' A} {ss : Stream' (NA.OI2 M acc).State}
     (h_run : (NA.OI2 M acc).InfRun as ss)
     (h_inf0 : ∃ᶠ k in atTop, ss k ∈ { s | s.1 0 ∈ acc 0 })
     (h_inf1 : ∃ᶠ k in atTop, ss k ∈ { s | s.1 1 ∈ acc 1 }) :

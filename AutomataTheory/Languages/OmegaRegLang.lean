@@ -14,7 +14,7 @@ Note that we do require that the Automata.NA accepting an ω-regular language
 to have a finite state type.
 -/
 
-open Function Set Filter Sum
+open Function Set Filter Sum Stream'
 open scoped Computability
 
 section OmegaRegLang
@@ -26,13 +26,13 @@ variable {A : Type}
 /-- An ω-language is regular iff it is accepted by a finite-state Automata.NA using
 the Büchi acceptance condition.
 -/
-def OmegaRegLang (L : Set (ℕ → A)) :=
+def OmegaRegLang (L : Set (Stream' A)) :=
   ∃ M : Automata.NA A, ∃ acc : Set M.State, Finite M.State ∧ M.AcceptedOmegaLang acc = L
 
 /-- The language `∅` is ω-regular.
 -/
 theorem omega_reg_lang_empty :
-    OmegaRegLang (∅ : Set (ℕ → A)) := by
+    OmegaRegLang (∅ : Set (Stream' A)) := by
   let M := Automata.NA.mk (A := A) Unit ∅ (fun _ _ ↦ ∅)
   use M, ∅ ; constructor
   · exact Finite.of_fintype Unit
@@ -41,7 +41,7 @@ theorem omega_reg_lang_empty :
 /-- The language `univ` is ω-regular.
 -/
 theorem omega_reg_lang_univ :
-    OmegaRegLang (univ : Set (ℕ → A)) := by
+    OmegaRegLang (univ : Set (Stream' A)) := by
   let M := Automata.NA.mk (A := A) Unit {()} (fun _ _ ↦ {()})
   use M, {()} ; constructor
   · exact Finite.of_fintype Unit
@@ -52,7 +52,7 @@ theorem omega_reg_lang_univ :
 
 /-- ω-regular languages are closed under union.
 -/
-theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
+theorem omega_reg_lang_union {L0 L1 : Set (Stream' A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∪ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -71,7 +71,7 @@ theorem omega_reg_lang_union {L0 L1 : Set (ℕ → A)}
 
 /-- ω-regular languages are closed under finite bounded indexed union.
 -/
-theorem omega_reg_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+theorem omega_reg_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set (Stream' A)}
     (h : ∀ i ∈ s, OmegaRegLang (L i)) : OmegaRegLang (⋃ i ∈ s, L i) := by
   generalize h_n : s.ncard = n
   induction' n with n h_ind generalizing s
@@ -82,7 +82,7 @@ theorem omega_reg_lang_biUnion {I : Type} [Finite I] {s : Set I} {L : I → Set 
 
 /-- ω-regular languages are closed under intersection.
 -/
-theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
+theorem omega_reg_lang_inter {L0 L1 : Set (Stream' A)}
     (h0 : OmegaRegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 ∩ L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -103,7 +103,7 @@ theorem omega_reg_lang_inter {L0 L1 : Set (ℕ → A)}
 
 /-- ω-regular languages are closed under finite bounded indexed intersection.
 -/
-theorem omega_reg_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (ℕ → A)}
+theorem omega_reg_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set (Stream' A)}
     (h : ∀ i ∈ s, OmegaRegLang (L i)) : OmegaRegLang (⋂ i ∈ s, L i) := by
   generalize h_n : s.ncard = n
   induction' n with n h_ind generalizing s
@@ -114,7 +114,7 @@ theorem omega_reg_lang_biInter {I : Type} [Finite I] {s : Set I} {L : I → Set 
 
 /-- The concatenation of a regular language and an ω-regular language is ω-regular.
 -/
-theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (ℕ → A)}
+theorem omega_reg_lang_concat {L0 : Set (List A)} {L1 : Set (Stream' A)}
     (h0 : RegLang L0) (h1 : OmegaRegLang L1) : OmegaRegLang (L0 * L1) := by
   obtain ⟨M0, acc0, h_fin0, h_l0⟩ := h0
   obtain ⟨M1, acc1, h_fin1, h_l1⟩ := h1
@@ -145,7 +145,7 @@ theorem omega_reg_lang_omega_limit {L : Set (List A)}
 /-- An ω-language is ω-regular if and only if it is the finite union of sets
 of the form `U * V^ω`, where all `U`s and `V`s are regular languages.
 -/
-theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)} :
+theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (Stream' A)} :
     OmegaRegLang L ↔
     ∃ n : ℕ, ∃ U V : Fin n → Set (List A),
       (∀ i, RegLang (U i) ∧ RegLang (V i)) ∧ L = ⋃ i, (U i) * (V i)^ω := by
@@ -199,7 +199,7 @@ theorem omega_reg_lang_iff_finite_union_form [Inhabited A] {L : Set (ℕ → A)}
 /-- If a congruence is of finite index, is ample, and saturates an ω-language `L`,
 then `L` is ω-regular.
 -/
-theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (ℕ → A)}
+theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (Stream' A)}
     (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang L := by
   rw [congruence_ample_saturates_union h_amp h_sat, omega_reg_lang_iff_finite_union_form]
   have eq_quot : Fin (Nat.card c.QuotType) ≃ c.QuotType := by exact (Finite.equivFin c.QuotType).symm
@@ -227,14 +227,14 @@ theorem omega_reg_lang_fin_idx_congr [Inhabited A] {c : Congruence A} {L : Set (
 /-- If a congruence is of finite index, is ample, and saturates an ω-language `L`,
 then the complement of `L` is ω-regular as well.
 -/
-theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L : Set (ℕ → A)}
+theorem omega_reg_lang_fin_idx_congr_compl [Inhabited A] {c : Congruence A} {L : Set (Stream' A)}
     (h_fin : Finite (c.QuotType)) (h_amp : c.Ample) (h_sat : c.Saturates L) : OmegaRegLang Lᶜ := by
   have h_sat' := congruence_saturates_compl h_sat
   exact omega_reg_lang_fin_idx_congr h_fin h_amp h_sat'
 
 /-- ω-regular languages are closed under complementation.
 -/
-theorem omega_reg_lang_compl [Inhabited A] {L : Set (ℕ → A)}
+theorem omega_reg_lang_compl [Inhabited A] {L : Set (Stream' A)}
     (h : OmegaRegLang L) : OmegaRegLang Lᶜ := by
   obtain ⟨M, acc, h_fin, rfl⟩ := h
   exact omega_reg_lang_fin_idx_congr_compl (c := M.BuchiCongr acc)
