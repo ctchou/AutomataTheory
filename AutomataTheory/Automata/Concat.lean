@@ -321,7 +321,7 @@ theorem acc_lang_concat_ne :
       use s1 ; rw [h_s1]
     obtain ⟨n, h_n, ⟨ss0, h_run0, h_acc0, h_ss0⟩, ⟨ss1, h_run1, h_ss1⟩⟩ := na_concat_fin_run_1.mp ⟨h_run, h_s1_ex⟩
     use (as.extract 0 n), (as.extract n m)
-    simp (disch := omega) [append_extract_extract, extract_nil_iff, h_n]
+    simp (disch := omega) [append_extract_extract, extract_eq_nil_iff, h_n]
     constructor
     · use n, as ; simp ; use ss0
     · use (m - n), (as.drop n) ; simp (disch := omega) [extract_drop]
@@ -333,7 +333,7 @@ theorem acc_lang_concat_ne :
     simp at h_al1_ne
     rcases h_al0 with ⟨n, as0, ⟨⟨ss0, ⟨h_init0, h_next0⟩, h_acc0⟩, rfl⟩⟩
     rcases h_al1 with ⟨m, as1, ⟨⟨ss1, ⟨h_init1, h_next1⟩, h_acc1⟩, rfl⟩⟩
-    have h_m : 0 < m := by simp [extract_nil_iff] at h_al1_ne ; omega
+    have h_m : 0 < m := by simp [extract_eq_nil_iff] at h_al1_ne ; omega
     let as := (as0.extract 0 n) ++ₛ as1
     use (n + m), as ; constructor
     · let ss := fun k ↦ if k < n + 1 then inl (ss0 k) else inr (ss1 (k - n))
@@ -346,7 +346,7 @@ theorem acc_lang_concat_ne :
           · exact h_init0
           · intro k h_k
             have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
-            simp (disch := omega) [get_append_left' h1, get_extract, h_next0 k h_k]
+            simp (disch := omega) [get_append_left' h1, get_extract', h_next0 k h_k]
         · use ss1 ; simp ; constructor <;> [constructor ; skip]
           · exact h_init1
           · intro k h_k
@@ -395,7 +395,7 @@ theorem acc_omega_lang_concat :
         · exact h_init0
         · intro k h_k
           have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
-          simp (disch := omega) [← h_as, get_append_left' h1, get_extract, h_next0 k h_k]
+          simp (disch := omega) [← h_as, get_append_left' h1, get_extract', h_next0 k h_k]
       · use ss1 ; simp [ss]
         have h1 : (as0.extract 0 n).length = n := by simp [length_extract]
         rw [← h1] ; simp [← h_as, drop_append_stream, h_run1]

@@ -40,10 +40,10 @@ variable {c : Congruence A}
 theorem automaton_congr_run (as : Stream' A) (n : ℕ) :
     c.toDA.DetRun as n = ⟦ as.extract 0 n ⟧ := by
   induction' n with n h_ind
-  · simp [Automata.DA.DetRun, Congruence.toDA, extract_nil]
+  · simp [Automata.DA.DetRun, Congruence.toDA, extract_eq_nil]
   simp only [Automata.DA.DetRun, h_ind]
   simp only [Congruence.toDA, Quotient.lift_mk]
-  simp [extract_succ_right]
+  simp [extract_succ_right']
 
 /-- The language accepted by `c.toDA` with a unique accepting state `s`
 is exactly the equivalence class of `s`.

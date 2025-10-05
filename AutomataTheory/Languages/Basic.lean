@@ -208,7 +208,7 @@ theorem mem_ConcatInf_IterOmega {L0 L1 : Set (List A)} {as : Stream' A}
   use (fun m ↦ φ1 (m) + al0.length)
   constructorm* _ ∧ _
   · intro m n h_mn ; have := h_mono h_mn ; grind
-  · simp [h_φ1_0, h_al0, extract_append_zero_right, extract_nil]
+  · simp [h_φ1_0, h_al0, extract_append_zero_right, extract_eq_nil]
   · intro m
     have h1 : φ1 (m + 1) + al0.length - (φ1 m + al0.length) = φ1 (m + 1) - φ1 m := by omega
     specialize h_φ1_sub m

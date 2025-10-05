@@ -97,8 +97,8 @@ theorem da_run_from_on_append (M : DA A) (s : M.State) (al1 al2 : List A) :
 theorem da_run_on_of_det_run (M : DA A) (as : Stream' A) (n : ℕ) :
     M.RunOn (as.extract 0 n) = M.DetRun as n := by
   induction' n with n h_ind
-  · simp [extract_nil, DA.DetRun, DA.RunOn, DA.RunFromOn]
-  have h1 := extract_succ_right as (show 0 ≤ n by omega)
+  · simp [extract_eq_nil, DA.DetRun, DA.RunOn, DA.RunFromOn]
+  have h1 := extract_succ_right' (xs := as) (show 0 ≤ n by omega)
   rw [DA.RunOn, DA.DetRun, ← h_ind, h1, da_run_from_on_append] ; rfl
 
 /-- A technical result for extending a finite run to an infinite run.
@@ -145,8 +145,8 @@ theorem da_acc_lang_compl [Inhabited A] :
     have h_run_n' := na_FinRun_fixSuffix h_run'
     have h_as_eq : fixSuffix as' n default = fixSuffix as n default := by
       ext k ; simp [get.eq_1] ; rcases Classical.em (k < n) with h_k | h_k <;> simp [fixSuffix, h_k]
-      have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al, get_extract]
-      have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al', get_extract]
+      have h_as_k : as k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al, get_extract']
+      have h_as_k' : as' k = al.get ⟨k, (by omega)⟩ := by simp (disch := omega) [← h_al', get_extract']
       rw [h_as_k, h_as_k']
     rw [h_as_eq] at h_run_n'
     have h_ss_n := da_fin_run_unique h_run_n n (by omega)

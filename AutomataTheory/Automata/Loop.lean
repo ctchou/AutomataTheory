@@ -168,13 +168,13 @@ theorem acc_lang_loop_concat :
   intro k h_k
   rcases (show k + 1 < n1 ∨ k + 1 = n1 ∨ k + 1 > n1 by omega) with h_k | h_k | h_k
   · have h1 : k < (as1.extract 0 n1).length := by simp [length_extract] ; omega
-    simp (disch := omega) [get_append_left' h1, get_extract]
+    simp (disch := omega) [get_append_left' h1, get_extract']
     have h_next := h_run1.2 k (by omega)
     simp [ss, h_next, h_k, (show k < n1 by omega)]
   · have h_next := h_run1.2 k (by omega)
     suffices h_n1 : ss2 0 = ss1 (k + 1) by
       have h1 : k < (as1.extract 0 n1).length := by simp [length_extract] ; omega
-      simp (disch := omega) [get_append_left' h1, get_extract]
+      simp (disch := omega) [get_append_left' h1, get_extract']
       simp [ss, ← h_k, h_n1, h_next]
     simp [← h_k] at h_acc1
     simp [h_acc1] ; exact h_run2.1
@@ -230,7 +230,7 @@ theorem acc_lang_loop [Inhabited A] :
         use ss''
       · simp (disch := omega) [← h_al, al', al'', append_extract_extract]
     · rcases (show n = 0 ∨ n > 0 by omega) with ⟨rfl⟩ | h_n
-      · use 0 ; simp [← h_al, instIterFin, IterFin, extract_nil]
+      · use 0 ; simp [← h_al, instIterFin, IterFin, extract_eq_nil]
       simp [loop] at h_loop
       have h_inr : ∀ k < n, k > 0 → ss k ∈ range inr := by
         intro k h_k_n h_k_0
@@ -245,7 +245,7 @@ theorem acc_lang_loop [Inhabited A] :
     revert al
     induction' i with i h_ind
     · intro al ; simp [instIterFin, IterFin] ; rintro ⟨rfl⟩
-      use 0 ; simp [extract_nil]
+      use 0 ; simp [extract_eq_nil]
       use (fun k ↦ default), (fun k ↦ inl ()) ; simp [NA.FinRun, NA.Loop]
     rintro al ⟨al1, al2, h_al1, h_al2, h_al⟩
     specialize h_ind al1 h_al1

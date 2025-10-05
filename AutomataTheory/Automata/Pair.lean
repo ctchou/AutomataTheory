@@ -55,7 +55,7 @@ theorem pair_lang_fin_subseq {as : Stream' A} {ss : Stream' M.State} {m n : ℕ}
     (h_next : ∀ k, ss (k + 1) ∈ M.next (ss k) (as k)) (h_m_n : m ≤ n) :
     as.extract m n ∈ M.PairLang (ss m) (ss n) := by
   use (fun k ↦ ss (k + m))
-  simp (disch := omega) [NA.PairPath, length_extract, get_extract, (show n - m + m = n by omega)]
+  simp (disch := omega) [NA.PairPath, length_extract, get_extract', (show n - m + m = n by omega)]
   intro k h_k ; grind
 
 theorem pair_path_split {s s' : M.State} {al0 al1 : List A} {ss : Stream' M.State}
@@ -155,7 +155,7 @@ theorem pair_acc_lang_frequently_from_run {as : Stream' A} {ss : Stream' M.State
   · exact segment'_lower_val h_mono h_k
   · use (fun k ↦ ss (k + φ n)) ; constructor
     · have : φ n < φ (n + 1) := h_mono (show n < n + 1 by omega)
-      simp (disch := omega) [NA.PairPath, length_extract, get_extract, (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
+      simp (disch := omega) [NA.PairPath, length_extract, get_extract', (show φ (n + 1) - φ n + φ n = φ (n + 1) by omega)]
       intro j h_j ; have := h_next (j + φ n)
       simpa [(show j + 1 + φ n = j + φ n + 1 by omega), (show φ n + j = j + φ n by omega)]
     · have : φ 0 ≤ φ m := by simp [StrictMono.le_iff_le h_mono]
@@ -199,7 +199,7 @@ theorem pair_acc_lang_frequently_to_run {φ : Stream' ℕ} {as : Stream' A} (ss'
     have := segment_lower_bound h_mono h_zero k
     have := segment_upper_bound h_mono h_zero k
     have h_next := (h_ps (Segment φ k)).1.2.2 (k - φ (Segment φ k))
-    simp [length_extract, get_extract,
+    simp [length_extract, get_extract',
       (show φ (Segment φ k) + (k - φ (Segment φ k)) = k by omega),
       (show k - φ (Segment φ k) + 1 = k + 1 - φ (Segment φ k) by omega),
       (show k - φ (Segment φ k) < φ (Segment φ k + 1) - φ (Segment φ k) by omega)] at h_next
@@ -267,7 +267,7 @@ theorem pair_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.State
     simp [NA.FinRun, h_init, length_extract]
     intro k h_k
     have h1 : k < (as.extract 0 n).length := by simp [length_extract, h_k]
-    simp (disch := omega) [padDefault_elt_left h1, get_extract, h_next]
+    simp (disch := omega) [padDefault_elt_left h1, get_extract', h_next]
   · rintro ⟨ss, h_path⟩
     use al.length, al.padDefault ; simp [extract_padDefault]
     use ss ; exact pair_path_fin_run.mp h_path
@@ -291,7 +291,7 @@ theorem pair_acc_lang_regular [Inhabited A] [h_fin : Finite M.State] {s s' : M.S
       apply na_FinRun_modulo (hr := h_run)
       · intro k h_k
         have h1 : k < (as.extract 0 n).length := by simp [length_extract, h_k]
-        simp (disch := omega) [padDefault_elt_left h1, get_extract]
+        simp (disch := omega) [padDefault_elt_left h1, get_extract']
       · simp
     simp
     obtain (h_acc | h_acc) := h_acc.symm
@@ -346,7 +346,7 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     have h_mono : StrictMono nth_sa := by exact Nat.nth_strictMono h_inf
     use (as.extract 0 (nth_sa 0)), (as.drop (nth_sa 0))
     simp [append_extract_drop] ; constructor
-    · use ss ; simp (disch := omega) [NA.PairPath, h_nth_sa, h_next, length_extract, get_extract]
+    · use ss ; simp (disch := omega) [NA.PairPath, h_nth_sa, h_next, length_extract, get_extract']
     use (fun n ↦ nth_sa n - nth_sa 0) ; simp ; constructor
     · intro m n h_mn ; simp
       have h_nth_mn := h_mono h_mn
@@ -360,7 +360,7 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
     have h2 : nth_sa 0 + (nth_sa (n + 1) - nth_sa 0) = nth_sa (n + 1) := by omega
     simp [extract_drop, h1, h2]
     use (ss.drop (nth_sa n))
-    simp (disch := omega) [NA.PairPath, h_nth_sa, length_extract, get_drop', get_extract]
+    simp (disch := omega) [NA.PairPath, h_nth_sa, length_extract, get_drop', get_extract']
     intro k h_k ; specialize h_next (k + nth_sa n)
     have h3 : nth_sa n + (k + 1) = k + nth_sa n + 1 := by omega
     have h4 : nth_sa n + k = k + nth_sa n := by omega
@@ -391,7 +391,7 @@ theorem omega_reg_lang_finite_union_form [h_fin : Finite M.State] :
         simp [ss, h_k', h_k'', seg]
         have h_next := (h_nth_ss (Segment nth_sa (k - al0.length))).2.2
           <| (k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length)
-        simp (disch := omega) [length_extract, get_extract] at h_next
+        simp (disch := omega) [length_extract, get_extract'] at h_next
         specialize h_next (by omega)
         have h1 : nth_sa (Segment nth_sa (k - al0.length)) + (k - nth_sa (Segment nth_sa (k - al0.length)) - al0.length)
           = k - al0.length := by omega

@@ -149,7 +149,7 @@ theorem det_muller_lang_concat {L0 : Set (List A)} {L1 : Set (Stream' A)}
         · exact h_run0.1
         intro k h_k
         have h1 : k < (as0.extract 0 n).length := by simp [length_extract, h_k]
-        simp (disch := omega) [get_append_left' h1, get_extract, h_run0.2 k h_k]
+        simp (disch := omega) [get_append_left' h1, get_extract', h_run0.2 k h_k]
       have h_acc1 : M1.MullerAccept accSet1 (as.drop n) := by
         have h1 : n = (as0.extract 0 n).length := by simp [length_extract]
         rw [h1] ; simp [← h_as, drop_append_stream] ; exact h_as1

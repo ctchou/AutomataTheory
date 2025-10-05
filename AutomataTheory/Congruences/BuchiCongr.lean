@@ -72,7 +72,7 @@ theorem buchi_congr_saturates : (M.BuchiCongr acc).Saturates (M.AcceptedOmegaLan
     apply Frequently.mono h_inf ; intro m
     exact (h_congr_q m (ss (φ m)) (ss (φ (m + 1)))).2.mp
   obtain ⟨ss0', h_ss_0, h_ss_φ0, h_next0'⟩ := h_pair_0'
-  simp (disch := omega) [length_extract, get_extract] at h_ss_φ0 h_next0'
+  simp (disch := omega) [length_extract, get_extract'] at h_ss_φ0 h_next0'
   have h_lem1 : ∀ m,  (as'.drop (φ' 0)).extract (φ' m - φ' 0) (φ' (m + 1) - φ' 0) = as'.extract (φ' m) (φ' (m + 1)) := by
     intro m
     have := StrictMono.monotone h_mono' (show 0 ≤ m by omega)

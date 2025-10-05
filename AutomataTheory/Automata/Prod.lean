@@ -83,7 +83,7 @@ theorem acc_lang_inter [Inhabited A] :
       intro k h_k
       have h1 : k < (as.extract 0 al.length).length := by simp [length_extract, h_k]
       have h2 : al.padDefault k = as k := by
-        rw [← h_al] ; simp (disch := omega) [padDefault_elt_left, get_extract]
+        rw [← h_al] ; simp (disch := omega) [padDefault_elt_left, get_extract']
       simp [h2, h_run_i.2 k h_k]
     use al.length, al.padDefault ; simp [extract_padDefault]
     choose ss_i h_ss_i using h_all'

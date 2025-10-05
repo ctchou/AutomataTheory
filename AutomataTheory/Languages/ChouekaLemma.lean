@@ -93,11 +93,11 @@ theorem choueka_lang_omega_limit_subset_omega_power [Inhabited A] {M : DA A} {ac
     · exact h_acc (σ 0)
     have h1 := h_φ'_n (σ (n - 1))
     have h2 := h_φ_φ' (n - 1) ; simp [show n - 1 + 1 = n by omega] at h2
-    have h3 := append_extract_extract as (show φ' (σ (n - 1)) ≤ φ (σ (n - 1)) by omega)
+    have h3 := append_extract_extract (xs := as) (show φ' (σ (n - 1)) ≤ φ (σ (n - 1)) by omega)
       (show φ (σ (n - 1)) ≤ φ' (σ n) by omega)
     have h4 := h_run (σ (n - 1)) ; simp [DA.RunOn] at h4
     simp [← h3, DA.RunOn, da_run_from_on_append, h4]
-    have h5 := append_extract_extract as (show 0 ≤ φ (σ (n - 1)) by omega)
+    have h5 := append_extract_extract (xs := as) (show 0 ≤ φ (σ (n - 1)) by omega)
       (show φ (σ (n - 1)) ≤ φ' (σ n) by omega)
     simp [← da_run_from_on_append, h5]
     exact h_acc (σ n)
@@ -156,7 +156,7 @@ theorem choueka_lang_omega_power_subset_omega_limit [Inhabited A]
     intro i j h_ij ; simp [instIterStar, IterStar]
     use (j - i) ; generalize h_n : j - i = n
     induction' n with n h_ind generalizing i j <;> simp [instIterFin, IterFin]
-    · simp [extract_nil, (show i = j by omega)]
+    · simp [extract_eq_nil, (show i = j by omega)]
     use (as.extract (φ i) (φ (j - 1))), (as.extract (φ (j - 1)) (φ j)) ; constructorm* _ ∧ _
     · exact h_ind i (j - 1) (by omega) (by omega)
     · specialize h_φ_V (j - 1)

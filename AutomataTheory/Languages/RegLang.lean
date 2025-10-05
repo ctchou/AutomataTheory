@@ -50,10 +50,10 @@ theorem reg_lang_epsilon [Inhabited A] :
   · exact Finite.of_fintype Unit
   ext al ; simp ; constructor
   · rintro ⟨n, as, ⟨ss, ⟨h_init, h_next⟩, h_acc⟩, h_al⟩
-    suffices h_n : n = 0 by simp [← h_al, h_n, extract_nil]
+    suffices h_n : n = 0 by simp [← h_al, h_n, extract_eq_nil]
     by_contra ; specialize h_next 0 (by omega) ; simp [M] at h_next
   · rintro ⟨rfl⟩
-    use 0, (fun k ↦ default) ; simp [extract_nil]
+    use 0, (fun k ↦ default) ; simp [extract_eq_nil]
     use (fun k ↦ ()) ; simp [M, Automata.NA.FinRun]
 
 /-- The language `univ` is regular.
