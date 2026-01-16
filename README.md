@@ -3,6 +3,12 @@
 
 --------------------------------
 
+*The results in this project are being ported to CSLib:*
+
+* https://github.com/leanprover/cslib
+
+*In the following <ins>underlined text</ins> is used to indicate those results that are already in CSLib.*
+
 This repo contains a Lean4 formalization of automata theory,
 where the automata can "run" on both finite and infinite words.
 Our formalization strives to treat both finite and infinite words in
@@ -20,12 +26,12 @@ migrated to this stand-alone repo on 2025-04-27.
 
 *Update 2025-06-09:* The following results have been proved:
 
-* Regular languages are closed under union, intersection, complementation,
-  concatenation, and the Kleene star.
+* <ins>Regular languages are closed under union, intersection, complementation,
+  concatenation, and the Kleene star.</ins>
 
-* $\omega$-regular languages are closed under union and intersection.
+* <ins>$\omega$-regular languages are closed under union and intersection.
   Both the concatenation of a regular language followed by an $\omega$-regular language
-  and the $\omega$-power of a regular language yield an $\omega$-regular language.
+  and the $\omega$-power of a regular language yield an $\omega$-regular language.</ins>
 
 *Update 2025-07-21:* More results have been proved:
 
@@ -53,14 +59,14 @@ mentioned above.
 *Update 2025-07-30:* The needed Ramsey theorem on infinite graphs has been proved
 and there is no `sorry` left.
 
-*Update 2025-08-01:* Significant improvements in notations have been made,
+*Update 2025-08-01:* <ins>Significant improvements in notations have been made,
 including the more pervasive uses of the dot notation and the introductions of
-several infix and postfix operators.
+several infix and postfix operators.</ins>
 
 *Update 2025-08-30:* Some results about deterministic automata have been proved:
 
-* A deterministic Büchi automaton accepts precisely the $\omega$-limit of the
-  language (on finite words) that it accepts.
+* <ins>A deterministic Büchi automaton accepts precisely the $\omega$-limit of the
+  language (on finite words) that it accepts.</ins>
 
 * The $\omega$-languages accepted by deterministic Muller automata, referred
   to as deterministic Muller languages, are closed under intersection, union,
