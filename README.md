@@ -38,9 +38,9 @@ migrated to this stand-alone repo on 2025-04-27.
 * All equivalence classes of a right congruence relation (on finite words)
   of finite index are regular languages.
 
-* A language is $\omega$-regular if and only if it is the union of a finite
+* <ins>A language is $\omega$-regular if and only if it is the union of a finite
   number of languages of the form $U \cdot V^\omega$, where $U$ and $V$ are
-  regular languages.
+  regular languages.</ins>
 
 * If a right congruence relation of finite index is "ample" and "saturates"
   an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular
