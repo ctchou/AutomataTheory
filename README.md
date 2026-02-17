@@ -35,15 +35,15 @@ migrated to this stand-alone repo on 2025-04-27.
 
 *Update 2025-07-21:* More results have been proved:
 
-* All equivalence classes of a right congruence relation (on finite words)
-  of finite index are regular languages.
+* <ins>All equivalence classes of a right congruence relation (on finite words)
+  of finite index are regular languages.</ins>
 
 * <ins>A language is $\omega$-regular if and only if it is the union of a finite
   number of languages of the form $U \cdot V^\omega$, where $U$ and $V$ are
   regular languages.</ins>
 
-* If a right congruence relation of finite index is "ample" and "saturates"
-  an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular
+* <ins>If a right congruence relation of finite index is "ample" and "saturates"
+  an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular</ins>
   (see `AutomataTheory/Congruences/Basic.lean` for the definitions of "ample" and "saturates").
 
 *Update 2025-07-26:* The closure of $\omega$-regular languages under complementation
