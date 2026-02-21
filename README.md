@@ -56,7 +56,7 @@ The crux of the proof uses a congruence relation invented by Büchi
 that is of finite index and has the ampleness and saturation properties
 mentioned above.
 
-*Update 2025-07-30:* The needed Ramsey theorem on infinite graphs has been proved
+*Update 2025-07-30:* <ins>The needed Ramsey theorem on infinite graphs has been proved</ins>
 and there is no `sorry` left.
 
 *Update 2025-08-01:* <ins>Significant improvements in notations have been made,
