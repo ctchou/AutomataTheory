@@ -46,8 +46,8 @@ migrated to this stand-alone repo on 2025-04-27.
   an $\omega$-language $L$, then both $L$ and its complement are $\omega$-regular</ins>
   (see `AutomataTheory/Congruences/Basic.lean` for the definitions of "ample" and "saturates").
 
-*Update 2025-07-26:* The closure of $\omega$-regular languages under complementation
-has been proved, modulo a Ramsey theorem on infinite graphs which is to be proved later.
+*Update 2025-07-26:* <ins>The closure of $\omega$-regular languages under complementation
+has been proved</ins>, modulo a Ramsey theorem on infinite graphs which is to be proved later.
 The proof being formalized is essentially that of Büchi [1] and follows the modern
 presentation in the first 2 sections of a survey article by Thomas [3], an outline
 of which can also be found in Wikipedia [4].
